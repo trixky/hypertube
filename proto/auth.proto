@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+
+option go_package = "./proto";
+
+
+package auth;
+
+message InternalRegisterRequest {
+    string email = 1;
+    string password = 2;
+
+    string username = 3;
+    string firstname = 4;
+    string lastname = 5;
+}
+
+message InternalLoginRequest {
+    string password = 2;
+    string userame = 3;
+}
+
+message InternalLoginResponse {
+    string jwt = 1;
+}
+
+message InternalRecoverPasswordRequest {
+    string email = 1;
+}
+
+message InternalChangePasswordRequest {
+    string token = 1;
+    string password = 2;
+    string email = 3;
+}
+
+service AuthService {
+    rpc InternalRegister(InternalRegisterRequest) returns (InternalLoginResponse) {};
+    rpc InternalLogin(InternalLoginRequest) returns (InternalLoginResponse) {};
+    rpc InternalRecoverPassword(InternalRecoverPasswordRequest) returns (google.protobuf.Empty) {};
+    rpc InternalChangePassword(InternalChangePasswordRequest) returns (google.protobuf.Empty) {};
+}
+

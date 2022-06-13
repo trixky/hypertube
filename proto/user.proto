@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "./proto";
+
+package user;
+
+message ModifyEmail {
+    string email = 1;
+}
+
+message ModifyPassword {
+    string current_password = 1;
+    string new_password = 2;
+}
+
+message ModifyUsername {
+    bytes username = 1;
+}
+
+message ModifyFirstname {
+    bytes firstname = 1;
+}
+
+message ModifyLastname {
+    bytes lastname = 1;
+}
+
+message ModifyProfilePicture {
+    bytes image = 1;
+}

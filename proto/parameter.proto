@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option go_package = "./proto";
+
+
+package parameter;
+
+enum Langage {
+    LANGAGE_ENGLISH = 0;
+    LANGAGE_FRENCH = 1;
+    LANGAGE_RUSSIAN = 2;
+}
+
+message ChangeLangage {
+    Langage langage = 1;
+}

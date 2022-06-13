@@ -1,0 +1,9 @@
+version: 1
+packages:
+  - path: "../api-auth/sqlc"
+    name: "sqlc"
+    engine: "postgresql"
+    schema:
+      - "sql/users/schema.sql"
+    queries:
+      - "sql/users/query.sql"
