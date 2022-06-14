@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	pb "github.com/trixky/hypertube/api/proto"
+	pb "github.com/trixky/hypertube/api-auth/proto"
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
 
