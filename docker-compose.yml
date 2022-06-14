@@ -60,6 +60,19 @@ services:
       - postgres
     volumes:
       - pgadmin-data:/var/lib/pgadmin
+  
+  client:
+    build: ./client
+    environment:
+      CLIENT_PORT: ${CLIENT_PORT}
+    volumes:
+      - ./client:/app
+    depends_on:
+      - api-auth
+    links:
+      - api-auth
+    ports:
+      - "${CLIENT_PORT}:${CLIENT_PORT}"
 
 volumes:
   postgres-data:
