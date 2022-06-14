@@ -4,19 +4,20 @@
 *.dll
 *.so
 *.dylib
+**/main
 
 # Test binary, built with `go test -c`
 *.test
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
-# main
-# api
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# Generated packages
+**/proto/*.go
+**/sqlc/*.go
 
+# Random/misc
 *.asdf
-
-*/proto/*.go
-*/sqlc/*.go
+**/toto*
+**/tutu*
+**/tata*
