@@ -16,7 +16,7 @@ const (
 	host            = "0.0.0.0"
 	database_driver = "postgres"
 
-	env_port              = "API_AUTH_PORT"
+	env_port              = "API_SCRAPPER_PORT"
 	env_postgres_host     = "POSTGRES_HOST"
 	env_postgres_port     = "POSTGRES_PORT"
 	env_postgres_user     = "POSTGRES_USER"
@@ -116,7 +116,7 @@ func main() {
 
 	s := grpc.NewServer()
 
-	pb.RegisterAuthServiceServer(s, &server.AuthServer{})
+	pb.RegisterScrapperServiceServer(s, &server.ScrapperServer{})
 
 	if err := s.Serve(listen); err != nil {
 		log.Fatalf("failed to serve on: %v\n", err)
