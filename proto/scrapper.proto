@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+option go_package = "./proto";
+
+package scrapper;
+
+enum MediaCategory {
+	CATEGORY_UNSPECIFIED = 0;
+	CATEGORY_MOVIE = 1;
+	CATEGORY_SERIE = 2;
+}
+
+message SearchRequest {
+    string query = 1;
+	uint32 page = 2;
+    MediaCategory category = 3;
+	uint32 year = 4;
+	string genres = 5;
+	uint32 rating = 6;
+	string sort_by = 7;
+	string sort_order = 8;
+}
+
+message SearchResponse {
+	uint64 id = 1;
+	uint32 page = 2;
+	string name = 3;
+	string genres = 4;
+	string description = 5;
+	string thumbnail = 6;
+	string duration = 7;
+	uint32 year = 8;
+	uint32 rating = 9;
+}
+
+
+message GetRequest {
+	uint64 id = 1;
+}
+
+message Staff {
+	uint64 id = 1;
+	string imdb_id = 2;
+	string name = 3;
+	string role = 4;
+	string thumbnail = 5;
+	string url = 6;
+}
+
+message Relation {
+	uint64 id = 1;
+	string imdb_id = 2;
+	string name = 3;
+	string thumbnail = 4;
+}
+
+message GetResponse {
+	uint64 id = 1;
+	string name = 2;
+	string genres = 3;
+	string description = 6;
+	string thumbnail = 7;
+	string duration = 8;
+	uint32 year = 9;
+	uint32 rating = 10;
+	repeated Staff staffs = 4;
+	repeated Relation relations = 5;
+}
+
+
+service ScrapperService {
+    rpc Search(SearchRequest) returns (SearchResponse) {};
+    rpc Get(GetRequest) returns (GetResponse) {};
+}
