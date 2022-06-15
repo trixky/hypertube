@@ -10,6 +10,7 @@ https://grpc.io/docs/languages/go/quickstart/
 
 ```
 protoc -Iproto --go_out=api-auth --go-grpc_out=api-auth  proto/*.proto
+protoc -Iproto --go_out=api-scrapper --go-grpc_out=api-scrapper  proto/scrapper.proto
 ```
 
 # GRPC/api_rest compatibility
