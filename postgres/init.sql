@@ -22,7 +22,7 @@ VALUES (
 
 -- Scrapper
 
-CREATE TABLE torrents (
+CREATE TABLE medias (
     id BIGSERIAL PRIMARY KEY,
     full_url TEXT NOT NULL,
     imdb_title_id INTEGER NULL,
@@ -38,15 +38,15 @@ CREATE TABLE torrents (
     imdb_id VARCHAR(10) NOT NULL
 );
 
-CREATE TABLE torrent_files (
+CREATE TABLE media_files (
     id BIGSERIAL PRIMARY KEY,
-    torrent_id INTEGER NOT NULL,
+    media_id INTEGER NOT NULL,
     path VARCHAR (250) NULL,
     name VARCHAR (250) NOT NULL,
     size VARCHAR (250) NULL
 );
-ALTER TABLE ONLY torrent_files
-ADD CONSTRAINT torrent_files_torrent_id_foreign FOREIGN KEY (torrent_id) REFERENCES torrents(id) ON DELETE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY media_files
+ADD CONSTRAINT media_files_media_id_foreign FOREIGN KEY (media_id) REFERENCES medias(id) ON DELETE CASCADE NOT DEFERRABLE;
 
 -- IMDB Informations
 
