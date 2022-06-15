@@ -7,3 +7,10 @@ packages:
       - "sql/users/schema.sql"
     queries:
       - "sql/users/query.sql"
+  - path: "../api-scrapper/sqlc"
+    name: "sqlc"
+    engine: "postgresql"
+    schema:
+      - "sql/scrapper/schema.sql"
+    queries:
+      - "sql/scrapper/query.sql"
