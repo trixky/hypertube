@@ -1,5 +1,3 @@
-\c hypertube;
-
 -- Users
 
 CREATE TABLE users (
