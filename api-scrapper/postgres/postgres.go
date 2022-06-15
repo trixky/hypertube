@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	_ "github.com/lib/pq"
-	"github.com/trixky/hypertube/api-auth/sqlc"
+	"github.com/trixky/hypertube/api-scrapper/sqlc"
 )
 
 type Config struct {
