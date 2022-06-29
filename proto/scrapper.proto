@@ -17,23 +17,20 @@ message Torrent {
 	string full_url = 2;
 	string name = 3;
 	MediaCategory type = 4;
-	optional uint32 seed = 5;
-	optional uint32 leech = 6;
-	optional string size = 7;
-	optional google.protobuf.Timestamp upload_time = 8;
-	optional string description_html = 9;
-	optional string torrent_url = 10;
+	string torrent_url = 5;
+	optional uint32 seed = 6;
+	optional uint32 leech = 7;
+	optional string size = 8;
+	optional google.protobuf.Timestamp upload_time = 9;
+	optional string description_html = 10;
 	optional string magnet = 11;
 	optional string imdb_id = 12;
 }
 
-message ScrapRequest {
-	string site = 1;
-    MediaCategory category = 2;
-	uint32 start_page = 3;
+message ScrapeRequest {
 }
 
-message ScrapResponse {
+message ScrapeResponse {
 	uint32 ms_duration = 1;
 	repeated Torrent torrents = 2;
 }
@@ -59,7 +56,7 @@ message IdentifyResponse {
 	Media media = 2;
 }
 
-message ScrapLatestRequest {
+message ScrapeLatestRequest {
 }
 
 message SearchRequest {
@@ -123,9 +120,9 @@ message GetResponse {
 
 
 service ScrapperService {
-	rpc ScrapAll(ScrapRequest) returns (stream ScrapResponse) {};
+	rpc ScrapeAll(ScrapeRequest) returns (stream ScrapeResponse) {};
 	rpc IdentifyAll(IdentifyRequest) returns (stream IdentifyResponse) {};
-	rpc ScrapLatest(ScrapLatestRequest) returns (stream ScrapResponse) {};
+	rpc ScrapeLatest(ScrapeLatestRequest) returns (stream ScrapeResponse) {};
     rpc Search(SearchRequest) returns (SearchResponse) {};
     rpc Get(GetRequest) returns (GetResponse) {};
 }
