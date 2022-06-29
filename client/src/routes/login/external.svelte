@@ -1,4 +1,4 @@
-<!-- ========================= JS -->
+<!-- ========================= SCRIPT -->
 <script lang="ts">
 	import ContinueWith from './continue-with.svelte';
 </script>

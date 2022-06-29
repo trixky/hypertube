@@ -1,4 +1,4 @@
-<!-- ========================= JS -->
+<!-- ========================= SCRIPT -->
 <script lang="ts">
 	export let alone = false
 </script>

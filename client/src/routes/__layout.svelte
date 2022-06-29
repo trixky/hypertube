@@ -1,4 +1,4 @@
-<!-- ========================= JS -->
+<!-- ========================= SCRIPT -->
 <script lang="ts">
     import '../app.css';
     import Header from '../components/layouts/header.svelte';

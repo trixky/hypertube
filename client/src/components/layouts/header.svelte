@@ -1,4 +1,4 @@
-<!-- ========================= JS -->
+<!-- ========================= SCRIPT -->
 <script>
 	import Logo from './logo.svelte';
 </script>
