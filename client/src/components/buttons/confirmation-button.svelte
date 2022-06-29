@@ -21,7 +21,8 @@
 		<div
 			in:fade={{ duration: 350, delay: 50 }}
 			out:fade={{ duration: 80 }}
-			class="spinner absolute inline-block left-4 opacity-0 transition-all delay-200 duration-[0.35s]"
+			id="spinner"
+			class="absolute inline-block left-4 opacity-0 transition-all duration-[0.35s]"
 		>
 			<Spinner />
 		</div>
@@ -35,7 +36,7 @@
 		@apply pl-12 bg-blue-400;
 	}
 
-	button.loading > .spinner {
+	button.loading > #spinner {
 		@apply opacity-100;
 	}
 
