@@ -1,15 +1,14 @@
 <!-- ========================= JS -->
-<script>
+<script lang="ts">
     import '../app.css';
-    import Header from '../components/static/header.svelte';
-    import Footer from '../components/static/footer.svelte';
+    import Header from '../components/layouts/header.svelte';
+    import Footer from '../components/layouts/footer.svelte';
 </script>
 
 <!-- ========================= HTML -->
 
-<Header/>
-<slot />
-<Footer/>
-
-
-<!-- ========================= CSS -->
+<Header />
+<main class="min-h-[80%]">
+    <slot />
+</main>
+<Footer />
