@@ -7,20 +7,15 @@ import (
 
 	"github.com/gocolly/colly"
 	pb "github.com/trixky/hypertube/api-scrapper/proto"
+	st "github.com/trixky/hypertube/api-scrapper/scrapper"
 )
 
-type Urls struct {
-	Movies, Shows string
-}
-
-var URLS Urls = Urls{
+var URLS st.Urls = st.Urls{
 	Movies: "http://www.legittorrents.info/index.php?page=torrents&active=1&category=1&order=3&by=2&pages=$page",
 	Shows:  "http://www.legittorrents.info/index.php?page=torrents&active=1&category=13&order=3&by=2&pages=$page",
 }
 
-const TorrentUrl string = "http://www.legittorrents.info/index.php?page=torrent-details&id="
-
-func scrapeList(page_type string, page uint32) (page_result ScrapperPageResult, err error) {
+func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResult, err error) {
 	torrents := make([]*pb.Torrent, 0, 20)
 	c := colly.NewCollector(colly.IgnoreRobotsTxt())
 
@@ -98,7 +93,7 @@ func scrapeSingle(id string) (torrent pb.Torrent, err error) {
 	return
 }
 
-var LegitTorrents = Scrapper{
+var Scrapper = st.Scrapper{
 	ScrapeList:   scrapeList,
 	ScrapeSingle: scrapeSingle,
 }
