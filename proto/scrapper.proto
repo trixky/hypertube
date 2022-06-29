@@ -4,35 +4,79 @@ option go_package = "./proto";
 
 package scrapper;
 
+import "google/protobuf/timestamp.proto";
+
 enum MediaCategory {
 	CATEGORY_UNSPECIFIED = 0;
 	CATEGORY_MOVIE = 1;
 	CATEGORY_SERIE = 2;
 }
 
+message Torrent {
+	uint32 id = 1;
+	string full_url = 2;
+	string name = 3;
+	MediaCategory type = 4;
+	optional uint32 seed = 5;
+	optional uint32 leech = 6;
+	optional string size = 7;
+	optional google.protobuf.Timestamp upload_time = 8;
+	optional string description_html = 9;
+	optional string torrent_url = 10;
+	optional string magnet = 11;
+	optional string imdb_id = 12;
+}
+
+message ScrapRequest {
+	string site = 1;
+    MediaCategory category = 2;
+	uint32 start_page = 3;
+}
+
+message ScrapResponse {
+	uint32 ms_duration = 1;
+	repeated Torrent torrents = 2;
+}
+
+message Media {
+	uint32 id = 1;
+	string imdb_id = 2;
+	string name = 3;
+	string description = 4;
+	uint32 year = 5;
+	optional string duration = 6;
+	optional string thumbnail = 7;
+	optional string background = 8;
+	optional string genres = 9;
+	optional string rating = 10;
+}
+
+message IdentifyRequest {
+}
+
+message IdentifyResponse {
+	uint32 ms_duration = 1;
+	Media media = 2;
+}
+
+message ScrapLatestRequest {
+}
+
 message SearchRequest {
     string query = 1;
 	uint32 page = 2;
-    MediaCategory category = 3;
-	uint32 year = 4;
-	string genres = 5;
-	uint32 rating = 6;
-	string sort_by = 7;
-	string sort_order = 8;
+	uint32 year = 3;
+	string genres = 4;
+	uint32 rating = 5;
+	string sort_by = 6;
+	string sort_order = 7;
+    optional MediaCategory category = 8;
 }
 
 message SearchResponse {
-	uint64 id = 1;
 	uint32 page = 2;
-	string name = 3;
-	string genres = 4;
-	string description = 5;
-	string thumbnail = 6;
-	string duration = 7;
-	uint32 year = 8;
-	uint32 rating = 9;
+	repeated Media medias = 3;
 }
-
 
 message GetRequest {
 	uint64 id = 1;
@@ -54,21 +98,34 @@ message Relation {
 	string thumbnail = 4;
 }
 
+message TorrentPublicInformations {
+	string name = 1;
+	optional uint32 seed = 2;
+	optional uint32 leech = 3;
+	optional string size = 4;
+}
+
 message GetResponse {
-	uint64 id = 1;
-	string name = 2;
-	string genres = 3;
-	string description = 6;
-	string thumbnail = 7;
-	string duration = 8;
-	uint32 year = 9;
-	uint32 rating = 10;
-	repeated Staff staffs = 4;
-	repeated Relation relations = 5;
+	uint32 id = 1;
+	string imdb_id = 2;
+	string name = 3;
+	string description = 4;
+	uint32 year = 5;
+	TorrentPublicInformations TorrentPublicInformations = 6;
+	repeated Staff staffs = 7;
+	repeated Relation relations = 8;
+	optional string duration = 9;
+	optional string thumbnail = 10;
+	optional string background = 11;
+	optional string genres = 12;
+	optional string rating = 13;
 }
 
 
 service ScrapperService {
+	rpc ScrapAll(ScrapRequest) returns (stream ScrapResponse) {};
+	rpc IdentifyAll(IdentifyRequest) returns (stream IdentifyResponse) {};
+	rpc ScrapLatest(ScrapLatestRequest) returns (stream ScrapResponse) {};
     rpc Search(SearchRequest) returns (SearchResponse) {};
     rpc Get(GetRequest) returns (GetResponse) {};
 }
