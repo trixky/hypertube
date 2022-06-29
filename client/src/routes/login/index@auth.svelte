@@ -1,4 +1,4 @@
-<!-- ========================= JS -->
+<!-- ========================= SCRIPT -->
 <script lang="ts">
 	import BlackBox from '../../components/containers/black-box.svelte';
 	import Logo from '../../components/layouts/logo.svelte';
