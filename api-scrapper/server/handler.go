@@ -4,33 +4,39 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
-	"github.com/gocolly/colly"
 	pb "github.com/trixky/hypertube/api-scrapper/proto"
+	st "github.com/trixky/hypertube/api-scrapper/sites"
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
 
-func (s *ScrapperServer) ScrapAll(request *pb.ScrapRequest, out pb.ScrapperService_ScrapAllServer) error {
+var categories []string = []string{"movies", "shows"}
+
+func (s *ScrapperServer) ScrapeAll(request *pb.ScrapeRequest, out pb.ScrapperService_ScrapeAllServer) error {
 	log.Printf("Scrap All %v\n", request)
 
-	c := colly.NewCollector(
-		colly.AllowedDomains("en.wikipedia.org"),
-	)
-
-	// Find and print all links
-	c.OnHTML(".mw-parser-output", func(e *colly.HTMLElement) {
-		links := e.ChildAttrs("a", "href")
-		fmt.Println(links)
-	})
-	c.Visit("https://en.wikipedia.org/wiki/Web_scraping")
-
-	var i uint32 = 0
-	for ; i < 5; i++ {
-		if err := out.Send(&pb.ScrapResponse{
-			MsDuration: i,
-			Torrents:   []*pb.Torrent{},
-		}); err != nil {
-			return err
+	for _, scrapper := range st.Scrappers {
+		for _, category := range categories {
+			var page uint32 = 1
+			for {
+				page_result, err := scrapper.ScrapeList(category, page)
+				if err == nil {
+					if err := out.Send(&pb.ScrapeResponse{
+						MsDuration: 0,
+						Torrents:   page_result.Torrents,
+					}); err != nil {
+						return err
+					}
+				} else {
+					return err
+				}
+				page = page_result.NextPage
+				if page == 0 {
+					break
+				}
+				time.Sleep(time.Second)
+			}
 		}
 	}
 
@@ -42,7 +48,7 @@ func (s *ScrapperServer) IdentifyAll(request *pb.IdentifyRequest, out pb.Scrappe
 	return nil
 }
 
-func (s *ScrapperServer) ScrapLatest(request *pb.ScrapLatestRequest, out pb.ScrapperService_ScrapLatestServer) error {
+func (s *ScrapperServer) ScrapeLatest(request *pb.ScrapeLatestRequest, out pb.ScrapperService_ScrapeLatestServer) error {
 	log.Printf("Scrap Latest %v\n", request)
 	return nil
 }
