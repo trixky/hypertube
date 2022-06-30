@@ -12,6 +12,20 @@ enum MediaCategory {
 	CATEGORY_SERIE = 2;
 }
 
+message UnprocessedTorrent {
+	string full_url = 1;
+	string name = 2;
+	MediaCategory type = 3;
+	optional string torrent_url = 4;
+	optional uint32 seed = 5;
+	optional uint32 leech = 6;
+	optional string size = 7;
+	optional google.protobuf.Timestamp upload_time = 8;
+	optional string description_html = 9;
+	optional string magnet = 10;
+	optional string imdb_id = 11;
+}
+
 message Torrent {
 	uint32 id = 1;
 	string full_url = 2;
@@ -32,7 +46,7 @@ message ScrapeRequest {
 
 message ScrapeResponse {
 	uint32 ms_duration = 1;
-	repeated Torrent torrents = 2;
+	repeated UnprocessedTorrent torrents = 2;
 }
 
 message Media {
