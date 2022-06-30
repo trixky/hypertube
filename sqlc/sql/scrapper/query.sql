@@ -1,14 +1,14 @@
--- name: GetMedia :one
+-- name: GetTorrent :one
 SELECT *
-FROM medias
+FROM torrents
 WHERE id = $1
 LIMIT 1;
--- name: ListMedias :many
+-- name: ListTorrents :many
 SELECT *
-FROM medias
+FROM torrents
 ORDER BY id DESC;
--- name: CreateMedia :one
-INSERT INTO medias (
+-- name: CreateTorrent :one
+INSERT INTO torrents (
 		full_url,
 		imdb_title_id,
 		name,
@@ -37,24 +37,32 @@ VALUES (
 		$12
 	)
 RETURNING *;
--- name: SetMediaPeers :exec
-UPDATE medias
+-- name: SetTorrentPeers :exec
+UPDATE torrents
 SET seed = $2,
 	leech = $3
 WHERE id = $1;
--- name: AddMediaIMDBId :exec
-UPDATE medias
+-- name: SetTorrentInformations :exec
+UPDATE torrents
+SET torrent_url = $2,
+	magnet = $3,
+	description_html = $4,
+	size = $5,
+	imdb_id = $6
+WHERE id = $1;
+-- name: AddTorrentIMDBId :exec
+UPDATE torrents
 SET imdb_title_id = $2
 WHERE id = $1;
--- name: AddMediaFile :exec
-INSERT INTO media_files (media_id, path, name, size)
+-- name: AddTorrentFile :exec
+INSERT INTO torrent_files (torrent_id, path, name, size)
 VALUES ($1, $2, $3, $4)
 RETURNING *;
--- name: DeleteMedia :exec
-DELETE FROM medias
+-- name: DeleteTorrent :exec
+DELETE FROM torrents
 WHERE id = $1;
--- name: CreateIMDBTitle :one
-INSERT INTO imdb_titles (
+-- name: CreateMedia :one
+INSERT INTO medias (
 		imdb_id,
 		description,
 		duration,
@@ -75,29 +83,29 @@ VALUES (
 		$8
 	)
 RETURNING *;
--- name: AddIMDBTitleName :one
-INSERT INTO imdb_title_names (imdb_title_id, lang, name)
+-- name: AddMediaName :one
+INSERT INTO media_names (media_id, lang, name)
 VALUES ($1, $2, $3)
 RETURNING *;
--- name: DeleteIMDBTitleName :exec
-DELETE FROM imdb_title_names
+-- name: DeleteMediaName :exec
+DELETE FROM media_names
 WHERE id = $1;
--- name: AddIMDBTitleStaff :one
-INSERT INTO imdb_title_staffs (imdb_title_id, name, thumbnail, url, role)
+-- name: AddMediaStaff :one
+INSERT INTO media_staffs (media_id, name, thumbnail, url, role)
 VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
--- name: DeleteIMDBTitleStaff :exec
-DELETE FROM imdb_title_staffs
+-- name: DeleteMediaStaff :exec
+DELETE FROM media_staffs
 WHERE id = $1;
--- name: AddIMDBTitleRelation :one
-INSERT INTO imdb_title_relations (
-		imdb_title_id,
+-- name: AddMediaRelation :one
+INSERT INTO media_relations (
+		media_id,
 		relation_imdb_id,
 		name,
 		thumbnail
 	)
 VALUES ($1, $2, $3, $4)
 RETURNING *;
--- name: DeleteIMDBTitleRelation :exec
-DELETE FROM imdb_title_relations
+-- name: DeleteMediaRelation :exec
+DELETE FROM media_relations
 WHERE id = $1;

@@ -17,8 +17,8 @@ message UnprocessedTorrent {
 	string name = 2;
 	MediaCategory type = 3;
 	optional string torrent_url = 4;
-	optional uint32 seed = 5;
-	optional uint32 leech = 6;
+	optional int32 seed = 5;
+	optional int32 leech = 6;
 	optional string size = 7;
 	optional google.protobuf.Timestamp upload_time = 8;
 	optional string description_html = 9;
@@ -32,8 +32,8 @@ message Torrent {
 	string name = 3;
 	MediaCategory type = 4;
 	string torrent_url = 5;
-	optional uint32 seed = 6;
-	optional uint32 leech = 7;
+	optional int32 seed = 6;
+	optional int32 leech = 7;
 	optional string size = 8;
 	optional google.protobuf.Timestamp upload_time = 9;
 	optional string description_html = 10;
@@ -111,8 +111,8 @@ message Relation {
 
 message TorrentPublicInformations {
 	string name = 1;
-	optional uint32 seed = 2;
-	optional uint32 leech = 3;
+	optional int32 seed = 2;
+	optional int32 leech = 3;
 	optional string size = 4;
 }
 
