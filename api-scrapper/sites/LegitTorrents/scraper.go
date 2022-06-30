@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gocolly/colly"
+	"github.com/golang/protobuf/ptypes"
 	pb "github.com/trixky/hypertube/api-scrapper/proto"
 	st "github.com/trixky/hypertube/api-scrapper/scrapper"
 )
@@ -16,7 +18,7 @@ var URLS st.Urls = st.Urls{
 }
 
 func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResult, err error) {
-	torrents := make([]*pb.Torrent, 0, 20)
+	torrents := make([]*pb.UnprocessedTorrent, 0, 20)
 	c := colly.NewCollector(colly.IgnoreRobotsTxt())
 
 	var category pb.MediaCategory
@@ -40,22 +42,23 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 				seed := uint32(seed64)
 				leech64, _ := strconv.ParseUint(el.ChildText("td:nth-child(6)"), 10, 32)
 				leech := uint32(leech64)
-				size := ""
-				// TODO Convert to DateTime
-				// upload_time := el.ChildText("td:nth-child(4)")
-				// TODO Name to filename (remove spaces and disallowed characters)
-				torrent_url := fmt.Sprintf("http://www.legittorrents.info/download.php?id=%s&f=%s.torrent", id, name)
+				// LegitTorrents has a single date format
+				layout := "02/01/2006" // -- dd/mm/yyyy
+				upload_time_date := el.ChildText("td:nth-child(4)")
+				upload_time, _ := time.Parse(layout, upload_time_date)
+				upload_timestamp, _ := ptypes.TimestampProto(upload_time)
+				filename := strings.ReplaceAll(name, " ", "+")
+				torrent_url := fmt.Sprintf("http://www.legittorrents.info/download.php?id=%s&f=%s.torrent", id, filename)
 
-				torrents = append(torrents, &pb.Torrent{
-					Id:         0,
+				torrents = append(torrents, &pb.UnprocessedTorrent{
 					Name:       name,
 					FullUrl:    fmt.Sprintf("http://www.legittorrents.info/index.php?page=torrent-details&id=%s", id),
 					Type:       category,
 					Seed:       &seed,
 					Leech:      &leech,
-					Size:       &size,
-					UploadTime: nil,
-					TorrentUrl: torrent_url,
+					Size:       nil,
+					UploadTime: upload_timestamp,
+					TorrentUrl: &torrent_url,
 				})
 			}
 		})
@@ -89,7 +92,7 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 	return
 }
 
-func scrapeSingle(id string) (torrent pb.Torrent, err error) {
+func scrapeSingle(id string) (torrent pb.UnprocessedTorrent, err error) {
 	return
 }
 
