@@ -1,25 +1,3 @@
-\c hypertube;
-
--- Users
-
-CREATE TABLE users (
-    id BIGSERIAL PRIMARY KEY,
-    username VARCHAR (30) NOT NULL,
-    firstname VARCHAR (30) NOT NULL,
-    lastname VARCHAR (30) NOT NULL,
-    email VARCHAR (90) NOT NULL,
-    password VARCHAR (65) NOT NULL
-);
-
-INSERT INTO users (username, firstname, lastname, email, password)
-VALUES (
-        'admin',
-        'mathis',
-        'bois',
-        'mathis@email.com',
-        'c54b18a947c806a48d7fd825ec6aea73'
-    );
-
 -- Scrapper
 
 CREATE TABLE medias (
