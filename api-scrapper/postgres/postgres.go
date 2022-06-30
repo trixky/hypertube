@@ -26,7 +26,7 @@ type Database struct {
 	SqlcQueries *sqlc.Queries
 }
 
-var database Database
+var DB Database
 
 func Init(config Config) error {
 	sql_database, err := sql.Open(config.Driver, config.Compile_config())
@@ -39,8 +39,8 @@ func Init(config Config) error {
 		return err
 	}
 
-	database.SqlDatabase = sql_database
-	database.SqlcQueries = sqlc.New(sql_database)
+	DB.SqlDatabase = sql_database
+	DB.SqlcQueries = sqlc.New(sql_database)
 
 	return nil
 }

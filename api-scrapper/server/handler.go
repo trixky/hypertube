@@ -2,18 +2,55 @@ package server
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/trixky/hypertube/api-scrapper/postgres"
 	pb "github.com/trixky/hypertube/api-scrapper/proto"
 	st "github.com/trixky/hypertube/api-scrapper/sites"
+	"github.com/trixky/hypertube/api-scrapper/sqlc"
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
 
 var categories []string = []string{"movies", "shows"}
 
+func makeNullInt32(value *int32) (null_int32 sql.NullInt32) {
+	if value == nil {
+		return
+	}
+	null_int32.Int32 = *value
+	null_int32.Valid = true
+	return
+}
+
+func makeNullString(value *string) (null_string sql.NullString) {
+	if value == nil {
+		return
+	}
+	null_string.String = *value
+	null_string.Valid = true
+	return
+}
+
+func torrenToSQL(torrent *pb.UnprocessedTorrent) sqlc.CreateTorrentParams {
+	return sqlc.CreateTorrentParams{
+		Name:            torrent.Name,
+		Type:            torrent.Type.String(),
+		FullUrl:         torrent.FullUrl,
+		Seed:            makeNullInt32(torrent.Seed),
+		Leech:           makeNullInt32(torrent.Leech),
+		Size:            makeNullString(torrent.Size),
+		TorrentUrl:      makeNullString(torrent.TorrentUrl),
+		Magnet:          makeNullString(torrent.Magnet),
+		ImdbID:          makeNullString(torrent.ImdbId),
+		DescriptionHtml: makeNullString(torrent.DescriptionHtml),
+	}
+}
+
 func (s *ScrapperServer) ScrapeAll(request *pb.ScrapeRequest, out pb.ScrapperService_ScrapeAllServer) error {
+	ctx := context.Background()
 	log.Printf("Scrap All %v\n", request)
 
 	for _, scrapper := range st.Scrappers {
@@ -21,6 +58,12 @@ func (s *ScrapperServer) ScrapeAll(request *pb.ScrapeRequest, out pb.ScrapperSer
 			var page uint32 = 1
 			for {
 				page_result, err := scrapper.ScrapeList(category, page)
+				for _, torrent := range page_result.Torrents {
+					_, err := postgres.DB.SqlcQueries.CreateTorrent(ctx, torrenToSQL(torrent))
+					if err != nil {
+						return err
+					}
+				}
 				if err == nil {
 					if err := out.Send(&pb.ScrapeResponse{
 						MsDuration: 0,
@@ -32,7 +75,7 @@ func (s *ScrapperServer) ScrapeAll(request *pb.ScrapeRequest, out pb.ScrapperSer
 					return err
 				}
 				page = page_result.NextPage
-				if page == 0 {
+				if true /* page == 0 */ {
 					break
 				}
 				time.Sleep(time.Second)
@@ -89,8 +132,8 @@ func (s *ScrapperServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRes
 		Year:        2000,
 		TorrentPublicInformations: &pb.TorrentPublicInformations{
 			Name:  "Movie [1080p]",
-			Seed:  &[]uint32{42}[0],
-			Leech: &[]uint32{42}[0],
+			Seed:  &[]int32{42}[0],
+			Leech: &[]int32{42}[0],
 			Size:  &[]string{"123456789"}[0],
 		},
 		Staffs: []*pb.Staff{

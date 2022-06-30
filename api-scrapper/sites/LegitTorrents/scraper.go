@@ -38,10 +38,10 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 				name := el.ChildText("td:nth-child(2) a")
 				id_parts := strings.Split(el.ChildAttr("td:nth-child(2) a", "href"), "=")
 				id := id_parts[len(id_parts)-1]
-				seed64, _ := strconv.ParseUint(el.ChildText("td:nth-child(5)"), 10, 32)
-				seed := uint32(seed64)
-				leech64, _ := strconv.ParseUint(el.ChildText("td:nth-child(6)"), 10, 32)
-				leech := uint32(leech64)
+				seed64, _ := strconv.ParseInt(el.ChildText("td:nth-child(5)"), 10, 32)
+				seed := int32(seed64)
+				leech64, _ := strconv.ParseInt(el.ChildText("td:nth-child(6)"), 10, 32)
+				leech := int32(leech64)
 				// LegitTorrents has a single date format
 				layout := "02/01/2006" // -- dd/mm/yyyy
 				upload_time_date := el.ChildText("td:nth-child(4)")
@@ -56,7 +56,6 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 					Type:       category,
 					Seed:       &seed,
 					Leech:      &leech,
-					Size:       nil,
 					UploadTime: upload_timestamp,
 					TorrentUrl: &torrent_url,
 				})
