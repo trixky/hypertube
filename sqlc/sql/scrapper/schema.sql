@@ -1,4 +1,5 @@
 -- Scrapper
+
 CREATE TABLE torrents (
     id BIGSERIAL PRIMARY KEY,
     full_url TEXT NOT NULL,
@@ -14,6 +15,7 @@ CREATE TABLE torrents (
     magnet TEXT NULL,
     imdb_id VARCHAR(10) NULL
 );
+
 CREATE TABLE torrent_files (
     id BIGSERIAL PRIMARY KEY,
     torrent_id INTEGER NOT NULL,
@@ -23,7 +25,9 @@ CREATE TABLE torrent_files (
 );
 ALTER TABLE ONLY torrent_files
 ADD CONSTRAINT torrent_files_torrent_id_foreign FOREIGN KEY (torrent_id) REFERENCES torrents(id) ON DELETE CASCADE NOT DEFERRABLE;
+
 -- IMDB Informations
+
 CREATE TABLE medias (
     id BIGSERIAL PRIMARY KEY,
     imdb_id VARCHAR (10) NOT NULL,
@@ -35,6 +39,7 @@ CREATE TABLE medias (
     genres VARCHAR (250) NOT NULL,
     rating INTEGER NULL
 );
+
 CREATE TABLE media_names (
     id BIGSERIAL PRIMARY KEY,
     media_id INTEGER NOT NULL,
@@ -43,6 +48,7 @@ CREATE TABLE media_names (
 );
 ALTER TABLE ONLY media_names
 ADD CONSTRAINT media_names_media_id_foreign FOREIGN KEY (media_id) REFERENCES medias(id) ON DELETE CASCADE NOT DEFERRABLE;
+
 CREATE TABLE media_staffs (
     id BIGSERIAL PRIMARY KEY,
     media_id INTEGER NOT NULL,
@@ -53,6 +59,7 @@ CREATE TABLE media_staffs (
 );
 ALTER TABLE ONLY media_staffs
 ADD CONSTRAINT media_staffs_media_id_foreign FOREIGN KEY (media_id) REFERENCES medias(id) ON DELETE CASCADE NOT DEFERRABLE;
+
 CREATE TABLE media_relations (
     id BIGSERIAL PRIMARY KEY,
     media_id INTEGER NOT NULL,

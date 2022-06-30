@@ -24,6 +24,7 @@ var time_prefixes []string = []string{
 }
 
 // 1337x has 3 date formats
+// test: https://go.dev/play/p/koVP_R5IaEi
 func parseDateTime(value string) (timestamp *timestamppb.Timestamp, err error) {
 	layout := "3:04pm" // -- XX:XX{am,pm}
 	upload_time, err := time.Parse(layout, value)
@@ -77,10 +78,10 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 			name := el.ChildText("td.name a:last-child")
 			relative_href := el.ChildAttr("td.name a:last-child", "href")
 			full_url := "https://1337x.to" + relative_href
-			seed64, _ := strconv.ParseUint(el.ChildText("td.seeds"), 10, 32)
-			seed := uint32(seed64)
-			leech64, _ := strconv.ParseUint(el.ChildText("td.leeches"), 10, 32)
-			leech := uint32(leech64)
+			seed64, _ := strconv.ParseInt(el.ChildText("td.seeds"), 10, 32)
+			seed := int32(seed64)
+			leech64, _ := strconv.ParseInt(el.ChildText("td.leeches"), 10, 32)
+			leech := int32(leech64)
 			re := regexp.MustCompile("\\d+$")
 			size := el.ChildText("td.size")
 			size = re.ReplaceAllString(size, "")
@@ -95,7 +96,6 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 				Leech:      &leech,
 				Size:       &size,
 				UploadTime: upload_timestamp,
-				TorrentUrl: nil,
 			})
 		})
 	})
