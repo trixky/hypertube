@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
 
 
 option go_package = "./proto";
@@ -37,9 +38,29 @@ message InternalChangePasswordRequest {
 }
 
 service AuthService {
-    rpc InternalRegister(InternalRegisterRequest) returns (InternalLoginResponse) {};
-    rpc InternalLogin(InternalLoginRequest) returns (InternalLoginResponse) {};
-    rpc InternalRecoverPassword(InternalRecoverPasswordRequest) returns (google.protobuf.Empty) {};
-    rpc InternalChangePassword(InternalChangePasswordRequest) returns (google.protobuf.Empty) {};
+    rpc InternalRegister(InternalRegisterRequest) returns (InternalLoginResponse) {
+        option (google.api.http) = {
+            post: "/v1/internal/register"
+            body: "*"
+        };
+    };
+    rpc InternalLogin(InternalLoginRequest) returns (InternalLoginResponse) {
+        option (google.api.http) = {
+            post: "/v1/internal/login"
+            body: "internalLoginRequest"
+        };
+    };
+    rpc InternalRecoverPassword(InternalRecoverPasswordRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/internal/recover-password"
+            body: "*"
+        };
+    };
+    rpc InternalChangePassword(InternalChangePasswordRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/internal/change-password"
+            body: "*"
+        };
+    };
 }
 

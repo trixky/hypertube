@@ -1,97 +1,31 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
-	"os"
+	"net/http"
 	"strconv"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/trixky/hypertube/api-auth/postgres"
 	pb "github.com/trixky/hypertube/api-auth/proto"
 	"github.com/trixky/hypertube/api-auth/server"
+	"github.com/trixky/hypertube/api-auth/utils"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 )
 
 const (
 	host            = "0.0.0.0"
 	database_driver = "postgres"
-
-	env_port              = "API_AUTH_PORT"
-	env_postgres_host     = "POSTGRES_HOST"
-	env_postgres_port     = "POSTGRES_PORT"
-	env_postgres_user     = "POSTGRES_USER"
-	env_postgres_password = "POSTGRES_PASSWORD"
-	env_postgres_db       = "POSTGRES_DB"
 )
 
-type Env struct {
-	Port             int
-	PostgresHost     string
-	PostgresPort     int
-	PostgresUser     string
-	PostgresPassword string
-	PostgresDB       string
-}
-
-func (e *Env) GetAll() {
-	const (
-		port_max = 65535
-		port_min = 1000
-	)
-
-	// --------- get Port
-	port, err := strconv.Atoi(os.Getenv(env_port))
-
-	if err != nil {
-		log.Fatalf("%s environement variable is corrupted or missing", env_port)
-	} else if port < port_min || port > port_max {
-		log.Fatalf("port need to be included between %d and %d (%d)", port_min, port_max, port)
-	}
-
-	e.Port = port
-
-	// --------- get PostgresHost
-	if e.PostgresHost = os.Getenv(env_postgres_host); len(e.PostgresHost) == 0 {
-		log.Fatalf("%s environement variable missing", env_postgres_host)
-	}
-
-	// --------- get PostgresPort
-	postgres_port, err := strconv.Atoi(os.Getenv(env_postgres_port))
-
-	if err != nil {
-		log.Fatalf("%s environement variable is corrupted or missing", env_postgres_port)
-	} else if postgres_port < port_min || postgres_port > port_max {
-		log.Fatalf("port need to be included between %d and %d (%d)", port_min, port_max, postgres_port)
-	}
-
-	e.PostgresPort = postgres_port
-
-	// --------- get PostgresUser
-	if e.PostgresUser = os.Getenv(env_postgres_user); len(e.PostgresUser) == 0 {
-		log.Fatalf("%s environement variable missing", env_postgres_user)
-	}
-
-	// --------- get PostgresPassword
-	if e.PostgresPassword = os.Getenv(env_postgres_password); len(e.PostgresPassword) == 0 {
-		log.Fatalf("%s environement variable missing", env_postgres_password)
-	}
-
-	// --------- get PostgresDB
-	if e.PostgresDB = os.Getenv(env_postgres_db); len(e.PostgresDB) == 0 {
-		log.Fatalf("%s environement variable missing", env_postgres_db)
-	}
-}
-
-func readEnv() (env Env) {
-	env.GetAll()
-
-	return
-}
-
 func main() {
-	env := readEnv()
+	env := utils.ReadEnv()
 
-	addr := host + ":" + strconv.Itoa(env.Port)
+	grpc_addr := host + ":" + strconv.Itoa(env.GrpcPort)
 
 	if err := postgres.Init(postgres.Config{
 		Driver:   database_driver,
@@ -106,19 +40,67 @@ func main() {
 
 	log.Println("connected to postgres")
 
-	listen, err := net.Listen("tcp", addr)
+	listen, err := net.Listen("tcp", grpc_addr)
 
 	if err != nil {
 		log.Fatalf("failed to listen on: %v\n", err)
 	}
 
-	log.Printf("listening on %s\n", addr)
+	log.Printf("listening on %s\n", grpc_addr)
 
 	s := grpc.NewServer()
 
 	pb.RegisterAuthServiceServer(s, &server.AuthServer{})
 
-	if err := s.Serve(listen); err != nil {
-		log.Fatalf("failed to serve on: %v\n", err)
+	go func() {
+		log.Fatalf("failed to serve on: %v\n", s.Serve(listen))
+	}()
+
+	conn, err := grpc.DialContext(
+		context.Background(),
+		grpc_addr,
+		grpc.WithBlock(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalln("Failed to dial server:", err)
 	}
+
+	http_addr := ":" + strconv.Itoa(env.HttpPort)
+
+	// gwmux := runtime.NewServeMux()
+
+	gwmux := runtime.NewServeMux(runtime.WithMetadata(
+		func(ctx context.Context, r *http.Request) metadata.MD {
+			log.Println("authauth:", r.Header.Get("authauth"))
+
+			md := make(map[string]string)
+			if method, ok := runtime.RPCMethod(ctx); ok {
+				md["method"] = method // /grpc.gateway.examples.internal.proto.examplepb.LoginService/Login
+			}
+			if pattern, ok := runtime.HTTPPathPattern(ctx); ok {
+				md["pattern"] = pattern // /v1/example/login
+			}
+			return metadata.New(md)
+		},
+	))
+
+	err = pb.RegisterAuthServiceHandler(context.Background(), gwmux, conn)
+	if err != nil {
+		log.Fatalln("Failed to register gateway:", err)
+	}
+
+	gwServer := &http.Server{
+		Addr:    http_addr,
+		Handler: utils.AllowCORS(gwmux),
+	}
+
+	// -------------
+	// mux := http.NewServeMux()
+	// mux.Handle("/", gwmux)
+	// -------------
+
+	log.Println("Serving gRPC-Gateway on http://0.0.0.0:8090 /", http_addr)
+	log.Fatalln(gwServer.ListenAndServe())
+
 }
