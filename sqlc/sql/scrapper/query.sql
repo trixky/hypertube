@@ -18,18 +18,18 @@ ORDER BY id DESC;
 -- name: CreateTorrent :one
 INSERT INTO torrents
 	(
-	full_url,
-	imdb_title_id,
-	name,
-	type,
-	seed,
-	leech,
-	size,
-	upload_time,
-	description_html,
-	torrent_url,
-	magnet,
-	imdb_id
+		full_url,
+		imdb_title_id,
+		name,
+		type,
+		seed,
+		leech,
+		size,
+		upload_time,
+		description_html,
+		torrent_url,
+		magnet,
+		imdb_id
 	)
 VALUES
 	(
@@ -82,14 +82,14 @@ WHERE id = $1;
 -- name: CreateMedia :one
 INSERT INTO medias
 	(
-	imdb_id,
-	description,
-	duration,
-	thumbnail,
-	background,
-	year,
-	genres,
-	rating
+		imdb_id,
+		description,
+		duration,
+		thumbnail,
+		background,
+		year,
+		genres,
+		rating
 	)
 VALUES
 	(
@@ -102,7 +102,43 @@ VALUES
 		$7,
 		$8
 	)
-RETURNING *;
+RETURNING *; 
+
+-- name: CreateMedias :copyfrom
+INSERT INTO medias
+	(
+		imdb_id,
+		description,
+		duration,
+		thumbnail,
+		background,
+		year,
+		genres,
+		rating
+	)
+VALUES
+	(
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8
+	);
+
+-- name: GetMediaByIDMB :one
+SELECT *
+FROM medias
+WHERE imdb_id = $1
+LIMIT 1;
+
+-- name: CheckMediaExistByIMDB :one
+SELECT count(id)
+FROM medias
+WHERE imdb_id = $1
+LIMIT 1;
 
 -- name: AddMediaName :one
 INSERT INTO media_names
