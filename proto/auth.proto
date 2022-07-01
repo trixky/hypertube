@@ -47,7 +47,7 @@ service AuthService {
     rpc InternalLogin(InternalLoginRequest) returns (InternalLoginResponse) {
         option (google.api.http) = {
             post: "/v1/internal/login"
-            body: "internalLoginRequest"
+            body: "*"
         };
     };
     rpc InternalRecoverPassword(InternalRecoverPasswordRequest) returns (google.protobuf.Empty) {
