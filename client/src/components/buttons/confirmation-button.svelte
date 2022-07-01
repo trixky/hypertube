@@ -4,9 +4,12 @@
 	import { fade } from 'svelte/transition';
 
 	export let name: string = '?';
+	export let handler: Function = () => {};
+
 	let loading: boolean = false;
 
 	function toto() {
+		handler()
 		loading = !loading;
 	}
 </script>

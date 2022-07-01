@@ -4,16 +4,22 @@
 
 https://grpc.io/docs/languages/go/quickstart/
 
+```
+go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
+go install google.golang.org/protobuf/cmd/protoc-gen-go
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
+```
+
 # Compilation
 
 ## Compile to the auth api
 
 ```
-protoc -Iproto --go_out=api-auth --go-grpc_out=api-auth  proto/*.proto
+protoc -Iproto --go_out=api-auth --go-grpc_out=api-auth --grpc-gateway_out=api-auth  proto/*.proto
 ```
 
 # GRPC/api_rest compatibility
 
+https://grpc-ecosystem.github.io/grpc-gateway/docs/tutorials/introduction/
 https://grpc.io/blog/coreos/
-
 https://googleapis.github.io/common-protos-java/1.14.0/apidocs/com/google/api/HttpRule.html
