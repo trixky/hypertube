@@ -12,7 +12,8 @@ services:
     links:
       - postgres
     ports:
-      - "${API_AUTH_PORT}:${API_AUTH_PORT}"
+      - "${API_AUTH_GRPC_PORT}:${API_AUTH_GRPC_PORT}"
+      - "${API_AUTH_HTTP_PORT}:${API_AUTH_HTTP_PORT}"
 
     # access to the server:
     # $> docker-compose exec server sh
