@@ -25,6 +25,8 @@ func (s *AuthServer) InternalRegister(ctx context.Context, in *pb.InternalRegist
 
 	fmt.Println("auth:", auth)
 	fmt.Println("chat:", chat)
+	fmt.Println("method:", md.Get("method"))
+	fmt.Println("pattern:", md.Get("pattern"))
 
 	// -----------------------
 	// grpcMetadata.Pairs()
