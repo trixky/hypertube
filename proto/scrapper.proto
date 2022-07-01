@@ -12,26 +12,18 @@ enum MediaCategory {
 	CATEGORY_SERIE = 2;
 }
 
+message TorrentFile {
+	string name = 1;
+	optional string path = 2;
+	optional string size = 3;
+}
+
 message UnprocessedTorrent {
 	string full_url = 1;
 	string name = 2;
 	MediaCategory type = 3;
-	optional string torrent_url = 4;
-	optional int32 seed = 5;
-	optional int32 leech = 6;
-	optional string size = 7;
-	optional google.protobuf.Timestamp upload_time = 8;
-	optional string description_html = 9;
-	optional string magnet = 10;
-	optional string imdb_id = 11;
-}
-
-message Torrent {
-	uint32 id = 1;
-	string full_url = 2;
-	string name = 3;
-	MediaCategory type = 4;
-	string torrent_url = 5;
+	repeated TorrentFile files = 4;
+	optional string torrent_url = 5;
 	optional int32 seed = 6;
 	optional int32 leech = 7;
 	optional string size = 8;
@@ -41,12 +33,28 @@ message Torrent {
 	optional string imdb_id = 12;
 }
 
+message Torrent {
+	uint32 id = 1;
+	string full_url = 2;
+	string name = 3;
+	MediaCategory type = 4;
+	string torrent_url = 5;
+	repeated TorrentFile files = 6;
+	optional int32 seed = 7;
+	optional int32 leech = 8;
+	optional string size = 9;
+	optional google.protobuf.Timestamp upload_time = 10;
+	optional string description_html = 11;
+	optional string magnet = 12;
+	optional string imdb_id = 13;
+}
+
 message ScrapeRequest {
 }
 
 message ScrapeResponse {
 	uint32 ms_duration = 1;
-	repeated UnprocessedTorrent torrents = 2;
+	repeated Torrent torrents = 2;
 }
 
 message Media {
