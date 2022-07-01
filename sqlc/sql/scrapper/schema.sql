@@ -15,6 +15,7 @@ CREATE TABLE torrents (
     magnet TEXT NULL,
     imdb_id VARCHAR(10) NULL
 );
+CREATE UNIQUE INDEX unique_torrent_url ON torrents(full_url);
 
 CREATE TABLE torrent_files (
     id BIGSERIAL PRIMARY KEY,
@@ -32,13 +33,14 @@ CREATE TABLE medias (
     id BIGSERIAL PRIMARY KEY,
     imdb_id VARCHAR (10) NOT NULL,
     description TEXT NULL,
-    duration VARCHAR (50) NULL,
+    duration INTEGER NOT NULL,
     thumbnail TEXT NULL,
     background VARCHAR (250) NULL,
     year INTEGER NOT NULL,
     genres VARCHAR (250) NOT NULL,
     rating INTEGER NULL
 );
+CREATE UNIQUE INDEX unique_imdb_id ON medias(imdb_id);
 
 CREATE TABLE media_names (
     id BIGSERIAL PRIMARY KEY,
