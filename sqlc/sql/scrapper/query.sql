@@ -68,7 +68,7 @@ UPDATE torrents
 SET imdb_title_id = $2
 WHERE id = $1;
 
--- name: AddTorrentFile :exec
+-- name: AddTorrentFile :one
 INSERT INTO torrent_files
 	(torrent_id, path, name, size)
 VALUES
