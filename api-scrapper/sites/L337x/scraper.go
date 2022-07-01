@@ -129,8 +129,59 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 	return
 }
 
-func scrapeSingle(id string) (torrent pb.UnprocessedTorrent, err error) {
-	return
+func scrapeSingle(torrent *pb.UnprocessedTorrent) error {
+	c := colly.NewCollector(colly.IgnoreRobotsTxt())
+
+	c.OnRequest(func(r *colly.Request) {
+		fmt.Println("Visiting", r.URL)
+	})
+
+	c.OnHTML(".torrent-detail-page", func(e *colly.HTMLElement) {
+		description := e.DOM.Find("#description")
+		if description != nil {
+			description, _ := description.Html()
+			torrent.DescriptionHtml = &description
+			imdb_id_match := st.IMDBre.FindStringSubmatch(description)
+			if len(imdb_id_match) == 2 {
+				torrent.ImdbId = &imdb_id_match[1]
+			}
+		}
+
+		magnet := e.ChildAttr("a[href^='magnet:']", "href")
+		if magnet != "" {
+			torrent.Magnet = &magnet
+		}
+
+		torrent_url := e.ChildAttr(".dropdown-menu > li > a", "href")
+		torrent.TorrentUrl = &torrent_url
+
+		// test: https://go.dev/play/p/4QLPAxQkcuM
+		re := regexp.MustCompile("(.+)\\s+\\((.+)\\)\\s*$")
+		e.ForEach("#files > ul > li", func(index int, h *colly.HTMLElement) {
+			name := h.Text
+			matches := re.FindStringSubmatch(name)
+			if len(matches) == 3 {
+				path, name := st.ExtractPath(name)
+				torrent.Files = append(torrent.Files, &pb.TorrentFile{
+					Name: name,
+					Path: path,
+					Size: &matches[2],
+				})
+			}
+		})
+		fmt.Println("Found files", torrent.Files)
+	})
+
+	c.OnError(func(r *colly.Response, err error) {
+		fmt.Printf("error %v\n", err)
+	})
+
+	if err := c.Visit(torrent.FullUrl); err != nil {
+		fmt.Printf("error %v\n", err)
+		return err
+	}
+
+	return nil
 }
 
 var Scrapper = st.Scrapper{

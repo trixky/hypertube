@@ -91,8 +91,53 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 	return
 }
 
-func scrapeSingle(id string) (torrent pb.UnprocessedTorrent, err error) {
-	return
+func scrapeSingle(torrent *pb.UnprocessedTorrent) error {
+	c := colly.NewCollector(colly.IgnoreRobotsTxt())
+
+	c.OnRequest(func(r *colly.Request) {
+		fmt.Println("Visiting", r.URL)
+	})
+
+	c.OnHTML("#bodyarea > table > tbody > tr > td > table.lista > tbody > tr > td > div > table.lista > tbody", func(e *colly.HTMLElement) {
+		description_node := e.DOM.Find("tr:nth-child(4) > td.header + td.lista")
+		if description_node != nil {
+			description, _ := description_node.Html()
+			torrent.DescriptionHtml = &description
+			imdb_id_match := st.IMDBre.FindStringSubmatch(description)
+			if len(imdb_id_match) == 2 {
+				torrent.ImdbId = &imdb_id_match[1]
+			}
+		}
+
+		size := e.ChildText("tr:nth-child(7) > td.header + td.lista")
+		if size != "" {
+			torrent.Size = &size
+		}
+
+		e.ForEach("tr:nth-child(8) .lista table tbody tr", func(index int, h *colly.HTMLElement) {
+			if index > 0 {
+				name := h.ChildText("td:nth-child(1)")
+				size := h.ChildText("td:nth-child(2)")
+				path, name := st.ExtractPath(name)
+				torrent.Files = append(torrent.Files, &pb.TorrentFile{
+					Name: name,
+					Path: path,
+					Size: &size,
+				})
+			}
+		})
+	})
+
+	c.OnError(func(r *colly.Response, err error) {
+		fmt.Printf("error %v\n", err)
+	})
+
+	if err := c.Visit(torrent.FullUrl); err != nil {
+		fmt.Printf("error %v\n", err)
+		return err
+	}
+
+	return nil
 }
 
 var Scrapper = st.Scrapper{
