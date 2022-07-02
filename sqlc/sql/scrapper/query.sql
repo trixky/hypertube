@@ -186,12 +186,11 @@ FROM names
 WHERE imdb_id = $1
 LIMIT 1;
 
--- name: CreateNameRelation :one
+-- name: CreateNameRelation :exec
 INSERT INTO name_relations
 	(name_id, media_id)
 VALUES
-	($1, $2)
-RETURNING *;
+	($1, $2);
 
 -- name: CreateMediaStaff :exec
 INSERT INTO media_staffs

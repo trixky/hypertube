@@ -3,8 +3,8 @@ package importer
 type Name struct {
 	NConst            string
 	PrimaryName       string
-	BirthYear         string // year or \N
-	DeathYear         string // year or \N
+	BirthYear         int32  // year or \N
+	DeathYear         int32  // year or \N
 	PrimaryProfession string // comma separated job names
 	KnownForTitles    string // comma separated Title.TConst
 }
@@ -49,13 +49,13 @@ type TitlePrincipals struct {
 	TConst     string // Title.TConst
 	Ordering   int32
 	NConst     string // Name.NConst
-	category   string // Role of the person
-	job        string // Precision of the role
-	characters string // Array of strings or \N
+	Category   string // Role of the person
+	Job        string // Precision of the role
+	Characters string // Array of strings or \N
 }
 
 type TitleRating struct {
 	TConst        string  // Title.TConst
-	QverageRating float32 // rating between 0 and 10
+	AverageRating float32 // rating between 0 and 10
 	NumVotes      int32
 }
