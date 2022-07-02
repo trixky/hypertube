@@ -21,6 +21,7 @@ const batch_size = 10000
 // Relations are collected and returned as a pair to add them later when Medias are inserted
 func ImportNames() (relations map[string][]string, err error) {
 	fmt.Println("Loading names...")
+	relations = make(map[string][]string)
 	ctx := context.Background()
 	file, err := openTsvFile("./medias/name.basics.tsv")
 	defer file.Close()
@@ -393,7 +394,6 @@ func ImportTitlesPrincipal() error {
 					Character: makeNullString(&character),
 				})
 				if err_insert != nil {
-					fmt.Println("actor character insert err", character)
 					return err_insert
 				}
 			}
@@ -405,7 +405,6 @@ func ImportTitlesPrincipal() error {
 				Role:    makeNullString(&role),
 			})
 			if err_insert != nil {
-				fmt.Println("role insert err", role)
 				return err_insert
 			}
 		}
@@ -416,14 +415,89 @@ func ImportTitlesPrincipal() error {
 	return nil
 }
 
+func ImportNameRelations(relations *map[string][]string) error {
+	fmt.Println("Loading name relations...")
+	ctx := context.Background()
+
+	// Keep track of IDs to ignore
+	ignore := make(map[string]bool)
+	media_exist := make(map[string]int64)
+	name_exist := make(map[string]int64)
+
+	// Add all relations
+	for relation_imdb, name_imdbs := range *relations {
+		// Check if we can ignore the Media
+		if _, ok := ignore[relation_imdb]; ok {
+			continue
+		}
+
+		// Check if the Media exist
+		media_id, ok := media_exist[relation_imdb]
+		if !ok {
+			existing_media, err := postgres.DB.SqlcQueries.GetMediaByIMDB(ctx, relation_imdb)
+			if err != nil {
+				if errors.Is(err, sql.ErrNoRows) {
+					return err
+				} else {
+					ignore[relation_imdb] = true
+					continue
+				}
+			} else {
+				err = nil
+			}
+			media_id = existing_media.ID
+			media_exist[relation_imdb] = media_id
+		}
+
+		for _, name_imdb := range name_imdbs {
+			// Check if we can ignore the Name
+			if _, ok := ignore[name_imdb]; ok {
+				continue
+			}
+
+			// Check if the Name exist
+			name_id, ok := name_exist[name_imdb]
+			if !ok {
+				exisiting_name, err := postgres.DB.SqlcQueries.GetNameByIMDB(ctx, name_imdb)
+				if err != nil {
+					if errors.Is(err, sql.ErrNoRows) {
+						return err
+					} else {
+						ignore[name_imdb] = true
+						continue
+					}
+				} else {
+					err = nil
+				}
+				name_id = exisiting_name.ID
+				name_exist[name_imdb] = name_id
+			}
+
+			// Add the relation
+			err_insert := postgres.DB.SqlcQueries.CreateNameRelation(ctx, sqlc.CreateNameRelationParams{
+				MediaID: int32(media_id),
+				NameID:  int32(name_id),
+			})
+			if err_insert != nil {
+				return err_insert
+			}
+		}
+
+	}
+
+	fmt.Printf("Checked %v name relations\n", len(*relations))
+
+	return nil
+}
+
 // types: [short movie tvEpisode tvSeries tvShort tvMovie tvMiniSeries video tvSpecial videoGame tvPilot]
 func Import() error {
 	// Import names first
-	// _ /* name_relations */, err := ImportNames()
-	// if err != nil {
-	// fmt.Println(err)
-	// 	return err
-	// }
+	name_relations, err := ImportNames()
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
 
 	// Open Medias related informations
 	// ratings, err := GetRatings()
@@ -447,13 +521,18 @@ func Import() error {
 	// }
 
 	// Import Title crew and principals
-	err := ImportTitlesPrincipal()
+	// err := ImportTitlesPrincipal()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return err
+	// }
+
+	// Import Name relations to Titles
+	err = ImportNameRelations(&name_relations)
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
-
-	// TODO Import Name relations to Titles
 
 	fmt.Println("Done !")
 
