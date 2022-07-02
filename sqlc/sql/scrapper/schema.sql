@@ -56,7 +56,7 @@ CREATE TABLE media_staffs (
     id BIGSERIAL PRIMARY KEY,
     media_id INTEGER NOT NULL,
     name_id INTEGER NOT NULL,
-    role VARCHAR (250) NOT NULL
+    role VARCHAR (250) NULL
 );
 ALTER TABLE ONLY media_staffs
 ADD CONSTRAINT media_staffs_media_id_foreign FOREIGN KEY (media_id) REFERENCES medias(id) ON DELETE CASCADE NOT DEFERRABLE;
