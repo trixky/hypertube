@@ -60,18 +60,19 @@ CREATE TABLE medias (
     background VARCHAR (250) NULL,
     year INTEGER NOT NULL,
     genres VARCHAR (250) NOT NULL,
-    rating INTEGER NULL
+    rating DOUBLE NULL
 );
 CREATE UNIQUE INDEX unique_media_imdb_id ON medias(imdb_id);
 
 CREATE TABLE media_names (
     id BIGSERIAL PRIMARY KEY,
     media_id INTEGER NOT NULL,
-    lang VARCHAR (5) NOT NULL,
-    name VARCHAR (250) NOT NULL
+    name VARCHAR (250) NOT NULL,
+    lang VARCHAR (5) NOT NULL
 );
 ALTER TABLE ONLY media_names
 ADD CONSTRAINT media_names_media_id_foreign FOREIGN KEY (media_id) REFERENCES medias(id) ON DELETE CASCADE NOT DEFERRABLE;
+CREATE UNIQUE INDEX unique_media_name_by_lang ON media_names(media_id, name, lang);
 
 CREATE TABLE media_staffs (
     id BIGSERIAL PRIMARY KEY,

@@ -140,12 +140,25 @@ FROM medias
 WHERE imdb_id = $1
 LIMIT 1;
 
--- name: AddMediaName :one
+-- name: CreateMediaName :one
 INSERT INTO media_names
-	(media_id, lang, name)
+	(media_id, name, lang)
 VALUES
 	($1, $2, $3)
+ON CONFLICT DO NOTHING
 RETURNING *;
+
+-- name: CreateMediaNames :copyfrom
+INSERT INTO media_names
+	(media_id, name, lang)
+VALUES
+	($1, $2, $3);
+
+-- name: CheckMediaNameExist :one
+SELECT count(id)
+FROM media_names
+WHERE media_id = $1 AND name = $2 AND lang = $3
+LIMIT 1;
 
 -- name: DeleteMediaName :exec
 DELETE FROM media_names
@@ -166,6 +179,7 @@ VALUES
 		$3,
 		$4
 	)
+ON CONFLICT DO NOTHING
 RETURNING *;
 
 -- name: CreateNames :copyfrom
@@ -197,18 +211,43 @@ VALUES
 	($1, $2)
 RETURNING *;
 
--- name: AddMediaStaff :one
+-- name: CreateMediaStaff :one
 INSERT INTO media_staffs
 	(media_id, name_id, role)
 VALUES
 	($1, $2, $3)
+ON CONFLICT DO NOTHING
 RETURNING *;
+
+-- name: CreateMediaStaffs :copyfrom
+INSERT INTO media_staffs
+	(media_id, name_id, role)
+VALUES
+	($1, $2, $3);
 
 -- name: DeleteMediaStaff :exec
 DELETE FROM media_staffs
 WHERE id = $1;
 
--- name: AddMediaRelation :one
+-- name: CreateMediaActor :one
+INSERT INTO media_actors
+	(media_id, name_id, character)
+VALUES
+	($1, $2, $3)
+ON CONFLICT DO NOTHING
+RETURNING *;
+
+-- name: CreateMediaActors :copyfrom
+INSERT INTO media_actors
+	(media_id, name_id, character)
+VALUES
+	($1, $2, $3);
+
+-- name: DeleteMediaActor :exec
+DELETE FROM media_actors
+WHERE id = $1;
+
+-- name: CreateMediaRelation :one
 INSERT INTO media_relations
 	(media_id, relation_id)
 VALUES
