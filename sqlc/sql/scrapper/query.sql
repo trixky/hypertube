@@ -102,7 +102,7 @@ VALUES
 		$7,
 		$8
 	)
-RETURNING *; 
+RETURNING *;
 
 -- name: CreateMedias :copyfrom
 INSERT INTO medias
@@ -151,11 +151,57 @@ RETURNING *;
 DELETE FROM media_names
 WHERE id = $1;
 
+-- name: CreateName :one
+INSERT INTO names
+	(
+		imdb_id,
+		name,
+		birth_year,
+		death_year
+	)
+VALUES
+	(
+		$1,
+		$2,
+		$3,
+		$4
+	)
+RETURNING *;
+
+-- name: CreateNames :copyfrom
+INSERT INTO names
+	(
+		imdb_id,
+		name,
+		birth_year,
+		death_year
+	)
+VALUES
+	(
+		$1,
+		$2,
+		$3,
+		$4
+	);
+
+-- name: CheckNameExistByIMDB :one
+SELECT count(id)
+FROM names
+WHERE imdb_id = $1
+LIMIT 1;
+
+-- name: CreateNameRelation :one
+INSERT INTO name_relations
+	(name_id, media_id)
+VALUES
+	($1, $2)
+RETURNING *;
+
 -- name: AddMediaStaff :one
 INSERT INTO media_staffs
-	(media_id, name, thumbnail, url, role)
+	(media_id, name_id, role)
 VALUES
-	($1, $2, $3, $4, $5)
+	($1, $2, $3)
 RETURNING *;
 
 -- name: DeleteMediaStaff :exec
@@ -164,14 +210,9 @@ WHERE id = $1;
 
 -- name: AddMediaRelation :one
 INSERT INTO media_relations
-	(
-	media_id,
-	relation_imdb_id,
-	name,
-	thumbnail
-	)
+	(media_id, relation_id)
 VALUES
-	($1, $2, $3, $4)
+	($1, $2)
 RETURNING *;
 
 -- name: DeleteMediaRelation :exec
