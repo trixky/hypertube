@@ -23,7 +23,10 @@ type TorrentCreationResult struct {
 	files   []sqlc.TorrentFile
 }
 
-var categories []string = []string{"movies", "shows"}
+var categories []string = []string{
+	"movies",
+	// "shows",
+}
 
 func makeNullInt32(value *int32) (null_int32 sql.NullInt32) {
 	if value == nil {
@@ -256,7 +259,7 @@ func (s *ScrapperServer) IdentifyAll(request *pb.IdentifyRequest, out pb.Scrappe
 
 func (s *ScrapperServer) ScrapeLatest(request *pb.ScrapeLatestRequest, out pb.ScrapperService_ScrapeLatestServer) error {
 	ctx := context.Background()
-	log.Printf("Scrap Latest %v\n", request)
+	log.Printf("Scrape Latest %v\n", request)
 
 	for _, scrapper := range st.Scrappers {
 		for _, category := range categories {
