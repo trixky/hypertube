@@ -40,7 +40,7 @@ CREATE TABLE medias (
     genres VARCHAR (250) NOT NULL,
     rating INTEGER NULL
 );
-CREATE UNIQUE INDEX unique_imdb_id ON medias(imdb_id);
+CREATE UNIQUE INDEX unique_media_imdb_id ON medias(imdb_id);
 
 CREATE TABLE media_names (
     id BIGSERIAL PRIMARY KEY,
@@ -54,9 +54,7 @@ ADD CONSTRAINT media_names_media_id_foreign FOREIGN KEY (media_id) REFERENCES me
 CREATE TABLE media_staffs (
     id BIGSERIAL PRIMARY KEY,
     media_id INTEGER NOT NULL,
-    name VARCHAR (250) NOT NULL,
-    thumbnail TEXT NULL,
-    url TEXT NOT NULL,
+    name_id INTEGER NOT NULL,
     role VARCHAR (250) NOT NULL
 );
 ALTER TABLE ONLY media_staffs
@@ -65,9 +63,24 @@ ADD CONSTRAINT media_staffs_media_id_foreign FOREIGN KEY (media_id) REFERENCES m
 CREATE TABLE media_relations (
     id BIGSERIAL PRIMARY KEY,
     media_id INTEGER NOT NULL,
-    relation_imdb_id VARCHAR (10) NOT NULL,
-    name VARCHAR (250) NOT NULL,
-    thumbnail TEXT NULL
+    relation_id INTEGER NOT NULL
 );
 ALTER TABLE ONLY media_relations
 ADD CONSTRAINT media_relations_media_id_foreign FOREIGN KEY (media_id) REFERENCES medias(id) ON DELETE CASCADE NOT DEFERRABLE;
+
+CREATE TABLE names (
+    id BIGSERIAL PRIMARY KEY,
+    imdb_id VARCHAR (10) NOT NULL,
+    name VARCHAR (250) NOT NULL,
+    birth_year INTEGER NULL,
+    death_year INTEGER NULL
+);
+CREATE UNIQUE INDEX unique_name_imdb_id ON names(imdb_id);
+
+CREATE TABLE name_relations (
+    id BIGSERIAL PRIMARY KEY,
+    name_id INTEGER NOT NULL,
+    media_id INTEGER NOT NULL
+);
+ALTER TABLE ONLY name_relations
+ADD CONSTRAINT name_relations_media_id_foreign FOREIGN KEY (media_id) REFERENCES medias(id) ON DELETE CASCADE NOT DEFERRABLE;
