@@ -22,6 +22,7 @@ const (
 	env_postgres_user     = "POSTGRES_USER"
 	env_postgres_password = "POSTGRES_PASSWORD"
 	env_postgres_db       = "POSTGRES_DB"
+	env_tmdb_api_key      = "TMDB_API_KEY"
 )
 
 type Env struct {
@@ -90,6 +91,12 @@ func readEnv() (env Env) {
 
 func main() {
 	env := readEnv()
+
+	// check TMDB api key
+	api_key := os.Getenv(env_tmdb_api_key)
+	if api_key == "" {
+		log.Fatalf("missing " + env_tmdb_api_key + " environment variable")
+	}
 
 	addr := host + ":" + strconv.Itoa(env.Port)
 
