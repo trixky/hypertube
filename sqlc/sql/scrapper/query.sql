@@ -86,33 +86,6 @@ INSERT INTO medias
 		thumbnail,
 		background,
 		year,
-		genres,
-		rating
-	)
-VALUES
-	(
-		$1,
-		$2,
-		$3,
-		$4,
-		$5,
-		$6,
-		$7,
-		$8,
-		$9
-	)
-RETURNING *;
-
--- name: CreateMedias :copyfrom
-INSERT INTO medias
-	(
-		imdb_id,
-		description,
-		duration,
-		thumbnail,
-		background,
-		year,
-		genres,
 		rating
 	)
 VALUES
@@ -125,6 +98,29 @@ VALUES
 		$6,
 		$7,
 		$8
+	)
+RETURNING *;
+
+-- name: CreateMedias :copyfrom
+INSERT INTO medias
+	(
+		imdb_id,
+		description,
+		duration,
+		thumbnail,
+		background,
+		year,
+		rating
+	)
+VALUES
+	(
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7
 	);
 
 -- name: GetMediaByIMDB :one
@@ -209,3 +205,23 @@ ON CONFLICT DO NOTHING;
 -- name: DeleteMediaActor :exec
 DELETE FROM media_actors
 WHERE id = $1;
+
+-- name: GetGenre :one
+SELECT *
+FROM genres
+WHERE name = $1
+LIMIT 1;
+
+-- name: CreateGenre :one
+INSERT INTO genres
+	(name)
+VALUES
+	($1)
+RETURNING *;
+
+-- name: CreateMediaGenre :exec
+INSERT INTO media_genres
+	(media_id, genre_id)
+VALUES
+	($1, $2)
+ON CONFLICT DO NOTHING;
