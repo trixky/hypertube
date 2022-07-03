@@ -1,6 +1,11 @@
--- name: GetUser :one
+-- name: GetUserById :one
 SELECT * FROM users
 WHERE id = $1 LIMIT 1;
+
+-- name: GetUserByCredentials :one
+SELECT * FROM users
+WHERE email = $1 
+AND password = $2 LIMIT 1;
 
 -- name: ListUsers :many
 SELECT * FROM users
