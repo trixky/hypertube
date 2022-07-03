@@ -4,10 +4,25 @@
 	import Logo from '../../components/layouts/logo.svelte';
 	import ConfirmationButton from '../../components/buttons/confirmation-button.svelte';
 	import Warning from '../../components/inputs/warning.svelte';
-	import { uppercase_first_character } from '../../utils/str';
 	import Eye from '../../components/inputs/eye.svelte';
+	import { browser } from '$app/env';
+	import * as cookies from '../../utils/cookies';
+	import * as sanitzer from '../../utils/sanitizer';
+	import { uppercase_first_character } from '../../utils/str';
+	import { encrypt_password } from '../../utils/password'
+	import { already_connected } from '../../utils/redirect'
+
+	already_connected(browser);
+
+	let loading = false;
 
 	let registration_attempts = 0;
+	let username_blur = false;
+	let firstname_blur = false;
+	let lastname_blur = false;
+	let email_blur = false;
+	let password_blur = false;
+	let confirm_password_blur = false;
 
 	let username = '';
 	let username_warning = '';
@@ -55,7 +70,7 @@
 						firstname,
 						lastname,
 						email,
-						password
+						password: await encrypt_password(password)
 					})
 				});
 
@@ -64,8 +79,7 @@
 						.json()
 						.then((body) => {
 							if (body.hasOwnProperty('token')) {
-								console.log('------- d:', body.token);
-								document.cookie = 'token=' + body.token;
+								cookies.add_a_cookie(cookies.labels.token, body.token);
 								resolve(true);
 								window.location.href = window.location.origin + '/';
 							} else {
@@ -81,129 +95,57 @@
 							);
 						});
 				} else {
-					if (res.status == 409) {
-						emails_already_in_use.push(email);
-						// notifies_response_warning('Email is already in use, please choose another');
-					} else {
-						notifies_response_warning('An error occured on server side, please try again');
-					}
+					if (res.status == 409) notifies_response_warning('Incorrect email and/or password');
+					else notifies_response_warning('An error occured on server side, please try again');
 				}
-
 				resolve(false);
 			}, 1000);
 		});
 	}
 
 	function notifies_response_warning(warning: string) {
-		response_warning = warning;
-
-		setTimeout(() => {
-			response_warning = '';
-		}, 5000);
+		response_warning = uppercase_first_character(warning);
 	}
 
-	// ------------------------------------------- checks
-	// ---------------------------- check username
+	// ----------------------------------------------------------------- sanitizing
 	function check_username(): boolean {
-		if (registration_attempts > 0) {
-			if (username.length == 0) username_warning = 'is missing';
-			else if (username.length < 3) username_warning = 'is too short, needs at least 3 characters';
-			else if (username.length > 20)
-				username_warning = 'is too long, must contain a maximum of 20 characters';
-			else username_warning = '';
-		}
+		response_warning = ''
+		if (registration_attempts || username_blur) username_warning = sanitzer.name(username);
 
 		return username_warning.length > 0;
 	}
-	// ---------------------------- check firstname
 	function check_firstname(): boolean {
-		if (registration_attempts > 0) {
-			if (firstname.length == 0) firstname_warning = 'is missing';
-			else if (firstname.length < 3)
-				firstname_warning = 'is too short, needs at least 3 characters';
-			else if (firstname.length > 20)
-				firstname_warning = 'is too long, must contain a maximum of 20 characters';
-			else firstname_warning = '';
-		}
+		response_warning = ''
+		if (registration_attempts || firstname_blur) firstname_warning = sanitzer.name(firstname);
 
 		return firstname_warning.length > 0;
 	}
-	// ---------------------------- check lastname
 	function check_lastname(): boolean {
-		if (registration_attempts > 0) {
-			if (lastname.length == 0) lastname_warning = 'is missing';
-			else if (lastname.length < 3) lastname_warning = 'is too short, needs at least 3 characters';
-			else if (lastname.length > 20)
-				lastname_warning = 'is too long, must contain a maximum of 20 characters';
-			else lastname_warning = '';
-		}
+		response_warning = ''
+		if (registration_attempts || lastname_blur) lastname_warning = sanitzer.name(lastname);
 
 		return lastname_warning.length > 0;
 	}
-	// ---------------------------- check email
 	function check_email(): boolean {
-		if (registration_attempts > 0) {
-			// https://stackoverflow.com/questions/46155/how-can-i-validate-an-email-address-in-javascript
-			const regex =
-				/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-
-			if (email.length == 0) email_warning = 'is missing';
-			else if (!regex.test(email)) email_warning = 'is bad formatted';
-			else email_warning = '';
-		}
+		response_warning = ''
+		if (registration_attempts || email_blur) email_warning = sanitzer.email(email);
 
 		return email_warning.length > 0;
 	}
-	// ---------------------------- check password
 	function check_password(event: any = null): boolean {
+		response_warning = ''
 		if (event) password = event.target.value;
 
-		if (registration_attempts > 0) {
-			let password_warnings = [];
-
-			if (password.length == 0) password_warnings.push('is missing');
-			else {
-				if (confirm_password == password) confirm_password_warning = '';
-				if (password.length < 8)
-					password_warnings.push('is too short, needs at least 3 characters');
-				else if (password.length > 30)
-					password_warnings.push('is too long, must contain a maximum of 20 characters');
-				if (!/[a-z]/.test(password)) {
-					password_warnings.push('must contain at least one lowercase character (a-z)');
-				}
-				if (!/[A-Z]/.test(password)) {
-					password_warnings.push('must contain at least one uppercase character (A-Z)');
-				}
-				if (!/\d/.test(password)) {
-					password_warnings.push('must contain at least one numeric character (0-9)');
-				}
-				if (!/[ !@#$%^&*()-=_+[\]{}\\|'\";:/?.>,<`~]/.test(password)) {
-					password_warnings.push('must contain at least one specific character (!@#...)');
-				}
-			}
-
-			let password_warnings_concatenation = password_warnings
-				.map((str) => uppercase_first_character(str))
-				.join('\n- ');
-
-			if (password_warnings.length > 1)
-				password_warnings_concatenation = '- ' + password_warnings_concatenation;
-
-			password_warning = password_warnings_concatenation;
-		}
+		if (registration_attempts || password_blur) password_warning = sanitzer.password(password);
 
 		return password_warning.length > 0;
 	}
-	// ---------------------------- check confirm password
 	function check_confirm_password(event: any = null): boolean {
+		response_warning = ''
 		if (event) confirm_password = event.target.value;
 
-		if (registration_attempts > 0) {
-			if (confirm_password.length == 0) confirm_password_warning = 'is missing';
-			else if (confirm_password != password)
-				confirm_password_warning = 'passwords must be the same';
-			else confirm_password_warning = '';
-		}
+		if (registration_attempts || confirm_password_blur)
+			confirm_password_warning = sanitzer.confirm_password(password, confirm_password);
 
 		return confirm_password_warning.length > 0;
 	}
@@ -221,6 +163,10 @@
 			name="username"
 			bind:value={username}
 			on:input={check_username}
+			on:blur={() => {
+				username_blur = true;
+				check_username();
+			}}
 		/>
 		<Warning content={username_warning} />
 		<div class="flex justify-between">
@@ -232,6 +178,10 @@
 					name="firstname"
 					bind:value={firstname}
 					on:input={check_firstname}
+					on:blur={() => {
+						firstname_blur = true;
+						check_firstname();
+					}}
 				/>
 				<Warning content={firstname_warning} />
 			</div>
@@ -243,6 +193,10 @@
 					name="lastname"
 					bind:value={lastname}
 					on:input={check_lastname}
+					on:blur={() => {
+						lastname_blur = true;
+						check_lastname();
+					}}
 				/>
 				<Warning content={lastname_warning} />
 			</div>
@@ -254,6 +208,10 @@
 			name="email"
 			bind:value={email}
 			on:input={check_email}
+			on:blur={() => {
+				email_blur = true;
+				check_email();
+			}}
 		/>
 		<Warning content={email_warning} />
 		<label for="password">Password</label>
@@ -263,6 +221,10 @@
 			name="password"
 			value={password}
 			on:input={check_password}
+			on:blur={() => {
+				password_blur = true;
+				check_password();
+			}}
 		/>
 		<Eye bind:open={show_password} />
 		<Warning content={password_warning} />
@@ -273,7 +235,10 @@
 			name="confirm password"
 			value={confirm_password}
 			on:input={check_confirm_password}
-			aria-hidden="false"
+			on:blur={() => {
+				confirm_password_blur = true;
+				check_confirm_password();
+			}}
 		/>
 		<Eye bind:open={show_password} />
 		<Warning content={confirm_password_warning} />

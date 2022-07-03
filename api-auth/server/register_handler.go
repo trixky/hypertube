@@ -4,106 +4,38 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/mail"
-	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/trixky/hypertube/api-auth/databases"
 	pb "github.com/trixky/hypertube/api-auth/proto"
+	"github.com/trixky/hypertube/api-auth/sanitizer"
 	"github.com/trixky/hypertube/api-auth/sqlc"
 	"google.golang.org/grpc/codes"
 	grpcMetadata "google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
-const expiration = time.Hour * 24 * 1000
-
-func SanitizeInternalRegister(in *pb.InternalRegisterRequest) error {
-	// ------------------------ email
-	email := in.GetEmail()
-	if len(email) == 0 {
-		return status.Errorf(codes.InvalidArgument, "email missing")
+func sanitizeInternalRegister(in *pb.InternalRegisterRequest) error {
+	if err := sanitizer.SanitizeEmail(in.GetEmail()); err != nil { // email
+		return err
 	}
-	if _, err := mail.ParseAddress(email); err != nil {
-		return status.Errorf(codes.InvalidArgument, "email corrupted")
+	if err := sanitizer.SanitizeName(in.GetUsername(), sanitizer.LABEL_username); err != nil { // username
+		return err
 	}
-
-	// ------------------------ username
-	username := in.GetUsername()
-	if len(username) == 0 {
-		return status.Errorf(codes.InvalidArgument, "username missing")
+	if err := sanitizer.SanitizeName(in.GetFirstname(), sanitizer.LABEL_firstname); err != nil { // firstname
+		return err
 	}
-	if len(username) < 3 {
-		return status.Errorf(codes.InvalidArgument, "username too short")
+	if err := sanitizer.SanitizeName(in.GetLastname(), sanitizer.LABEL_lastname); err != nil { // lastname
+		return err
 	}
-	if len(username) > 30 {
-		return status.Errorf(codes.InvalidArgument, "username too long")
-	}
-
-	// ------------------------ firstname
-	firstname := in.GetFirstname()
-	if len(firstname) == 0 {
-		return status.Errorf(codes.InvalidArgument, "firstname missing")
-	}
-	if len(firstname) < 3 {
-		return status.Errorf(codes.InvalidArgument, "firstname too short")
-	}
-	if len(firstname) > 30 {
-		return status.Errorf(codes.InvalidArgument, "firstname too long")
-	}
-
-	// ------------------------ lastname
-	lastname := in.GetLastname()
-	if len(lastname) == 0 {
-		return status.Errorf(codes.InvalidArgument, "lastname missing")
-	}
-	if len(lastname) < 3 {
-		return status.Errorf(codes.InvalidArgument, "lastname too short")
-	}
-	if len(lastname) > 20 {
-		return status.Errorf(codes.InvalidArgument, "lastname too long")
-	}
-
-	// ------------------------ password
-	password := in.GetPassword()
-	if len(password) == 0 {
-		return status.Errorf(codes.InvalidArgument, "password missing")
-	}
-	if len(password) < 8 {
-		return status.Errorf(codes.InvalidArgument, "password too short")
-	}
-	if len(password) > 30 {
-		return status.Errorf(codes.InvalidArgument, "password too long")
-	}
-
-	const numeric = "0123456789"
-
-	if !strings.ContainsAny(password, numeric) {
-		return status.Errorf(codes.InvalidArgument, "password must contain at least one number")
-	}
-
-	const alpha = "qwertyuioplkjhgfdsazxcvbnm" // qwerty
-
-	if !strings.ContainsAny(password, alpha) {
-		return status.Errorf(codes.InvalidArgument, "password must contain at least one lowercase character")
-	}
-	if !strings.ContainsAny(password, strings.ToUpper(alpha)) {
-		return status.Errorf(codes.InvalidArgument, "password must contain at least one uppercase character")
-	}
-
-	const special = " !@#$%^&*()-=_+[]{}\\|'\";:/?.>,<`~"
-
-	if !strings.ContainsAny(password, special) {
-		return status.Errorf(codes.InvalidArgument, "password must contain at least one special character")
+	if err := sanitizer.SanitizeSHA256Password(in.GetPassword()); err != nil { // password
+		return err
 	}
 
 	return nil
 }
 
 func (s *AuthServer) InternalRegister(ctx context.Context, in *pb.InternalRegisterRequest) (*pb.InternalLoginResponse, error) {
-	log.Printf("Greet function awas invoked with %v\n", in)
-
 	// ----------------------- (temp) headers
 	md, ok := grpcMetadata.FromIncomingContext(ctx)
 
@@ -122,8 +54,7 @@ func (s *AuthServer) InternalRegister(ctx context.Context, in *pb.InternalRegist
 	fmt.Println("password", in.GetPassword())
 
 	// -------------------- sanitize
-	log.Println("yolooooooooooo 0")
-	if err := SanitizeInternalRegister(in); err != nil {
+	if err := sanitizeInternalRegister(in); err != nil {
 		return nil, err
 	}
 
@@ -142,12 +73,12 @@ func (s *AuthServer) InternalRegister(ctx context.Context, in *pb.InternalRegist
 		}
 		return nil, status.Errorf(codes.Internal, "user creation failed")
 	}
-	// -------------------- logic
-	token := uuid.New().String() // token generation
 
 	// -------------------- cache
+	token := uuid.New().String() // token generation
+
 	if err := databases.AddToken(new_user.ID, token); err != nil {
-		return nil, status.Errorf(codes.Internal, "token creation failed")
+		return nil, status.Errorf(codes.Internal, "token generation failed")
 	}
 
 	return &pb.InternalLoginResponse{
