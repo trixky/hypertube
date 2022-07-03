@@ -50,7 +50,7 @@ CREATE UNIQUE INDEX unique_genre_name ON genres(name);
 
 CREATE TABLE medias (
     id BIGSERIAL PRIMARY KEY,
-    imdb_id VARCHAR (10) NOT NULL,
+    imdb_id VARCHAR (10) NULL,
     tmdb_id INTEGER NOT NULL,
     description TEXT NULL,
     duration INTEGER NULL,
