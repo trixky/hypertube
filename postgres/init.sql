@@ -60,6 +60,14 @@ CREATE TABLE names (
 );
 CREATE UNIQUE INDEX unique_name_tmdb_id ON names(tmdb_id);
 
+-- Genres
+
+CREATE TABLE genres (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR (250) NOT NULL
+);
+CREATE UNIQUE INDEX unique_genre_name ON genres(name);
+
 -- Media Informations
 
 CREATE TABLE medias (
@@ -87,6 +95,17 @@ CREATE TABLE media_names (
 ALTER TABLE ONLY media_names
 ADD CONSTRAINT media_names_media_id_foreign FOREIGN KEY (media_id) REFERENCES medias(id) ON DELETE CASCADE NOT DEFERRABLE;
 CREATE UNIQUE INDEX unique_media_name_by_lang ON media_names(media_id, name, lang);
+
+CREATE TABLE media_genres (
+    id BIGSERIAL PRIMARY KEY,
+    media_id INTEGER NOT NULL,
+    genre_id INTEGER NOT NULL
+);
+ALTER TABLE ONLY media_genres
+ADD CONSTRAINT media_genres_media_id_foreign FOREIGN KEY (media_id) REFERENCES medias(id) ON DELETE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY media_genres
+ADD CONSTRAINT media_genres_genre_id_foreign FOREIGN KEY (genre_id) REFERENCES genres(id) ON DELETE CASCADE NOT DEFERRABLE;
+CREATE UNIQUE INDEX unique_media_genre_by_genre ON media_genres(media_id, genre_id);
 
 CREATE TABLE media_staffs (
     id BIGSERIAL PRIMARY KEY,
