@@ -5,6 +5,8 @@
 	import External from './external.svelte';
 	import ConfirmationButton from '../../components/buttons/confirmation-button.svelte';
 
+	let email = "";
+	let password = "";
 </script>
 
 <!-- ========================= HTML -->
@@ -19,9 +21,9 @@
 	</div>
 	<form action="" class="pt-1">
 		<label for="email">Email</label>
-		<input type="email" placeholder="Email" name="email" />
+		<input type="email" placeholder="Email" name="email" bind:value={email} />
 		<label for="password">Password</label>
-		<input type="password" placeholder="Password" name="password" minlength="8" />
+		<input type="password" placeholder="Password" name="password" bind:value={password} />
 		<p class="extra-link mt-2 pl-28 mb-4 float-right"><a href="/register">Forgot your password ?</a></p>
 		<ConfirmationButton name="login"/>
 

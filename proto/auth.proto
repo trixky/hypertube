@@ -24,7 +24,7 @@ message InternalLoginRequest {
 }
 
 message InternalLoginResponse {
-    string jwt = 1;
+    string token = 1;
 }
 
 message InternalRecoverPasswordRequest {

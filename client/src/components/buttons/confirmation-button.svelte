@@ -2,15 +2,19 @@
 <script lang="ts">
 	import Spinner from '../animations/spinner.svelte';
 	import { fade } from 'svelte/transition';
+	import { uppercase_first_character } from '../../utils/str';
 
 	export let name: string = '?';
 	export let handler: Function = () => {};
 
-	let loading: boolean = false;
+	export let loading: boolean = false;
 
-	function toto() {
-		handler()
-		loading = !loading;
+	async function toto() {
+		if (!loading) {
+			loading = true;
+			await handler();
+			loading = false;
+		}
 	}
 </script>
 
@@ -30,7 +34,7 @@
 			<Spinner />
 		</div>
 	{/if}
-	<p class="inline-block">{name.charAt(0).toUpperCase() + name.slice(1)}</p>
+	<p class="inline-block">{uppercase_first_character(name)}</p>
 </button>
 
 <!-- ========================= CSS -->

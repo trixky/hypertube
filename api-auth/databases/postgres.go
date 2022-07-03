@@ -1,14 +1,19 @@
-package postgres
+package databases
 
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	_ "github.com/lib/pq"
 	"github.com/trixky/hypertube/api-auth/sqlc"
 )
 
-type Config struct {
+func ErrorIsDuplication(err error) bool {
+	return strings.Contains(err.Error(), "duplicate")
+}
+
+type PostgresConfig struct {
 	Driver   string
 	Host     string
 	Port     int
@@ -17,18 +22,11 @@ type Config struct {
 	Dbname   string
 }
 
-func (d *Config) Compile_config() string {
+func (d *PostgresConfig) Compile_config() string {
 	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", d.Host, d.Port, d.User, d.Password, d.Dbname)
 }
 
-type Database struct {
-	SqlDatabase *sql.DB
-	SqlcQueries *sqlc.Queries
-}
-
-var database Database
-
-func Init(config Config) error {
+func InitPosgres(config PostgresConfig) error {
 	sql_database, err := sql.Open(config.Driver, config.Compile_config())
 
 	if err != nil {
@@ -39,8 +37,8 @@ func Init(config Config) error {
 		return err
 	}
 
-	database.SqlDatabase = sql_database
-	database.SqlcQueries = sqlc.New(sql_database)
+	DBs.SqlDatabase = sql_database
+	DBs.SqlcQueries = sqlc.New(sql_database)
 
 	return nil
 }

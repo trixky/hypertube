@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/trixky/hypertube/api-auth/postgres"
+	"github.com/trixky/hypertube/api-auth/databases"
 	pb "github.com/trixky/hypertube/api-auth/proto"
 	"github.com/trixky/hypertube/api-auth/server"
 	"github.com/trixky/hypertube/api-auth/utils"
@@ -19,7 +19,7 @@ import (
 
 const (
 	host            = "0.0.0.0"
-	database_driver = "postgres"
+	postgres_driver = "postgres"
 )
 
 func main() {
@@ -27,8 +27,8 @@ func main() {
 
 	grpc_addr := host + ":" + strconv.Itoa(env.GrpcPort)
 
-	if err := postgres.Init(postgres.Config{
-		Driver:   database_driver,
+	if err := databases.InitPosgres(databases.PostgresConfig{
+		Driver:   postgres_driver,
 		Host:     env.PostgresHost,
 		Port:     env.PostgresPort,
 		User:     env.PostgresUser,
@@ -39,6 +39,12 @@ func main() {
 	}
 
 	log.Println("connected to postgres")
+
+	if err := databases.InitRedis(); err != nil {
+		log.Fatalf("failed to connect to redis: %v", err)
+	}
+
+	log.Println("connected to redis")
 
 	listen, err := net.Listen("tcp", grpc_addr)
 
@@ -67,8 +73,6 @@ func main() {
 	}
 
 	http_addr := ":" + strconv.Itoa(env.HttpPort)
-
-	// gwmux := runtime.NewServeMux()
 
 	gwmux := runtime.NewServeMux(runtime.WithMetadata(
 		func(ctx context.Context, r *http.Request) metadata.MD {
