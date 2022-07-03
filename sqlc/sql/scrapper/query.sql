@@ -19,7 +19,7 @@ ORDER BY id DESC;
 INSERT INTO torrents
 	(
 		full_url,
-		imdb_title_id,
+		media_id,
 		name,
 		type,
 		seed,
@@ -28,8 +28,7 @@ INSERT INTO torrents
 		upload_time,
 		description_html,
 		torrent_url,
-		magnet,
-		imdb_id
+		magnet
 	)
 VALUES
 	(
@@ -43,8 +42,7 @@ VALUES
 		$8,
 		$9,
 		$10,
-		$11,
-		$12
+		$11
 	)
 RETURNING *;
 
@@ -59,13 +57,12 @@ UPDATE torrents
 SET torrent_url = $2,
 	magnet = $3,
 	description_html = $4,
-	size = $5,
-	imdb_id = $6
+	size = $5
 WHERE id = $1;
 
--- name: AddTorrentIMDBId :exec
+-- name: AddTorrentMediaId :exec
 UPDATE torrents
-SET imdb_title_id = $2
+SET media_id = $2
 WHERE id = $1;
 
 -- name: AddTorrentFile :one
@@ -83,6 +80,7 @@ WHERE id = $1;
 INSERT INTO medias
 	(
 		imdb_id,
+		tmdb_id,
 		description,
 		duration,
 		thumbnail,
@@ -100,7 +98,8 @@ VALUES
 		$5,
 		$6,
 		$7,
-		$8
+		$8,
+		$9
 	)
 RETURNING *;
 
@@ -157,11 +156,12 @@ LIMIT 1;
 DELETE FROM media_names
 WHERE id = $1;
 
--- name: CreateName :exec
+-- name: CreateName :one
 INSERT INTO names
 	(
-		imdb_id,
+		tmdb_id,
 		name,
+		thumbnail,
 		birth_year,
 		death_year
 	)
@@ -170,27 +170,23 @@ VALUES
 		$1,
 		$2,
 		$3,
-		$4
+		$4,
+		$5
 	)
-ON CONFLICT DO NOTHING;
+ON CONFLICT DO NOTHING
+RETURNING *;
 
--- name: GetNameByIMDB :one
+-- name: GetNameByTMDB :one
 SELECT *
 FROM names
-WHERE imdb_id = $1
+WHERE tmdb_id = $1
 LIMIT 1;
 
--- name: CheckNameExistByIMDB :one
+-- name: CheckNameExistByTMDB :one
 SELECT count(id)
 FROM names
-WHERE imdb_id = $1
+WHERE tmdb_id = $1
 LIMIT 1;
-
--- name: CreateNameRelation :exec
-INSERT INTO name_relations
-	(name_id, media_id)
-VALUES
-	($1, $2);
 
 -- name: CreateMediaStaff :exec
 INSERT INTO media_staffs
@@ -212,15 +208,4 @@ ON CONFLICT DO NOTHING;
 
 -- name: DeleteMediaActor :exec
 DELETE FROM media_actors
-WHERE id = $1;
-
--- name: CreateMediaRelation :one
-INSERT INTO media_relations
-	(media_id, relation_id)
-VALUES
-	($1, $2)
-RETURNING *;
-
--- name: DeleteMediaRelation :exec
-DELETE FROM media_relations
 WHERE id = $1;
