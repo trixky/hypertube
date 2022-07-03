@@ -73,10 +73,14 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 		fmt.Println("Visiting", r.URL)
 	})
 
-	c.OnHTML(".featured-list table.table-list.table tbody ", func(e *colly.HTMLElement) {
+	c.OnHTML(".featured-list table.table-list.table tbody", func(e *colly.HTMLElement) {
 		e.ForEach("tr", func(_ int, el *colly.HTMLElement) {
-			name := el.ChildText("td.name a:last-child")
-			relative_href := el.ChildAttr("td.name a:last-child", "href")
+			name := el.ChildText("td.name a[href^='/torrent/']")
+			relative_href := el.ChildAttr("td.name a[href^='/torrent/']", "href")
+			if relative_href == "" || relative_href == "/" {
+				fmt.Println("found empty relative url in", e.Request.URL, "for", name)
+				return
+			}
 			full_url := "https://1337x.to" + relative_href
 			seed64, _ := strconv.ParseInt(el.ChildText("td.seeds"), 10, 32)
 			seed := int32(seed64)
@@ -169,7 +173,6 @@ func scrapeSingle(torrent *pb.UnprocessedTorrent) error {
 				})
 			}
 		})
-		fmt.Println("Found files", torrent.Files)
 	})
 
 	c.OnError(func(r *colly.Response, err error) {

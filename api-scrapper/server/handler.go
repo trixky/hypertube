@@ -14,6 +14,7 @@ import (
 	"github.com/trixky/hypertube/api-scrapper/scrapper"
 	st "github.com/trixky/hypertube/api-scrapper/sites"
 	"github.com/trixky/hypertube/api-scrapper/sqlc"
+	ut "github.com/trixky/hypertube/api-scrapper/utils"
 	grpcMetadata "google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -28,36 +29,17 @@ var categories []string = []string{
 	// "shows",
 }
 
-func makeNullInt32(value *int32) (null_int32 sql.NullInt32) {
-	if value == nil {
-		return
-	}
-	null_int32.Int32 = *value
-	null_int32.Valid = true
-	return
-}
-
-func makeNullString(value *string) (null_string sql.NullString) {
-	if value == nil {
-		return
-	}
-	null_string.String = *value
-	null_string.Valid = true
-	return
-}
-
 func torrenToSQL(torrent *pb.UnprocessedTorrent) sqlc.CreateTorrentParams {
 	return sqlc.CreateTorrentParams{
 		Name:            torrent.Name,
 		Type:            torrent.Type.String(),
 		FullUrl:         torrent.FullUrl,
-		DescriptionHtml: makeNullString(torrent.DescriptionHtml),
-		ImdbID:          makeNullString(torrent.ImdbId),
-		Leech:           makeNullInt32(torrent.Leech),
-		Magnet:          makeNullString(torrent.Magnet),
-		Seed:            makeNullInt32(torrent.Seed),
-		Size:            makeNullString(torrent.Size),
-		TorrentUrl:      makeNullString(torrent.TorrentUrl),
+		DescriptionHtml: ut.MakeNullString(torrent.DescriptionHtml),
+		Leech:           ut.MakeNullInt32(torrent.Leech),
+		Magnet:          ut.MakeNullString(torrent.Magnet),
+		Seed:            ut.MakeNullInt32(torrent.Seed),
+		Size:            ut.MakeNullString(torrent.Size),
+		TorrentUrl:      ut.MakeNullString(torrent.TorrentUrl),
 	}
 }
 
@@ -93,10 +75,6 @@ func torrentToProto(creation_result *TorrentCreationResult) (converted_torrent p
 	if torrent.Magnet.Valid {
 		magnet = &torrent.Magnet.String
 	}
-	var imdb_id *string
-	if torrent.ImdbID.Valid {
-		imdb_id = &torrent.ImdbID.String
-	}
 
 	// Convert the DB Torrent to a protobuf message
 	converted_torrent = pb.Torrent{
@@ -111,7 +89,6 @@ func torrentToProto(creation_result *TorrentCreationResult) (converted_torrent p
 		UploadTime:      upload_time,
 		DescriptionHtml: description,
 		Magnet:          magnet,
-		ImdbId:          imdb_id,
 		Files:           make([]*pb.TorrentFile, 0, len(creation_result.files)),
 	}
 
@@ -136,62 +113,98 @@ func torrentToProto(creation_result *TorrentCreationResult) (converted_torrent p
 }
 
 func updateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, torrent *pb.UnprocessedTorrent) (created bool, creation_result TorrentCreationResult, err error) {
-	existing_torrent, err := postgres.DB.SqlcQueries.GetTorrentByURL(ctx, torrent.FullUrl)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return
-	} else {
-		err = nil
+	db_torrent, err := postgres.DB.SqlcQueries.GetTorrentByURL(ctx, torrent.FullUrl)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return
+		} else {
+			err = nil
+		}
 	}
-	if existing_torrent.ID == 0 {
+	var imdb_id string
+
+	if db_torrent.ID == 0 {
 		fmt.Println("Inserting new torrent for", torrent.FullUrl)
 		scrapper.ScrapeSingle(torrent)
+		if torrent.ImdbId != nil {
+			imdb_id = *torrent.ImdbId
+		}
+
 		created_torrent, err_creation := postgres.DB.SqlcQueries.CreateTorrent(ctx, torrenToSQL(torrent))
 		if err_creation != nil {
 			err = err_creation
 			return
 		}
 		creation_result.torrent = created_torrent
+		db_torrent = created_torrent
+
 		time.Sleep(time.Second)
 		created = true
 	} else {
-		fmt.Println("Updating torrent", existing_torrent.ID)
-		creation_result.torrent = existing_torrent
+		fmt.Println("Updating torrent", db_torrent.ID)
+		creation_result.torrent = db_torrent
 		scrapped := false
-		if !existing_torrent.TorrentUrl.Valid {
+
+		// Update some informations if the torrent was not fully fetched originally
+		if !db_torrent.TorrentUrl.Valid {
 			scrapper.ScrapeSingle(torrent)
-			// Update some informations if the torrent was not fully fetched originally
+
 			postgres.DB.SqlcQueries.SetTorrentInformations(ctx, sqlc.SetTorrentInformationsParams{
-				ID:              existing_torrent.ID,
-				DescriptionHtml: makeNullString(torrent.DescriptionHtml),
-				ImdbID:          makeNullString(torrent.ImdbId),
-				Magnet:          makeNullString(torrent.Magnet),
-				Size:            makeNullString(torrent.Size),
-				TorrentUrl:      makeNullString(torrent.TorrentUrl),
+				ID:              db_torrent.ID,
+				DescriptionHtml: ut.MakeNullString(torrent.DescriptionHtml),
+				Magnet:          ut.MakeNullString(torrent.Magnet),
+				Size:            ut.MakeNullString(torrent.Size),
+				TorrentUrl:      ut.MakeNullString(torrent.TorrentUrl),
 			})
+
+			if torrent.ImdbId != nil && *torrent.ImdbId != "" {
+				imdb_id = *torrent.ImdbId
+			}
 			scrapped = true
 		}
+
+		// Always update peers
 		err = postgres.DB.SqlcQueries.SetTorrentPeers(ctx, sqlc.SetTorrentPeersParams{
-			ID:    existing_torrent.ID,
-			Seed:  makeNullInt32(torrent.Seed),
-			Leech: makeNullInt32(torrent.Leech),
+			ID:    db_torrent.ID,
+			Seed:  ut.MakeNullInt32(torrent.Seed),
+			Leech: ut.MakeNullInt32(torrent.Leech),
 		})
 		if err != nil {
 			return
 		}
+
 		if scrapped {
 			time.Sleep(time.Second)
 		}
 		created = false
 	}
 
-	// Create associated files
+	// Find IMDB informations or associated the media with an ID
+	if imdb_id != "" && !db_torrent.MediaID.Valid {
+		media_id, err_find := st.InsertOrGetMedia(imdb_id)
+		if err_find != nil {
+			err = err_find
+			return
+		}
+		if media_id > 0 {
+			err = postgres.DB.SqlcQueries.AddTorrentMediaId(ctx, sqlc.AddTorrentMediaIdParams{
+				ID:      db_torrent.ID,
+				MediaID: ut.MakeNullInt32(&media_id),
+			})
+			if err != nil {
+				return
+			}
+		}
+	}
+
 	if created {
+		// Create associated files
 		for _, file := range torrent.Files {
 			created_file, err_file := postgres.DB.SqlcQueries.AddTorrentFile(ctx, sqlc.AddTorrentFileParams{
 				TorrentID: int32(creation_result.torrent.ID),
 				Name:      file.Name,
-				Path:      makeNullString(file.Path),
-				Size:      makeNullString(file.Size),
+				Path:      ut.MakeNullString(file.Path),
+				Size:      ut.MakeNullString(file.Size),
 			})
 			if err_file != nil {
 				err = err_file
@@ -249,6 +262,8 @@ func (s *ScrapperServer) ScrapeAll(request *pb.ScrapeRequest, out pb.ScrapperSer
 		}
 	}
 
+	fmt.Println("Done ScrapeAll")
+
 	return nil
 }
 
@@ -304,6 +319,8 @@ func (s *ScrapperServer) ScrapeLatest(request *pb.ScrapeLatestRequest, out pb.Sc
 			}
 		}
 	}
+
+	fmt.Println("Done ScrapeLatest")
 
 	return nil
 }
