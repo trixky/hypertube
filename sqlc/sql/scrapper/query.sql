@@ -123,6 +123,12 @@ VALUES
 		$7
 	);
 
+-- name: GetMediaByTMDBID :one
+SELECT *
+FROM medias
+WHERE tmdb_id = $1
+LIMIT 1;
+
 -- name: GetMediaByIMDB :one
 SELECT *
 FROM medias
