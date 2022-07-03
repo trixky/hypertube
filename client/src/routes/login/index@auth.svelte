@@ -125,7 +125,7 @@
 		<hr />
 	</div>
 	<form action="" class="pt-1">
-		<label for="email">Email</label>
+		<label for="email" class="required">Email</label>
 		<input
 			type="email"
 			placeholder="Email"
@@ -139,7 +139,7 @@
 			disabled={loading}
 		/>
 		<Warning content={email_warning} />
-		<label for="password">Password</label>
+		<label for="password" class="required">Password</label>
 		<input
 			type={password_input_type}
 			placeholder="Password"
@@ -171,27 +171,5 @@
 		@apply text-slate-400 text-sm;
 	}
 
-	input {
-		@apply w-full p-2 rounded-sm bg-white duration-[0.35s];
-	}
 
-	/* https://stackoverflow.com/questions/2781549/removing-input-background-colour-for-chrome-autocomplete */
-	input:-webkit-autofill,
-	input:-webkit-autofill:hover,
-	input:-webkit-autofill:focus,
-	input:-webkit-autofill:active {
-		-webkit-box-shadow: 0 0 0 30px white inset !important;
-	}
-
-	input:disabled {
-		opacity: 0.3;
-	}
-
-	hr {
-		@apply border-white/60 inline-block w-28 -translate-y-1 mx-1;
-	}
-
-	label {
-		@apply block p-2 text-white;
-	}
 </style>

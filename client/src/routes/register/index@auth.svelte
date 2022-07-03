@@ -9,8 +9,8 @@
 	import * as cookies from '../../utils/cookies';
 	import * as sanitzer from '../../utils/sanitizer';
 	import { uppercase_first_character } from '../../utils/str';
-	import { encrypt_password } from '../../utils/password'
-	import { already_connected } from '../../utils/redirect'
+	import { encrypt_password } from '../../utils/password';
+	import { already_connected } from '../../utils/redirect';
 
 	already_connected(browser);
 
@@ -42,7 +42,7 @@
 	let show_password = false;
 	$: password_input_type = show_password ? 'text' : 'password';
 
-	let emails_already_in_use = [];
+	let emails_already_in_use: Array<string> = [];
 
 	function handle_register() {
 		return new Promise((resolve) => {
@@ -95,8 +95,10 @@
 							);
 						});
 				} else {
-					if (res.status == 409) notifies_response_warning('Incorrect email and/or password');
-					else notifies_response_warning('An error occured on server side, please try again');
+					if (res.status == 409) {
+						emails_already_in_use.push(email);
+						check_email();
+					} else notifies_response_warning('An error occured on server side, please try again');
 				}
 				resolve(false);
 			}, 1000);
@@ -109,31 +111,34 @@
 
 	// ----------------------------------------------------------------- sanitizing
 	function check_username(): boolean {
-		response_warning = ''
+		response_warning = '';
 		if (registration_attempts || username_blur) username_warning = sanitzer.name(username);
 
 		return username_warning.length > 0;
 	}
 	function check_firstname(): boolean {
-		response_warning = ''
+		response_warning = '';
 		if (registration_attempts || firstname_blur) firstname_warning = sanitzer.name(firstname);
 
 		return firstname_warning.length > 0;
 	}
 	function check_lastname(): boolean {
-		response_warning = ''
+		response_warning = '';
 		if (registration_attempts || lastname_blur) lastname_warning = sanitzer.name(lastname);
 
 		return lastname_warning.length > 0;
 	}
 	function check_email(): boolean {
-		response_warning = ''
-		if (registration_attempts || email_blur) email_warning = sanitzer.email(email);
+		response_warning = '';
+		if (registration_attempts || email_blur) {
+			if (emails_already_in_use.includes(email)) email_warning = 'Email is already in use, please choose another';
+			else email_warning = sanitzer.email(email);
+		}
 
 		return email_warning.length > 0;
 	}
 	function check_password(event: any = null): boolean {
-		response_warning = ''
+		response_warning = '';
 		if (event) password = event.target.value;
 
 		if (registration_attempts || password_blur) password_warning = sanitzer.password(password);
@@ -141,7 +146,7 @@
 		return password_warning.length > 0;
 	}
 	function check_confirm_password(event: any = null): boolean {
-		response_warning = ''
+		response_warning = '';
 		if (event) confirm_password = event.target.value;
 
 		if (registration_attempts || confirm_password_blur)
@@ -156,7 +161,7 @@
 	<Logo alone />
 	<h1 class="mt-2 mb-1 text-2xl text-white">Register</h1>
 	<form action="" class="pt-1">
-		<label for="username">Username</label>
+		<label for="username" class="required">Username</label>
 		<input
 			type="text"
 			placeholder="Username"
@@ -167,11 +172,12 @@
 				username_blur = true;
 				check_username();
 			}}
+			disabled={loading}
 		/>
 		<Warning content={username_warning} />
 		<div class="flex justify-between">
 			<div class="pr-2">
-				<label for="firstname">Firstname</label>
+				<label for="firstname" class="required">Firstname</label>
 				<input
 					type="text"
 					placeholder="Firstname"
@@ -182,11 +188,12 @@
 						firstname_blur = true;
 						check_firstname();
 					}}
+					disabled={loading}
 				/>
 				<Warning content={firstname_warning} />
 			</div>
 			<div class="pl-2">
-				<label for="lastname">Lastname</label>
+				<label for="lastname" class="required">Lastname</label>
 				<input
 					type="text"
 					placeholder="Lastname"
@@ -197,11 +204,12 @@
 						lastname_blur = true;
 						check_lastname();
 					}}
+					disabled={loading}
 				/>
 				<Warning content={lastname_warning} />
 			</div>
 		</div>
-		<label for="email">Email</label>
+		<label for="email" class="required">Email</label>
 		<input
 			type="email"
 			placeholder="Email"
@@ -212,9 +220,10 @@
 				email_blur = true;
 				check_email();
 			}}
+			disabled={loading}
 		/>
 		<Warning content={email_warning} />
-		<label for="password">Password</label>
+		<label for="password" class="required">Password</label>
 		<input
 			type={password_input_type}
 			placeholder="Password"
@@ -225,10 +234,11 @@
 				password_blur = true;
 				check_password();
 			}}
+			disabled={loading}
 		/>
 		<Eye bind:open={show_password} />
 		<Warning content={password_warning} />
-		<label for="confirm password">Confirm password</label>
+		<label for="confirm password" class="required">Confirm password</label>
 		<input
 			type={password_input_type}
 			placeholder="Confirm password"
@@ -239,10 +249,11 @@
 				confirm_password_blur = true;
 				check_confirm_password();
 			}}
+			disabled={loading}
 		/>
 		<Eye bind:open={show_password} />
 		<Warning content={confirm_password_warning} />
-		<ConfirmationButton name="register" handler={handle_register} />
+		<ConfirmationButton name="register" handler={handle_register} bind:loading />
 		<Warning centered content={response_warning} />
 	</form>
 	<p class="extra-link mt-4">
@@ -258,13 +269,5 @@
 
 	input {
 		@apply w-full p-2 rounded-sm;
-	}
-
-	label {
-		@apply block p-2 text-white;
-	}
-
-	label::after {
-		@apply content-['*'] text-blue-300;
 	}
 </style>
