@@ -194,10 +194,32 @@ func updateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 			if err != nil {
 				return
 			}
+			db_torrent.MediaID.Int32 = media_id
+			db_torrent.MediaID.Valid = true
 		}
 	}
 
 	if created {
+		// Try to find an IMDB
+		if imdb_id == "" && !db_torrent.MediaID.Valid {
+			media_id, err_find := st.TryInsertOrGetMedia(db_torrent.Name)
+			if err_find != nil {
+				err = err_find
+				return
+			}
+			if media_id > 0 {
+				err = postgres.DB.SqlcQueries.AddTorrentMediaId(ctx, sqlc.AddTorrentMediaIdParams{
+					ID:      db_torrent.ID,
+					MediaID: ut.MakeNullInt32(&media_id),
+				})
+				if err != nil {
+					return
+				}
+				db_torrent.MediaID.Int32 = media_id
+				db_torrent.MediaID.Valid = true
+			}
+		}
+
 		// Create associated files
 		for _, file := range torrent.Files {
 			created_file, err_file := postgres.DB.SqlcQueries.AddTorrentFile(ctx, sqlc.AddTorrentFileParams{

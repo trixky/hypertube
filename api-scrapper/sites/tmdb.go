@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/trixky/hypertube/api-scrapper/postgres"
@@ -107,7 +109,7 @@ type TMDBMovieResponse struct {
 	Genres []struct {
 		Id   int32  `json:"id"`
 		Name string `json:"name"`
-	}
+	} `json:"genre_ids"`
 	HomePage            string  `json:"homepage"`
 	IMDBId              *string `json:"imdb_id"`
 	OriginalLanguage    string  `json:"original_language"`
@@ -158,6 +160,28 @@ type TMDBMovieResponse struct {
 	} `json:"translations"`
 }
 
+type TMDBSearchResponse struct {
+	Page    int32 `json:"page"`
+	Results []struct {
+		Id               int32   `json:"id"`
+		Adult            bool    `json:"adult"`
+		PosterPath       *string `json:"poster_path"`
+		BackdropPath     *string `json:"backdrop_path"`
+		Overview         string  `json:"overview"`
+		Genres           []int32 `json:"genre_ids"`
+		ReleaseDate      string  `json:"release_date"`
+		OriginalLanguage string  `json:"original_language"`
+		OriginalTitle    string  `json:"original_title"`
+		Title            string  `json:"title"`
+		Popularity       float64 `json:"popularity"`
+		Video            bool    `json:"video"`
+		VoteAverage      float64 `json:"vote_average"`
+		VoteCount        int32   `json:"vote_count"`
+	} `json:"results"`
+	TotalResults int32 `json:"total_results"`
+	TotalPages   int32 `json:"total_pages"`
+}
+
 type MediaCrew struct {
 	Id        int32
 	Name      string
@@ -178,7 +202,8 @@ type MediaName struct {
 }
 
 type MediaInformations struct {
-	Id          int32
+	ImdbId      *string
+	TmdbId      int32
 	Title       string
 	Poster      *string
 	Background  *string
@@ -193,6 +218,7 @@ type MediaInformations struct {
 }
 
 var year_extractor = regexp.MustCompile("(\\d{4})")
+var match_name = regexp.MustCompile("(?i)(.+?)\\s*(?:\\(?(\\d{4})\\)?)(?:\\s*-\\s*|\\s*)(?:4k|2k|2160p|1080p|720p|proper|hqcam|cam|ts|blu-?ray|dvdrip|brrip|hdrip|x24|h264|x265|h265|web|hmax|imax|\\(|\\[|\\{)?")
 
 var api_key = os.Getenv("TMDB_API_KEY")
 
@@ -200,10 +226,7 @@ func GenerateImage(size string, path string) string {
 	return "https://image.tmdb.org/t/p/" + size + path
 }
 
-func GetMedia(tmdb_id int32) (informations *MediaInformations, err error) {
-	fmt.Println("asking TMDB for TMDB", tmdb_id)
-	fmt.Println("https://api.themoviedb.org/3/movie/" + fmt.Sprint(tmdb_id) + "?api_key=" + api_key + "&append_to_response=credits,translations")
-
+func GetTMDBMedia(tmdb_id int32) (informations *MediaInformations, err error) {
 	resp, err := http.Get("https://api.themoviedb.org/3/movie/" + fmt.Sprint(tmdb_id) + "?api_key=" + api_key + "&append_to_response=credits,translations")
 	if err != nil {
 		return
@@ -222,11 +245,12 @@ func GetMedia(tmdb_id int32) (informations *MediaInformations, err error) {
 
 	// Convert all informations to MediaInformations
 	informations = &MediaInformations{
+		TmdbId: tmdb_id,
 		Crew:   make([]MediaCrew, 0),
 		Actors: make([]MediaActor, 0),
 		Names:  make([]MediaName, 0),
 	}
-	informations.Id = media.Id
+	informations.TmdbId = media.Id
 	informations.Title = media.Title
 	if media.PosterPath != nil {
 		poster := GenerateImage("w500", *media.PosterPath)
@@ -297,9 +321,52 @@ func GetMedia(tmdb_id int32) (informations *MediaInformations, err error) {
 	return
 }
 
-func FindMedia(imdb_id string) (informations *MediaInformations, err error) {
-	fmt.Println("asking TMDB for IMDB", imdb_id)
+func SearchTMDBMedia(query string, year int32) (tmdb_id int32, err error) {
+	args := map[string]string{
+		"api_key":              api_key,
+		"query":                url.QueryEscape(query),
+		"primary_release_year": fmt.Sprint(year),
+		"page":                 "1",
+		"include_adult":        "false",
+	}
 
+	query_args := ""
+	for arg, arg_value := range args {
+		if query_args != "" {
+			query_args = query_args + "&"
+		}
+		query_args = query_args + arg + "=" + arg_value
+	}
+	fmt.Println("searching", "https://api.themoviedb.org/3/search/movie?"+query_args)
+	resp, err := http.Get("https://api.themoviedb.org/3/search/movie?" + query_args)
+	if err != nil {
+		fmt.Println("err1", err)
+		return
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("err2", err)
+		return
+	}
+
+	var result TMDBSearchResponse
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return
+	}
+
+	// Select the first matching media
+	// -- and ignore the search if there is more than 20 results
+	if result.TotalResults == 0 || result.TotalResults > 20 {
+		return
+	}
+	media := result.Results[0]
+
+	return media.Id, nil
+}
+
+func GetIMDBMedia(imdb_id string) (informations *MediaInformations, err error) {
 	resp, err := http.Get("https://api.themoviedb.org/3/find/" + imdb_id + "?api_key=" + api_key + "&external_source=imdb_id")
 	if err != nil {
 		return
@@ -319,37 +386,23 @@ func FindMedia(imdb_id string) (informations *MediaInformations, err error) {
 	if len(find_response.MovieResults) == 1 {
 		tmdb_id := find_response.MovieResults[0].Id
 		time.Sleep(time.Second)
-		informations, err = GetMedia(tmdb_id)
+		informations, err = GetTMDBMedia(tmdb_id)
+	}
+
+	if informations != nil {
+		informations.ImdbId = &imdb_id
 	}
 
 	return
 }
 
-func InsertOrGetMedia(imdb_id string) (media_id int32, err error) {
+func InsertMediaInformations(informations *MediaInformations) (media_id int32, err error) {
 	ctx := context.Background()
-
-	existing_media, err := postgres.DB.SqlcQueries.GetMediaByIMDB(ctx, imdb_id)
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		return
-	}
-
-	// Check if the Media already exists and return it
-	if existing_media.ID > 0 {
-		media_id = int32(existing_media.ID)
-		return media_id, err
-	}
-	// ... or else find all informations and save them
-
-	// Get all TMDB Informations
-	informations, err := FindMedia(imdb_id)
-	if informations == nil || err != nil {
-		return
-	}
 
 	// Insert Media
 	created_media, err := postgres.DB.SqlcQueries.CreateMedia(ctx, sqlc.CreateMediaParams{
-		ImdbID:      imdb_id,
-		TmdbID:      informations.Id,
+		ImdbID:      ut.MakeNullString(informations.ImdbId),
+		TmdbID:      informations.TmdbId,
 		Description: ut.MakeNullString(&informations.Description),
 		Duration:    ut.MakeNullInt32(informations.Duration),
 		Thumbnail:   ut.MakeNullString(informations.Poster),
@@ -468,6 +521,75 @@ func InsertOrGetMedia(imdb_id string) (media_id int32, err error) {
 			return media_id, err
 		}
 	}
+
+	return
+}
+
+func TryInsertOrGetMedia(name string) (media_id int32, err error) {
+	ctx := context.Background()
+
+	// Try to fix the name for the query, and find a Year
+	clean_name := strings.ReplaceAll(name, ".", " ")
+	matches := match_name.FindStringSubmatch(clean_name)
+	if len(matches) != 3 {
+		return
+	}
+	query := matches[1]
+	year_int, err := strconv.Atoi(matches[2])
+	year := int32(year_int)
+
+	// Search for a Media
+	result, err := SearchTMDBMedia(query, year)
+	if result == 0 || err != nil {
+		fmt.Println("no match for", query, year)
+		return
+	} else {
+		fmt.Println("found TMDB ID", result, "from", query, year)
+	}
+	existing_media, err := postgres.DB.SqlcQueries.GetMediaByTMDBID(ctx, result)
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		return
+	}
+
+	// Check if the Media already exists and return it
+	if existing_media.ID > 0 {
+		media_id = int32(existing_media.ID)
+		return media_id, err
+	}
+	// ... or else find all informations and save them
+
+	// Get all informations from TMDB
+	informations, err := GetTMDBMedia(result)
+	if informations == nil || err != nil {
+		return
+	}
+	media_id, err = InsertMediaInformations(informations)
+
+	return
+
+}
+
+func InsertOrGetMedia(imdb_id string) (media_id int32, err error) {
+	ctx := context.Background()
+
+	existing_media, err := postgres.DB.SqlcQueries.GetMediaByIMDB(ctx, ut.MakeNullString(&imdb_id))
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		return
+	}
+
+	// Check if the Media already exists and return it
+	if existing_media.ID > 0 {
+		media_id = int32(existing_media.ID)
+		return media_id, err
+	}
+	// ... or else find all informations and save them
+
+	// Get all informations from TMDB
+	informations, err := GetIMDBMedia(imdb_id)
+	if informations == nil || err != nil {
+		return
+	}
+	media_id, err = InsertMediaInformations(informations)
 
 	return
 }
