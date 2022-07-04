@@ -28,9 +28,20 @@ services:
     ports:
       - "${API_SCRAPPER_PORT}:${API_SCRAPPER_PORT}"
 
-    # access to the server:
-    # $> docker-compose exec server sh
-  
+  api-search:
+    build: ./api-search
+    env_file:
+      - ./api-search/.env
+      - ./postgres/.env
+    volumes:
+      - ./api-search:/app
+    depends_on:
+      - postgres
+    links:
+      - postgres
+    ports:
+      - "${API_SEARCH_PORT}:${API_SEARCH_PORT}"
+
   postgres:
     image: postgres
     restart: always
@@ -58,7 +69,7 @@ services:
       - postgres
     volumes:
       - pgadmin-data:/var/lib/pgadmin
-  
+
   client:
     build: ./client
     env_file:
