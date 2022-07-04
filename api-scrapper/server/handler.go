@@ -289,11 +289,6 @@ func (s *ScrapperServer) ScrapeAll(request *pb.ScrapeRequest, out pb.ScrapperSer
 	return nil
 }
 
-func (s *ScrapperServer) IdentifyAll(request *pb.IdentifyRequest, out pb.ScrapperService_IdentifyAllServer) error {
-	log.Printf("Identify All %v\n", request)
-	return nil
-}
-
 func (s *ScrapperServer) ScrapeLatest(request *pb.ScrapeLatestRequest, out pb.ScrapperService_ScrapeLatestServer) error {
 	ctx := context.Background()
 	log.Printf("Scrape Latest %v\n", request)
