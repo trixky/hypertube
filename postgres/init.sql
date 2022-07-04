@@ -79,7 +79,6 @@ CREATE TABLE medias (
     thumbnail TEXT NULL,
     background VARCHAR (250) NULL,
     year INTEGER NULL,
-    genres VARCHAR (250) NOT NULL,
     rating REAL NULL
 );
 CREATE UNIQUE INDEX unique_media_imdb_id ON medias(imdb_id);
