@@ -1,19 +1,8 @@
--- name: GetTorrent :one
-SELECT *
-FROM torrents
-WHERE id = $1
-LIMIT 1;
-
 -- name: GetTorrentByURL :one
 SELECT *
 FROM torrents
 WHERE full_url = $1
 LIMIT 1;
-
--- name: ListTorrents :many
-SELECT *
-FROM torrents
-ORDER BY id DESC;
 
 -- name: CreateTorrent :one
 INSERT INTO torrents
@@ -100,28 +89,6 @@ VALUES
 		$8
 	)
 RETURNING *;
-
--- name: CreateMedias :copyfrom
-INSERT INTO medias
-	(
-		imdb_id,
-		description,
-		duration,
-		thumbnail,
-		background,
-		year,
-		rating
-	)
-VALUES
-	(
-		$1,
-		$2,
-		$3,
-		$4,
-		$5,
-		$6,
-		$7
-	);
 
 -- name: GetMediaByTMDBID :one
 SELECT *

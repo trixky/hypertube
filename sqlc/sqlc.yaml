@@ -10,16 +10,7 @@ packages:
   - path: "../api-scrapper/sqlc"
     name: "sqlc"
     engine: "postgresql"
-    sql_package: "pgx/v4"
     schema:
-      - "sql/scrapper/schema.sql"
-    queries:
-      - "sql/scrapper/query.sql"
-  - path: "../scripts/import-medias/sqlc"
-    name: "sqlc"
-    engine: "postgresql"
-    sql_package: "pgx/v4"
-    schema:
-      - "sql/scrapper/schema.sql"
+      - "sql/torrents/schema.sql"
     queries:
       - "sql/scrapper/query.sql"

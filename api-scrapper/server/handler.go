@@ -15,7 +15,6 @@ import (
 	st "github.com/trixky/hypertube/api-scrapper/sites"
 	"github.com/trixky/hypertube/api-scrapper/sqlc"
 	ut "github.com/trixky/hypertube/api-scrapper/utils"
-	grpcMetadata "google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -340,70 +339,4 @@ func (s *ScrapperServer) ScrapeLatest(request *pb.ScrapeLatestRequest, out pb.Sc
 	fmt.Println("Done ScrapeLatest")
 
 	return nil
-}
-
-func (s *ScrapperServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.SearchResponse, error) {
-	md, ok := grpcMetadata.FromIncomingContext(ctx)
-
-	if !ok {
-		log.Println("missing args")
-		return nil, nil
-	}
-
-	search := md.Get("search")
-	fmt.Println("search:", search)
-
-	return &pb.SearchResponse{
-		Page:   1,
-		Medias: []*pb.Media{},
-	}, nil
-}
-
-func (s *ScrapperServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetResponse, error) {
-	md, ok := grpcMetadata.FromIncomingContext(ctx)
-
-	if !ok {
-		log.Println("missing args")
-		return nil, nil
-	}
-
-	search := md.Get("get")
-	fmt.Println("get:", search)
-
-	return &pb.GetResponse{
-		Id:          1,
-		ImdbId:      "tt3456",
-		Name:        "Movie",
-		Description: "Movie ?",
-		Year:        2000,
-		TorrentPublicInformations: &pb.TorrentPublicInformations{
-			Name:  "Movie [1080p]",
-			Seed:  &[]int32{42}[0],
-			Leech: &[]int32{42}[0],
-			Size:  &[]string{"123456789"}[0],
-		},
-		Staffs: []*pb.Staff{
-			&pb.Staff{
-				Id:        1,
-				ImdbId:    "tt1234",
-				Name:      "Writer",
-				Role:      "Writer",
-				Thumbnail: "jpg",
-				Url:       "http",
-			},
-		},
-		Relations: []*pb.Relation{
-			&pb.Relation{
-				Id:        2,
-				ImdbId:    "tt2345",
-				Name:      "Movie 2",
-				Thumbnail: "jpg",
-			},
-		},
-		Duration:   &[]string{"1h42"}[0],
-		Thumbnail:  &[]string{"jpg"}[0],
-		Background: &[]string{"jpg"}[0],
-		Genres:     &[]string{"movie,action"}[0],
-		Rating:     &[]string{"80"}[0],
-	}, nil
 }
