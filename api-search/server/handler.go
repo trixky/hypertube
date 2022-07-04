@@ -6,12 +6,16 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 
+	"github.com/trixky/hypertube/api-search/finder"
 	"github.com/trixky/hypertube/api-search/postgres"
 	pb "github.com/trixky/hypertube/api-search/proto"
 	ut "github.com/trixky/hypertube/api-search/utils"
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
+
+const PerPage int32 = 20
 
 func (s *SearchServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.SearchResponse, error) {
 	md, ok := grpcMetadata.FromIncomingContext(ctx)
@@ -24,9 +28,76 @@ func (s *SearchServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Se
 	search := md.Get("search")
 	fmt.Println("search:", search)
 
+	// Check and set arguments for the query
+	params := finder.FindMediasParams{
+		SortColumn: "id",
+		SortOrder:  "ASC",
+	}
+	page := int32(1)
+	if in.Page != nil && *in.Page > 1 {
+		page = int32(*in.Page)
+		params.Offset = page * PerPage
+	}
+	if in.Query != nil && *in.Query != "" {
+		params.SearchQuery = true
+		params.Query = *in.Query
+	}
+	if in.Year != nil && *in.Year > 0 {
+		params.SearchYear = true
+		params.Year = int32(*in.Year)
+	}
+	if in.Rating != nil && *in.Rating > 0 && *in.Rating <= 10 {
+		params.SearchRating = true
+		params.Rating = float64(*in.Rating)
+	}
+	if len(in.GenreIds) > 0 {
+		params.SearchGenres = true
+		params.Genres = in.GenreIds
+	}
+	if in.SortBy != nil {
+		column := strings.ToLower(*in.SortOrder)
+		if column == "id" || column == "year" || column == "duration" {
+			params.SortColumn = column
+		}
+	}
+	if in.SortOrder != nil {
+		order := strings.ToUpper(*in.SortOrder)
+		if order == "ASC" || order == "DESC" {
+			params.SortOrder = order
+		}
+	}
+
+	// Find all medias
+	medias, err := finder.FindMedias(ctx, params)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return &pb.SearchResponse{}, nil
+		}
+		return nil, err
+	}
+
+	// Convert to proto
+	pb_medias := make([]*pb.Media, 0)
+	for _, media := range medias {
+		rating := float32(media.Rating.Float64)
+		pb_medias = append(pb_medias, &pb.Media{
+			Id:          uint32(media.ID),
+			Type:        pb.MediaCategory_CATEGORY_MOVIE,
+			Description: media.Description.String,
+			Year:        uint32(media.Year.Int32),
+			Duration:    &media.Duration.Int32,
+			Names:       make([]*pb.MediaName, 0),
+			Genres:      make([]string, 0),
+			Thumbnail:   &media.Thumbnail.String,
+			Rating:      &rating,
+		})
+	}
+
 	return &pb.SearchResponse{
-		Page:   1,
-		Medias: []*pb.Media{},
+		Page:         uint32(page),
+		Results:      uint32(len(pb_medias)),
+		TotalResults: uint32(len(pb_medias)),
+		Medias:       pb_medias,
 	}, nil
 }
 
@@ -45,7 +116,6 @@ func (s *SearchServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespo
 	if err != nil {
 		return nil, err
 	}
-	log.Println("media", media)
 
 	// Construct the response
 	media_id := int32(media.ID)

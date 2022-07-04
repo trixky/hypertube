@@ -28,21 +28,21 @@ message Media {
 }
 
 message SearchRequest {
-    string query = 1;
-	uint32 page = 2;
-	repeated int32 genre_ids = 3;
+	repeated int32 genre_ids = 1;
+    optional string query = 2;
+	optional uint32 page = 3;
     optional MediaCategory category = 4;
 	optional string sort_by = 5;
 	optional string sort_order = 6;
-	optional uint32 year_min = 7;
-	optional uint32 year_max = 8;
-	optional float rating_min = 9;
-	optional float rating_max = 10;
+	optional uint32 year = 7;
+	optional float rating = 8;
 }
 
 message SearchResponse {
-	uint32 page = 2;
-	repeated Media medias = 3;
+	uint32 page = 1;
+	uint32 results = 2;
+	uint32 total_results = 3;
+	repeated Media medias = 4;
 }
 
 message GetRequest {
