@@ -67,7 +67,16 @@ func (s *SearchServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Se
 		}
 	}
 
-	// Find all medias
+	// Count the Medias first
+	medias_count, err := finder.CountMedias(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	if medias_count == 0 {
+		return &pb.SearchResponse{}, nil
+	}
+
+	// Find all Medias
 	medias, err := finder.FindMedias(ctx, params)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -96,7 +105,7 @@ func (s *SearchServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Se
 	return &pb.SearchResponse{
 		Page:         uint32(page),
 		Results:      uint32(len(pb_medias)),
-		TotalResults: uint32(len(pb_medias)),
+		TotalResults: uint32(medias_count),
 		Medias:       pb_medias,
 	}, nil
 }
