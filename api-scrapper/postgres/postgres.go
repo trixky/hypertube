@@ -1,10 +1,9 @@
 package postgres
 
 import (
-	"context"
+	"database/sql"
 	"fmt"
 
-	"github.com/jackc/pgx/v4"
 	_ "github.com/lib/pq"
 	"github.com/trixky/hypertube/api-scrapper/sqlc"
 )
@@ -23,24 +22,25 @@ func (d *Config) Compile_config() string {
 }
 
 type Database struct {
+	SqlDatabase *sql.DB
 	SqlcQueries *sqlc.Queries
 }
 
 var DB Database
 
 func Init(config Config) error {
-	ctx := context.Background()
+	sql_database, err := sql.Open(config.Driver, config.Compile_config())
 
-	pool, err := pgx.Connect(ctx, config.Compile_config())
 	if err != nil {
 		return err
 	}
 
-	if err = pool.Ping(ctx); err != nil {
+	if err = sql_database.Ping(); err != nil {
 		return err
 	}
 
-	DB.SqlcQueries = sqlc.New(pool)
+	DB.SqlDatabase = sql_database
+	DB.SqlcQueries = sqlc.New(sql_database)
 
 	return nil
 }
