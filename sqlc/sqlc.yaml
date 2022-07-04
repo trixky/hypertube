@@ -14,3 +14,10 @@ packages:
       - "sql/torrents/schema.sql"
     queries:
       - "sql/scrapper/query.sql"
+  - path: "../api-search/sqlc"
+    name: "sqlc"
+    engine: "postgresql"
+    schema:
+      - "sql/torrents/schema.sql"
+    queries:
+      - "sql/search/query.sql"

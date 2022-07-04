@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+option go_package = "./proto";
+
+package search;
+
+enum MediaCategory {
+	CATEGORY_UNSPECIFIED = 0;
+	CATEGORY_MOVIE = 1;
+	CATEGORY_SERIE = 2;
+}
+
+message MediaName {
+	string lang = 1;
+	string title = 2;
+}
+
+message Media {
+	uint32 id = 1;
+	MediaCategory type = 2;
+	string description = 3;
+	uint32 year = 4;
+	repeated MediaName names = 5;
+	repeated string genres = 6;
+	optional int32 duration = 7;
+	optional string thumbnail = 8;
+	optional float rating = 9;
+}
+
+message SearchRequest {
+    string query = 1;
+	uint32 page = 2;
+	repeated string genres = 3;
+    optional MediaCategory category = 4;
+	optional string sort_by = 5;
+	optional string sort_order = 6;
+	optional uint32 year_min = 7;
+	optional uint32 year_max = 8;
+	optional float rating_min = 9;
+	optional float rating_max = 10;
+}
+
+message SearchResponse {
+	uint32 page = 2;
+	repeated Media medias = 3;
+}
+
+message GetRequest {
+	uint64 id = 1;
+}
+
+message Staff {
+	int32 id = 1;
+	string name = 2;
+	string role = 3;
+	string thumbnail = 4;
+}
+
+message Actor {
+	int32 id = 1;
+	string name = 2;
+	string character = 3;
+	string thumbnail = 4;
+}
+
+message TorrentPublicInformations {
+	int32 id = 1;
+	string name = 2;
+	optional int32 seed = 3;
+	optional int32 leech = 4;
+	optional string size = 5;
+}
+
+message GetResponse {
+	Media media = 1;
+	TorrentPublicInformations torrents = 2;
+	repeated Staff staffs = 3;
+	repeated Actor actors = 4;
+}
+
+service SearchService {
+    rpc Search(SearchRequest) returns (SearchResponse) {};
+    rpc Get(GetRequest) returns (GetResponse) {};
+}
