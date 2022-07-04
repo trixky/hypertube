@@ -15,8 +15,6 @@ import (
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
 
-const PerPage int32 = 20
-
 func (s *SearchServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.SearchResponse, error) {
 	md, ok := grpcMetadata.FromIncomingContext(ctx)
 
@@ -36,7 +34,7 @@ func (s *SearchServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Se
 	page := int32(1)
 	if in.Page != nil && *in.Page > 1 {
 		page = int32(*in.Page)
-		params.Offset = page * PerPage
+		params.Offset = (page - 1) * finder.PerPage
 	}
 	if in.Query != nil && *in.Query != "" {
 		params.SearchQuery = true
@@ -89,7 +87,7 @@ func (s *SearchServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Se
 	pb_medias := make([]*pb.Media, 0)
 	for _, media := range medias {
 		rating := float32(media.Rating.Float64)
-		pb_medias = append(pb_medias, &pb.Media{
+		pb_media := pb.Media{
 			Id:          uint32(media.ID),
 			Type:        pb.MediaCategory_CATEGORY_MOVIE,
 			Description: media.Description.String,
@@ -99,7 +97,29 @@ func (s *SearchServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Se
 			Genres:      make([]string, 0),
 			Thumbnail:   &media.Thumbnail.String,
 			Rating:      &rating,
-		})
+		}
+
+		// Find some relations
+		names, err := postgres.DB.SqlcQueries.GetMediaNames(ctx, int32(media.ID))
+		if err != nil {
+			return nil, err
+		}
+		for _, name := range names {
+			pb_media.Names = append(pb_media.Names, &pb.MediaName{
+				Lang:  name.Lang,
+				Title: name.Name,
+			})
+		}
+		genres, err := postgres.DB.SqlcQueries.GetMediaGenres(ctx, int32(media.ID))
+		if err != nil {
+			return nil, err
+		}
+		for _, genre := range genres {
+			pb_media.Genres = append(pb_media.Genres, genre.Name)
+		}
+
+		// Add everything to the response
+		pb_medias = append(pb_medias, &pb_media)
 	}
 
 	return &pb.SearchResponse{

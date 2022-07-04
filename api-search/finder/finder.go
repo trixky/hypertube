@@ -3,14 +3,16 @@ package finder
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/trixky/hypertube/api-search/postgres"
 	"github.com/trixky/hypertube/api-search/sqlc"
 )
 
-// ? Imported from sqlc generated code to handle different ORDER BY and genres IN condition
+const PerPage int32 = 20
+
+// ? The query result handle code is the same as the sqlc generated code
+// ? Only the queries are different and are updated dynamically to handle different ORDER BY and genres IN condition
 
 const countMedias = `-- name: FindMedias :many
 SELECT count(DISTINCT medias.id)
@@ -83,7 +85,7 @@ WHERE
 		END
 	)
 ORDER BY {{sort_column}} {{sort_order}}
-LIMIT 5 OFFSET $1
+LIMIT {{per_page}} OFFSET $1
 `
 
 type FindMediasParams struct {
@@ -108,6 +110,7 @@ func GenerateQuery(mode string, arg *FindMediasParams) (string, []interface{}) {
 	}
 	query := strings.Replace(base, "{{sort_column}}", arg.SortColumn, 1)
 	query = strings.Replace(query, "{{sort_order}}", arg.SortOrder, 1)
+	query = strings.Replace(query, "{{per_page}}", fmt.Sprint(PerPage), 1)
 	args := []interface{}{
 		arg.SearchQuery,
 		arg.Query,
@@ -149,7 +152,6 @@ func CountMedias(ctx context.Context, arg FindMediasParams) (int64, error) {
 
 	// Dynamically update the query
 	query, args := GenerateQuery("count", &arg)
-	log.Println("query", query, args)
 
 	row := db.QueryRowContext(ctx, query, args...)
 	var count int64
