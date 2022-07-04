@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -109,7 +110,7 @@ type TMDBMovieResponse struct {
 	Genres []struct {
 		Id   int32  `json:"id"`
 		Name string `json:"name"`
-	} `json:"genre_ids"`
+	} `json:"genres"`
 	HomePage            string  `json:"homepage"`
 	IMDBId              *string `json:"imdb_id"`
 	OriginalLanguage    string  `json:"original_language"`
@@ -337,16 +338,14 @@ func SearchTMDBMedia(query string, year int32) (tmdb_id int32, err error) {
 		}
 		query_args = query_args + arg + "=" + arg_value
 	}
-	fmt.Println("searching", "https://api.themoviedb.org/3/search/movie?"+query_args)
+	log.Println("searching", "https://api.themoviedb.org/3/search/movie", args["query"], args["primary_release_year"])
 	resp, err := http.Get("https://api.themoviedb.org/3/search/movie?" + query_args)
 	if err != nil {
-		fmt.Println("err1", err)
 		return
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("err2", err)
 		return
 	}
 
@@ -441,7 +440,8 @@ func InsertMediaInformations(informations *MediaInformations) (media_id int32, e
 		// Check if the genre exist
 		genre, err := postgres.DB.SqlcQueries.GetGenre(ctx, genre_name)
 		if err != nil {
-			if !errors.Is(err, sql.ErrNoRows) {
+			if errors.Is(err, sql.ErrNoRows) {
+				err = nil
 				created_genre, err := postgres.DB.SqlcQueries.CreateGenre(ctx, genre_name)
 				if err != nil {
 					return media_id, err
@@ -467,7 +467,8 @@ func InsertMediaInformations(informations *MediaInformations) (media_id int32, e
 		// Check if the name exist
 		name, err := postgres.DB.SqlcQueries.GetNameByTMDB(ctx, crew.Id)
 		if err != nil {
-			if !errors.Is(err, sql.ErrNoRows) {
+			if errors.Is(err, sql.ErrNoRows) {
+				err = nil
 				created_name, err := postgres.DB.SqlcQueries.CreateName(ctx, sqlc.CreateNameParams{
 					TmdbID:    crew.Id,
 					Name:      crew.Name,
@@ -496,7 +497,8 @@ func InsertMediaInformations(informations *MediaInformations) (media_id int32, e
 		// Check if the name exist
 		name, err := postgres.DB.SqlcQueries.GetNameByTMDB(ctx, actor.Id)
 		if err != nil {
-			if !errors.Is(err, sql.ErrNoRows) {
+			if errors.Is(err, sql.ErrNoRows) {
+				err = nil
 				created_name, err := postgres.DB.SqlcQueries.CreateName(ctx, sqlc.CreateNameParams{
 					TmdbID:    actor.Id,
 					Name:      actor.Name,
@@ -541,15 +543,16 @@ func TryInsertOrGetMedia(name string) (media_id int32, err error) {
 	// Search for a Media
 	result, err := SearchTMDBMedia(query, year)
 	if result == 0 || err != nil {
-		fmt.Println("no match for", query, year)
+		log.Println("no match for", query, year)
 		return
 	} else {
-		fmt.Println("found TMDB ID", result, "from", query, year)
+		log.Println("found TMDB ID", result, "from", query, year)
 	}
 	existing_media, err := postgres.DB.SqlcQueries.GetMediaByTMDBID(ctx, result)
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return
 	}
+	err = nil
 
 	// Check if the Media already exists and return it
 	if existing_media.ID > 0 {
@@ -573,9 +576,10 @@ func InsertOrGetMedia(imdb_id string) (media_id int32, err error) {
 	ctx := context.Background()
 
 	existing_media, err := postgres.DB.SqlcQueries.GetMediaByIMDB(ctx, ut.MakeNullString(&imdb_id))
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return
 	}
+	err = nil
 
 	// Check if the Media already exists and return it
 	if existing_media.ID > 0 {
