@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"log"
 	"time"
 
@@ -114,7 +113,7 @@ func torrentToProto(creation_result *TorrentCreationResult) (converted_torrent p
 func updateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, torrent *pb.UnprocessedTorrent) (created bool, creation_result TorrentCreationResult, err error) {
 	db_torrent, err := postgres.DB.SqlcQueries.GetTorrentByURL(ctx, torrent.FullUrl)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if !errors.Is(err, sql.ErrNoRows) {
 			return
 		} else {
 			err = nil
@@ -123,7 +122,7 @@ func updateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 	var imdb_id string
 
 	if db_torrent.ID == 0 {
-		fmt.Println("Inserting new torrent for", torrent.FullUrl)
+		log.Println("Inserting new torrent for", torrent.FullUrl)
 		scrapper.ScrapeSingle(torrent)
 		if torrent.ImdbId != nil {
 			imdb_id = *torrent.ImdbId
@@ -140,7 +139,7 @@ func updateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 		time.Sleep(time.Second)
 		created = true
 	} else {
-		fmt.Println("Updating torrent", db_torrent.ID)
+		log.Println("Updating torrent", db_torrent.ID)
 		creation_result.torrent = db_torrent
 		scrapped := false
 
@@ -240,7 +239,7 @@ func updateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 
 func (s *ScrapperServer) ScrapeAll(request *pb.ScrapeRequest, out pb.ScrapperService_ScrapeAllServer) error {
 	ctx := context.Background()
-	log.Printf("Scrape All %v\n", request)
+	log.Println("Scrape All", request)
 
 	for _, scrapper := range st.Scrappers {
 		for _, category := range categories {
@@ -283,14 +282,14 @@ func (s *ScrapperServer) ScrapeAll(request *pb.ScrapeRequest, out pb.ScrapperSer
 		}
 	}
 
-	fmt.Println("Done ScrapeAll")
+	log.Println("Done ScrapeAll")
 
 	return nil
 }
 
 func (s *ScrapperServer) ScrapeLatest(request *pb.ScrapeLatestRequest, out pb.ScrapperService_ScrapeLatestServer) error {
 	ctx := context.Background()
-	log.Printf("Scrape Latest %v\n", request)
+	log.Println("Scrape Latest", request)
 
 	for _, scrapper := range st.Scrappers {
 		for _, category := range categories {
@@ -336,7 +335,7 @@ func (s *ScrapperServer) ScrapeLatest(request *pb.ScrapeLatestRequest, out pb.Sc
 		}
 	}
 
-	fmt.Println("Done ScrapeLatest")
+	log.Println("Done ScrapeLatest")
 
 	return nil
 }

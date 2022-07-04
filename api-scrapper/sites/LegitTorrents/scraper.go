@@ -2,6 +2,7 @@ package sites
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -29,7 +30,7 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 	}
 
 	c.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL)
+		log.Println("Visiting", r.URL)
 	})
 
 	c.OnHTML("#bodyarea table table.lista table table.lista > tbody", func(e *colly.HTMLElement) {
@@ -72,7 +73,7 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 	})
 
 	c.OnError(func(r *colly.Response, err error) {
-		fmt.Printf("error %v\n", err)
+		log.Println("error", err)
 	})
 
 	var url string
@@ -82,9 +83,9 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 		url = URLS.Shows
 	}
 
-	if error := c.Visit(strings.Replace(url, "$page", fmt.Sprint(page), 1)); error != nil {
-		fmt.Printf("error %v\n", error)
-		return page_result, error
+	if err := c.Visit(strings.Replace(url, "$page", fmt.Sprint(page), 1)); err != nil {
+		log.Println("error", err)
+		return page_result, err
 	}
 
 	page_result.Torrents = torrents
@@ -95,7 +96,7 @@ func scrapeSingle(torrent *pb.UnprocessedTorrent) error {
 	c := colly.NewCollector(colly.IgnoreRobotsTxt())
 
 	c.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL)
+		log.Println("Visiting", r.URL)
 	})
 
 	c.OnHTML("#bodyarea > table > tbody > tr > td > table.lista > tbody > tr > td > div > table.lista > tbody", func(e *colly.HTMLElement) {
@@ -129,11 +130,11 @@ func scrapeSingle(torrent *pb.UnprocessedTorrent) error {
 	})
 
 	c.OnError(func(r *colly.Response, err error) {
-		fmt.Printf("error %v\n", err)
+		log.Println("error", err)
 	})
 
 	if err := c.Visit(torrent.FullUrl); err != nil {
-		fmt.Printf("error %v\n", err)
+		log.Println("error", err)
 		return err
 	}
 

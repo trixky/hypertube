@@ -2,6 +2,7 @@ package sites
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -70,7 +71,7 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 	}
 
 	c.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL)
+		log.Println("Visiting", r.URL)
 	})
 
 	c.OnHTML(".featured-list table.table-list.table tbody", func(e *colly.HTMLElement) {
@@ -78,7 +79,7 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 			name := el.ChildText("td.name a[href^='/torrent/']")
 			relative_href := el.ChildAttr("td.name a[href^='/torrent/']", "href")
 			if relative_href == "" || relative_href == "/" {
-				fmt.Println("found empty relative url in", e.Request.URL, "for", name)
+				log.Println("found empty relative url in", e.Request.URL, "for", name)
 				return
 			}
 			full_url := "https://1337x.to" + relative_href
@@ -104,17 +105,8 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 		})
 	})
 
-	c.OnHTML("div.pagination", func(h *colly.HTMLElement) {
-		if page < 150 {
-			current_page := h.DOM.Find(".active")
-			if next_page := current_page.Next(); next_page != nil {
-				page_result.NextPage = page + 1
-			}
-		}
-	})
-
 	c.OnError(func(r *colly.Response, err error) {
-		fmt.Printf("error %v\n", err)
+		log.Println("error", err)
 	})
 
 	var url string
@@ -124,11 +116,16 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 		url = URLS.Shows
 	}
 
-	if error := c.Visit(strings.Replace(url, "$page", fmt.Sprint(page), 1)); error != nil {
-		fmt.Printf("error %v\n", error)
-		return page_result, error
+	if err := c.Visit(strings.Replace(url, "$page", fmt.Sprint(page), 1)); err != nil {
+		log.Println("error", err)
+		return page_result, err
 	}
 
+	c.Wait()
+
+	if page < 150 {
+		page_result.NextPage = page + 1
+	}
 	page_result.Torrents = torrents
 	return
 }
@@ -137,7 +134,7 @@ func scrapeSingle(torrent *pb.UnprocessedTorrent) error {
 	c := colly.NewCollector(colly.IgnoreRobotsTxt())
 
 	c.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL)
+		log.Println("Visiting", r.URL)
 	})
 
 	c.OnHTML(".torrent-detail-page", func(e *colly.HTMLElement) {
@@ -176,13 +173,15 @@ func scrapeSingle(torrent *pb.UnprocessedTorrent) error {
 	})
 
 	c.OnError(func(r *colly.Response, err error) {
-		fmt.Printf("error %v\n", err)
+		log.Println("error", err)
 	})
 
 	if err := c.Visit(torrent.FullUrl); err != nil {
-		fmt.Printf("error %v\n", err)
+		log.Println("error", err)
 		return err
 	}
+
+	c.Wait()
 
 	return nil
 }
