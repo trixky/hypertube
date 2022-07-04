@@ -30,7 +30,7 @@ message Media {
 message SearchRequest {
     string query = 1;
 	uint32 page = 2;
-	repeated string genres = 3;
+	repeated int32 genre_ids = 3;
     optional MediaCategory category = 4;
 	optional string sort_by = 5;
 	optional string sort_order = 6;
@@ -78,7 +78,20 @@ message GetResponse {
 	repeated Actor actors = 4;
 }
 
+message GenresRequest {
+}
+
+message Genre {
+	int32 id = 1;
+	string name = 2;
+}
+
+message GenresResponse {
+	repeated Genre genres = 1;
+}
+
 service SearchService {
     rpc Search(SearchRequest) returns (SearchResponse) {};
     rpc Get(GetRequest) returns (GetResponse) {};
+    rpc Genres(GenresRequest) returns (GenresResponse) {};
 }

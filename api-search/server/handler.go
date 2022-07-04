@@ -2,9 +2,12 @@ package server
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 
+	"github.com/trixky/hypertube/api-search/postgres"
 	pb "github.com/trixky/hypertube/api-search/proto"
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
@@ -58,4 +61,28 @@ func (s *SearchServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespo
 			Rating:    &rating,
 		},
 	}, nil
+}
+
+func (s *SearchServer) Genres(ctx context.Context, in *pb.GenresRequest) (*pb.GenresResponse, error) {
+	fmt.Println("List Genres", in)
+
+	genres, err := postgres.DB.SqlcQueries.GetGenres(ctx)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, err
+		} else {
+			err = nil
+		}
+	}
+	response := pb.GenresResponse{
+		Genres: make([]*pb.Genre, 0, len(genres)),
+	}
+	for _, genre := range genres {
+		response.Genres = append(response.Genres, &pb.Genre{
+			Id:   int32(genre.ID),
+			Name: genre.Name,
+		})
+	}
+
+	return &response, nil
 }
