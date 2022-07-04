@@ -9,6 +9,7 @@ import (
 
 	"github.com/trixky/hypertube/api-search/postgres"
 	pb "github.com/trixky/hypertube/api-search/proto"
+	ut "github.com/trixky/hypertube/api-search/utils"
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
 
@@ -31,36 +32,101 @@ func (s *SearchServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Se
 
 func (s *SearchServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetResponse, error) {
 	md, ok := grpcMetadata.FromIncomingContext(ctx)
-
 	if !ok {
 		log.Println("missing args")
 		return nil, nil
 	}
 
-	search := md.Get("get")
-	fmt.Println("get:", search)
+	get := md.Get("get")
+	fmt.Println("get:", get)
 
-	var duration int32 = 0
-	var thumbnail string = "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/yFwFp5QVHazxTklKGiJ0G59pVab.jpg"
-	var rating float32 = 7.2
-	return &pb.GetResponse{
+	// Find the media
+	media, err := postgres.DB.SqlcQueries.GetMediaByID(ctx, int64(in.Id))
+	if err != nil {
+		return nil, err
+	}
+	log.Println("media", media)
+
+	// Construct the response
+	media_id := int32(media.ID)
+	rating := float32(media.Rating.Float64)
+	response := pb.GetResponse{
 		Media: &pb.Media{
-			Id:          1,
+			Id:          uint32(media.ID),
 			Type:        pb.MediaCategory_CATEGORY_MOVIE,
-			Description: "Movie",
-			Year:        2000,
-			Names: []*pb.MediaName{
-				{
-					Lang:  "FR",
-					Title: "Movie",
-				},
-			},
-			Genres:    []string{"Action"},
-			Duration:  &duration,
-			Thumbnail: &thumbnail,
-			Rating:    &rating,
+			Description: media.Description.String,
+			Year:        uint32(media.Year.Int32),
+			Duration:    &media.Duration.Int32,
+			Names:       make([]*pb.MediaName, 0),
+			Genres:      make([]string, 0),
+			Thumbnail:   &media.Thumbnail.String,
+			Rating:      &rating,
 		},
-	}, nil
+		Torrents: make([]*pb.TorrentPublicInformations, 0),
+		Staffs:   make([]*pb.Staff, 0),
+		Actors:   make([]*pb.Actor, 0),
+	}
+
+	// Find relations
+	names, err := postgres.DB.SqlcQueries.GetMediaNames(ctx, int32(media.ID))
+	if err != nil {
+		return nil, err
+	}
+	for _, name := range names {
+		response.Media.Names = append(response.Media.Names, &pb.MediaName{
+			Lang:  name.Lang,
+			Title: name.Name,
+		})
+	}
+
+	torrents, err := postgres.DB.SqlcQueries.GetMediaTorrents(ctx, ut.MakeNullInt32(&media_id))
+	if err != nil {
+		return nil, err
+	}
+	for _, torrent := range torrents {
+		response.Torrents = append(response.Torrents, &pb.TorrentPublicInformations{
+			Id:    int32(torrent.ID.Int64),
+			Name:  torrent.Name.String,
+			Seed:  &torrent.Seed.Int32,
+			Leech: &torrent.Leech.Int32,
+		})
+	}
+
+	genres, err := postgres.DB.SqlcQueries.GetMediaGenres(ctx, int32(media.ID))
+	if err != nil {
+		return nil, err
+	}
+	for _, genre := range genres {
+		response.Media.Genres = append(response.Media.Genres, genre.Name)
+	}
+
+	actors, err := postgres.DB.SqlcQueries.GetMediaActors(ctx, int32(media.ID))
+	if err != nil {
+		return nil, err
+	}
+	for _, actor := range actors {
+		response.Actors = append(response.Actors, &pb.Actor{
+			Id:        int32(actor.ID),
+			Name:      actor.Name,
+			Thumbnail: actor.Thumbnail.String,
+			Character: actor.Character.String,
+		})
+	}
+
+	staffs, err := postgres.DB.SqlcQueries.GetMediaStaffs(ctx, int32(media.ID))
+	if err != nil {
+		return nil, err
+	}
+	for _, staff := range staffs {
+		response.Staffs = append(response.Staffs, &pb.Staff{
+			Id:        int32(staff.ID),
+			Name:      staff.Name,
+			Thumbnail: staff.Thumbnail.String,
+			Role:      staff.Role.String,
+		})
+	}
+
+	return &response, nil
 }
 
 func (s *SearchServer) Genres(ctx context.Context, in *pb.GenresRequest) (*pb.GenresResponse, error) {
