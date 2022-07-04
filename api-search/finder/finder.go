@@ -3,6 +3,7 @@ package finder
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/trixky/hypertube/api-search/postgres"
@@ -10,6 +11,42 @@ import (
 )
 
 // ? Imported from sqlc generated code to handle different ORDER BY and genres IN condition
+
+const countMedias = `-- name: FindMedias :many
+SELECT count(DISTINCT medias.id)
+FROM medias
+WHERE
+	(
+		CASE WHEN $1::bool
+		THEN EXISTS (
+			SELECT id FROM media_names
+			WHERE media_names.media_id = medias.id AND media_names.name ILIKE '%' || $2 || '%'
+			LIMIT 1
+		)
+		ELSE true
+		END
+	)
+	AND (
+		CASE WHEN $3::bool
+		THEN medias.rating >= $4
+		ELSE true
+		END
+	) AND (
+		CASE WHEN $5::bool
+		THEN medias.year = $6
+		ELSE true
+		END
+	) AND (
+		CASE WHEN $7::bool
+		THEN EXISTS (
+			SELECT id FROM media_genres
+			WHERE media_genres.media_id = medias.id AND media_genres.genre_id IN ({{genres}})
+			LIMIT 1
+		)
+		ELSE true
+		END
+	)
+`
 
 const findMedias = `-- name: FindMedias :many
 SELECT DISTINCT medias.id, medias.imdb_id, medias.tmdb_id, medias.description, medias.duration, medias.thumbnail, medias.background, medias.year, medias.rating
@@ -19,7 +56,7 @@ WHERE
 		CASE WHEN $2::bool
 		THEN EXISTS (
 			SELECT id FROM media_names
-			WHERE media_names.name ILIKE '%' || $3 || '%'
+			WHERE media_names.media_id = medias.id AND media_names.name ILIKE '%' || $3 || '%'
 			LIMIT 1
 		)
 		ELSE true
@@ -63,14 +100,15 @@ type FindMediasParams struct {
 	SortOrder    string
 }
 
-func FindMedias(ctx context.Context, arg FindMediasParams) ([]sqlc.Media, error) {
-	db := postgres.DB.SqlDatabase
-
+func GenerateQuery(mode string, arg *FindMediasParams) (string, []interface{}) {
 	// Dynamically update the query
-	query := strings.Replace(findMedias, "{{sort_column}}", arg.SortColumn, 1)
+	base := countMedias
+	if mode == "find" {
+		base = findMedias
+	}
+	query := strings.Replace(base, "{{sort_column}}", arg.SortColumn, 1)
 	query = strings.Replace(query, "{{sort_order}}", arg.SortOrder, 1)
 	args := []interface{}{
-		arg.Offset,
 		arg.SearchQuery,
 		arg.Query,
 		arg.SearchRating,
@@ -78,6 +116,9 @@ func FindMedias(ctx context.Context, arg FindMediasParams) ([]sqlc.Media, error)
 		arg.SearchYear,
 		arg.Year,
 		arg.SearchGenres,
+	}
+	if mode == "find" {
+		args = append([]interface{}{arg.Offset}, args...)
 	}
 
 	// Update the genres IN condition by generating args at the end
@@ -99,6 +140,29 @@ func FindMedias(ctx context.Context, arg FindMediasParams) ([]sqlc.Media, error)
 		}
 	}
 	query = strings.Replace(query, "{{genres}}", genres, 1)
+
+	return query, args
+}
+
+func CountMedias(ctx context.Context, arg FindMediasParams) (int64, error) {
+	db := postgres.DB.SqlDatabase
+
+	// Dynamically update the query
+	query, args := GenerateQuery("count", &arg)
+	log.Println("query", query, args)
+
+	row := db.QueryRowContext(ctx, query, args...)
+	var count int64
+	err := row.Scan(&count)
+
+	return count, err
+}
+
+func FindMedias(ctx context.Context, arg FindMediasParams) ([]sqlc.Media, error) {
+	db := postgres.DB.SqlDatabase
+
+	// Dynamically update the query
+	query, args := GenerateQuery("find", &arg)
 
 	// Send the query and handle the result
 	rows, err := db.QueryContext(ctx, query, args...)
