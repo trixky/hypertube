@@ -9,6 +9,20 @@ option go_package = "./proto";
 
 package auth;
 
+// -------------------------------------- internal
+message InternalMeRequest {
+    string token = 1;
+}
+
+message InternalMeResponse {
+    int64 id = 1;
+    string email = 2;
+    string username = 3;
+    string firstname = 4;
+    string lastname = 5;
+    string external = 6;
+}
+
 message InternalRegisterRequest {
     string email = 1;
     string password = 2;
@@ -23,10 +37,6 @@ message InternalLoginRequest {
     string email = 3;
 }
 
-message InternalLoginResponse {
-    string token = 1;
-}
-
 message InternalRecoverPasswordRequest {
     string email = 1;
 }
@@ -37,14 +47,31 @@ message InternalChangePasswordRequest {
     string email = 3;
 }
 
+// -------------------------------------- external
+message External42ConnectionRequest {
+    string code = 1;
+}
+
+// -------------------------------------- generic
+message GenericConnectionResponse {
+    string token = 1;
+}
+
 service AuthService {
-    rpc InternalRegister(InternalRegisterRequest) returns (InternalLoginResponse) {
+    // -------------------------------------- internal
+    rpc InternalMe(InternalMeRequest) returns (InternalMeResponse) {
+        option (google.api.http) = {
+            post: "/v1/internal/me"
+            body: "*"
+        };
+    };
+    rpc InternalRegister(InternalRegisterRequest) returns (GenericConnectionResponse) {
         option (google.api.http) = {
             post: "/v1/internal/register"
             body: "*"
         };
     };
-    rpc InternalLogin(InternalLoginRequest) returns (InternalLoginResponse) {
+    rpc InternalLogin(InternalLoginRequest) returns (GenericConnectionResponse) {
         option (google.api.http) = {
             post: "/v1/internal/login"
             body: "*"
@@ -62,5 +89,10 @@ service AuthService {
             body: "*"
         };
     };
+    // -------------------------------------- external
+    rpc External42Connection(External42ConnectionRequest) returns (GenericConnectionResponse) {
+        option (google.api.http) = {
+            get: "/v1/external/42/connection"
+        };
+    };
 }
-

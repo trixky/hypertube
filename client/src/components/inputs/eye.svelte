@@ -12,7 +12,6 @@
 </script>
 
 <!-- ========================= HTML -->
-
 <button
 	class="absolute right-10 p-1 translate-y-1"
 	on:click|preventDefault={handle_click}
@@ -20,7 +19,3 @@
 >
 	<img class="" src={img_src} width="24px" height="24px" alt={img_alt} />
 </button>
-
-<!-- ========================= CSS -->
-<style lang="postcss">
-</style>

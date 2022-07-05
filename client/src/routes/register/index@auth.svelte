@@ -5,18 +5,15 @@
 	import ConfirmationButton from '../../components/buttons/confirmation-button.svelte';
 	import Warning from '../../components/inputs/warning.svelte';
 	import Eye from '../../components/inputs/eye.svelte';
-	import { browser } from '$app/env';
 	import * as cookies from '../../utils/cookies';
 	import * as sanitzer from '../../utils/sanitizer';
 	import { uppercase_first_character } from '../../utils/str';
 	import { encrypt_password } from '../../utils/password';
-	import { already_connected } from '../../utils/redirect';
-
-	already_connected(browser);
 
 	let loading = false;
 
 	let registration_attempts = 0;
+
 	let username_blur = false;
 	let firstname_blur = false;
 	let lastname_blur = false;

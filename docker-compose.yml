@@ -15,6 +15,7 @@ services:
       - redis
     ports:
       - "${API_AUTH_GRPC_PORT}:${API_AUTH_GRPC_PORT}"
+      - "${API_AUTH_GRPC_GATEWAY_PORT}:${API_AUTH_GRPC_GATEWAY_PORT}"
       - "${API_AUTH_HTTP_PORT}:${API_AUTH_HTTP_PORT}"
 
     # access to the server:
@@ -40,7 +41,7 @@ services:
       - redis-data:/data
 
     # access to the redis CLI:
-    # $> docker-compose exec redis sh -c 'redis-cli -h redis'
+    # $> docker exec -it <container> /bin/sh -c 'redis-cli -h redis'
 
   pgadmin:
     image: dpage/pgadmin4

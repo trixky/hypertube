@@ -1,14 +1,18 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
-    import '../app.css';
-    import Header from '../components/layouts/header.svelte';
-    import Footer from '../components/layouts/footer.svelte';
+	import '../app.css';
+	import { browser } from '$app/env';
+	import { not_connected } from '../utils/redirect';
+	import Header from '../components/layouts/header.svelte';
+	import Footer from '../components/layouts/footer.svelte';
+
+	not_connected(browser);
 </script>
 
 <!-- ========================= HTML -->
 
 <Header />
 <main class="min-h-[80%]">
-    <slot />
+	<slot />
 </main>
 <Footer />

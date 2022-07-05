@@ -1,20 +1,13 @@
 package main
 
 import (
-	"context"
 	"log"
-	"net"
-	"net/http"
 	"strconv"
 
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/trixky/hypertube/api-auth/databases"
-	pb "github.com/trixky/hypertube/api-auth/proto"
-	"github.com/trixky/hypertube/api-auth/server"
-	"github.com/trixky/hypertube/api-auth/utils"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
+	"github.com/trixky/hypertube/api-auth/environment"
+	"github.com/trixky/hypertube/api-auth/external"
+	"github.com/trixky/hypertube/api-auth/internal"
 )
 
 const (
@@ -23,88 +16,43 @@ const (
 )
 
 func main() {
-	env := utils.ReadEnv()
-
-	grpc_addr := host + ":" + strconv.Itoa(env.GrpcPort)
-
+	environment.E.GetAll()
+	// ------------- postgres
+	log.Printf("start connection to postgres on %s:%d\n", environment.E.PostgresHost, environment.E.PostgresPort)
 	if err := databases.InitPosgres(databases.PostgresConfig{
 		Driver:   postgres_driver,
-		Host:     env.PostgresHost,
-		Port:     env.PostgresPort,
-		User:     env.PostgresUser,
-		Password: env.PostgresPassword,
-		Dbname:   env.PostgresDB,
+		Host:     environment.E.PostgresHost,
+		Port:     environment.E.PostgresPort,
+		User:     environment.E.PostgresUser,
+		Password: environment.E.PostgresPassword,
+		Dbname:   environment.E.PostgresDB,
 	}); err != nil {
 		log.Fatalf("failed to connect to postgres: %v", err)
 	}
 
-	log.Println("connected to postgres")
-
+	// ------------- redis
+	log.Println("start connection to redis on default address")
 	if err := databases.InitRedis(); err != nil {
 		log.Fatalf("failed to connect to redis: %v", err)
 	}
 
-	log.Println("connected to redis")
-
-	listen, err := net.Listen("tcp", grpc_addr)
-
-	if err != nil {
-		log.Fatalf("failed to listen on: %v\n", err)
-	}
-
-	log.Printf("listening on %s\n", grpc_addr)
-
-	s := grpc.NewServer()
-
-	pb.RegisterAuthServiceServer(s, &server.AuthServer{})
+	// ------------- grpc
+	grpc_addr := host + ":" + strconv.Itoa(environment.E.GrpcPort)
 
 	go func() {
-		log.Fatalf("failed to serve on: %v\n", s.Serve(listen))
+		log.Fatalf("failed to serve grpc on: %v\n", internal.NewGrpcServer(grpc_addr))
 	}()
 
-	conn, err := grpc.DialContext(
-		context.Background(),
-		grpc_addr,
-		grpc.WithBlock(),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-	if err != nil {
-		log.Fatalln("Failed to dial server:", err)
-	}
+	// ------------- grpc-gateway
+	grpc_gateway_addr := ":" + strconv.Itoa(environment.E.GrpcGatewayPort)
 
-	http_addr := ":" + strconv.Itoa(env.HttpPort)
+	go func() {
+		log.Fatalf("failed to serve grpc-gateway on: %v\n", internal.NewGrpcGatewayServer(grpc_gateway_addr, grpc_addr))
+	}()
 
-	gwmux := runtime.NewServeMux(runtime.WithMetadata(
-		func(ctx context.Context, r *http.Request) metadata.MD {
-			log.Println("authauth:", r.Header.Get("authauth"))
+	// ------------- http
+	http_addr := ":" + strconv.Itoa(environment.E.HttpPort)
 
-			md := make(map[string]string)
-			if method, ok := runtime.RPCMethod(ctx); ok {
-				md["method"] = method // /grpc.gateway.examples.internal.proto.examplepb.LoginService/Login
-			}
-			if pattern, ok := runtime.HTTPPathPattern(ctx); ok {
-				md["pattern"] = pattern // /v1/example/login
-			}
-			return metadata.New(md)
-		},
-	))
-
-	err = pb.RegisterAuthServiceHandler(context.Background(), gwmux, conn)
-	if err != nil {
-		log.Fatalln("Failed to register gateway:", err)
-	}
-
-	gwServer := &http.Server{
-		Addr:    http_addr,
-		Handler: utils.AllowCORS(gwmux),
-	}
-
-	// -------------
-	// mux := http.NewServeMux()
-	// mux.Handle("/", gwmux)
-	// -------------
-
-	log.Println("Serving gRPC-Gateway on http://0.0.0.0:8090 /", http_addr)
-	log.Fatalln(gwServer.ListenAndServe())
-
+	log.Printf("start to serve http services on %s\n", http_addr)
+	log.Fatalf("failed to serve http services on %s: %v", http_addr, external.NewHttpServer(http_addr))
 }
