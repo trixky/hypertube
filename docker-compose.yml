@@ -45,6 +45,7 @@ services:
       - postgres
     ports:
       - "${API_SEARCH_PORT}:${API_SEARCH_PORT}"
+      - "${API_SEARCH_GRPC_GATEWAY_PORT}:${API_SEARCH_GRPC_GATEWAY_PORT}"
 
   postgres:
     image: postgres
@@ -56,7 +57,6 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
-
     # access to the psql CLI:
     # $> docker-compose exec postgres psql
 
@@ -64,7 +64,6 @@ services:
     image: redis:7.0.2-alpine
     volumes:
       - redis-data:/data
-
     # access to the redis CLI:
     # $> docker exec -it <container> /bin/sh -c 'redis-cli -h redis'
 
