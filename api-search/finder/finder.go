@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/trixky/hypertube/api-search/postgres"
+	"github.com/trixky/hypertube/api-search/databases"
 	"github.com/trixky/hypertube/api-search/sqlc"
 )
 
@@ -165,7 +165,7 @@ func GenerateQuery(mode string, arg *FindMediasParams) (string, []interface{}) {
 }
 
 func CountMedias(ctx context.Context, arg FindMediasParams) (int64, error) {
-	db := postgres.DB.SqlDatabase
+	db := databases.DBs.SqlDatabase
 
 	// Dynamically update the query
 	query, args := GenerateQuery("count", &arg)
@@ -178,7 +178,7 @@ func CountMedias(ctx context.Context, arg FindMediasParams) (int64, error) {
 }
 
 func FindMedias(ctx context.Context, arg FindMediasParams) ([]sqlc.Media, error) {
-	db := postgres.DB.SqlDatabase
+	db := databases.DBs.SqlDatabase
 
 	// Dynamically update the query
 	query, args := GenerateQuery("find", &arg)
