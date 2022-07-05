@@ -1,0 +1,76 @@
+<!-- ========================= SCRIPT -->
+<script lang="ts">
+	import { fly } from 'svelte/transition';
+	import { clickOutside } from '../../../src/directives/clickOutside';
+	import ChevronDown from '../../../src/components/icons/ChevronDown.svelte';
+	import ChevronUp from '../../../src/components/icons/ChevronUp.svelte';
+
+	let classes: string = '';
+	let show = false;
+	let isOpen = false;
+	let genres: string[] = ['Adventure', 'Comedy', 'Animation', 'War'];
+	let wrapper: HTMLElement;
+	let offset: [number, number] = [0, 0];
+
+	function close() {
+		show = false;
+	}
+
+	function hide() {
+		isOpen = false;
+	}
+
+	function toggle() {
+		if (!show) {
+			offset = [wrapper.offsetLeft, wrapper.offsetTop];
+			isOpen = true;
+		}
+		show = !show;
+	}
+
+	export { classes as class };
+</script>
+
+<!-- ========================= HTML -->
+<div
+	bind:this={wrapper}
+	class={`wrapper ${classes}`}
+	class:absolute={isOpen}
+	style={`left: ${offset[0] - 8}px; top: ${offset[1]}px`}
+	on:click={toggle}
+>
+	<div class="flex justify-between items-center p-2" use:clickOutside on:clickOutside={close}>
+		<span>Genres</span>
+		{#if isOpen}
+			<ChevronDown />
+		{:else}
+			<ChevronUp />
+		{/if}
+	</div>
+	{#if show}
+		<div class="details" transition:fly={{ duration: 150 }} on:outroend={hide}>
+			{#each genres as genre (genre)}
+				<div class="inline-block p-2 border-b last:border-b-0 last:rounded-b-md border-slate-400">
+					<input type="checkbox" name="genres" id={genre} class=" inline-block" />
+					<label for={genre} class="inline-block flex-grow">{genre}</label>
+				</div>
+			{/each}
+		</div>
+	{/if}
+</div>
+
+<!-- ========================= CSS -->
+<style lang="postcss">
+	.wrapper {
+		@apply inline-block rounded-md bg-transparent border border-slate-400 bg-slate-900 text-white cursor-pointer;
+		transition: height 150ms ease-in-out, width 150ms ease-in-out;
+	}
+
+	.details {
+		@apply flex flex-col text-white border-t border-slate-400 overflow-hidden;
+	}
+
+	.details > div:nth-child(even) {
+		@apply bg-slate-800 bg-opacity-80;
+	}
+</style>
