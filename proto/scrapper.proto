@@ -5,12 +5,7 @@ option go_package = "./proto";
 package scrapper;
 
 import "google/protobuf/timestamp.proto";
-
-enum MediaCategory {
-	CATEGORY_UNSPECIFIED = 0;
-	CATEGORY_MOVIE = 1;
-	CATEGORY_SERIE = 2;
-}
+import "media.proto";
 
 message TorrentFile {
 	string name = 1;
@@ -21,7 +16,7 @@ message TorrentFile {
 message UnprocessedTorrent {
 	string full_url = 1;
 	string name = 2;
-	MediaCategory type = 3;
+	media.MediaCategory type = 3;
 	repeated TorrentFile files = 4;
 	optional string torrent_url = 5;
 	optional int32 seed = 6;
@@ -37,7 +32,7 @@ message Torrent {
 	uint32 id = 1;
 	string full_url = 2;
 	string name = 3;
-	MediaCategory type = 4;
+	media.MediaCategory type = 4;
 	string torrent_url = 5;
 	repeated TorrentFile files = 6;
 	optional int32 seed = 7;
@@ -55,19 +50,6 @@ message ScrapeRequest {
 message ScrapeResponse {
 	uint32 ms_duration = 1;
 	repeated Torrent torrents = 2;
-}
-
-message Media {
-	uint32 id = 1;
-	string imdb_id = 2;
-	string name = 3;
-	string description = 4;
-	uint32 year = 5;
-	optional string duration = 6;
-	optional string thumbnail = 7;
-	optional string background = 8;
-	optional string genres = 9;
-	optional string rating = 10;
 }
 
 message ScrapeLatestRequest {

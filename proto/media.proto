@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option go_package = "./proto";
+
+package media;
+
+enum MediaCategory {
+	CATEGORY_UNSPECIFIED = 0;
+	CATEGORY_MOVIE = 1;
+	CATEGORY_SERIE = 2;
+}
+
+message MediaName {
+	string lang = 1;
+	string title = 2;
+}
+
+message Media {
+	uint32 id = 1;
+	media.MediaCategory type = 2;
+	string description = 3;
+	uint32 year = 4;
+	repeated MediaName names = 5;
+	repeated string genres = 6;
+	optional int32 duration = 7;
+	optional string thumbnail = 8;
+	optional float rating = 9;
+}

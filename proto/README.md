@@ -16,8 +16,8 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
 
 ```
 protoc -Iproto --go_out=api-auth --go-grpc_out=api-auth --grpc-gateway_out=api-auth proto/*.proto
-protoc -Iproto --go_out=api-scrapper --go-grpc_out=api-scrapper  proto/scrapper.proto
-protoc -Iproto --go_out=api-search --go-grpc_out=api-search  proto/search.proto
+protoc -Iproto --go_out=api-scrapper --go-grpc_out=api-scrapper proto/*.proto
+protoc -Iproto --go_out=api-search --go-grpc_out=api-search --grpc-gateway_out=api-search proto/*.proto
 ```
 
 # GRPC/api_rest compatibility
