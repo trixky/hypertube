@@ -6,12 +6,12 @@ import (
 )
 
 const (
-	ENV_42_redirection_request_url     = "42_REDIRECTION_REQUEST_URL"
-	ENV_42_redirection_grant_type      = "42_REDIRECTION_GRANT_TYPE"
-	ENV_42_redirection_client_id       = "42_REDIRECTION_CLIENT_ID"
-	ENV_42_redirection_client_secret   = "42_REDIRECTION_CLIENT_SECRET"
-	ENV_42_redirection_redirection_uri = "42_REDIRECTION_REDIRECT_URI_ID"
-	ENV_42_request_me                  = "42_REQUEST_ME"
+	ENV_42_redirection_request_url     = "API_42_REDIRECTION_REQUEST_URL"
+	ENV_42_redirection_grant_type      = "API_42_REDIRECTION_GRANT_TYPE"
+	ENV_42_redirection_client_id       = "API_42_REDIRECTION_CLIENT_ID"
+	ENV_42_redirection_client_secret   = "API_42_REDIRECTION_CLIENT_SECRET"
+	ENV_42_redirection_redirection_uri = "API_42_REDIRECTION_REDIRECT_URI_ID"
+	ENV_42_request_me                  = "API_42_REQUEST_ME"
 )
 
 type Api42 struct {
