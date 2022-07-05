@@ -20,26 +20,33 @@ FROM medias
 WHERE
 	(
 		CASE WHEN $1::bool
-		THEN EXISTS (
-			SELECT id FROM media_names
-			WHERE media_names.media_id = medias.id AND media_names.name ILIKE '%' || $2 || '%'
-			LIMIT 1
-		)
+		THEN
+			EXISTS (
+				SELECT id FROM media_names
+				WHERE media_names.media_id = medias.id AND media_names.name ILIKE '%' || $2 || '%'
+				LIMIT 1
+			) OR (
+				medias.imdb_id ILIKE '%' || $3 || '%'
+			) OR (
+				medias.tmdb_id::varchar ILIKE '%' || $4 || '%'
+			) OR (
+				medias.description ILIKE '%' || $5 || '%'
+			)
 		ELSE true
 		END
 	)
 	AND (
-		CASE WHEN $3::bool
-		THEN medias.rating >= $4
+		CASE WHEN $6::bool
+		THEN medias.rating >= $7
 		ELSE true
 		END
 	) AND (
-		CASE WHEN $5::bool
-		THEN medias.year = $6
+		CASE WHEN $8::bool
+		THEN medias.year = $9
 		ELSE true
 		END
 	) AND (
-		CASE WHEN $7::bool
+		CASE WHEN $10::bool
 		THEN EXISTS (
 			SELECT id FROM media_genres
 			WHERE media_genres.media_id = medias.id AND media_genres.genre_id IN ({{genres}})
@@ -56,26 +63,33 @@ FROM medias
 WHERE
 	(
 		CASE WHEN $2::bool
-		THEN EXISTS (
-			SELECT id FROM media_names
-			WHERE media_names.media_id = medias.id AND media_names.name ILIKE '%' || $3 || '%'
-			LIMIT 1
-		)
+		THEN
+			EXISTS (
+				SELECT id FROM media_names
+				WHERE (media_names.media_id = medias.id AND media_names.name ILIKE '%' || $3 || '%')
+				LIMIT 1
+			) OR (
+				medias.imdb_id ILIKE '%' || $4 || '%'
+			) OR (
+				medias.tmdb_id::varchar ILIKE '%' || $5 || '%'
+			) OR (
+				medias.description ILIKE '%' || $6 || '%'
+			)
 		ELSE true
 		END
 	)
 	AND (
-		CASE WHEN $4::bool
-		THEN medias.rating >= $5
+		CASE WHEN $7::bool
+		THEN medias.rating >= $8
 		ELSE true
 		END
 	) AND (
-		CASE WHEN $6::bool
-		THEN medias.year = $7
+		CASE WHEN $9::bool
+		THEN medias.year = $10
 		ELSE true
 		END
 	) AND (
-		CASE WHEN $8::bool
+		CASE WHEN $11::bool
 		THEN EXISTS (
 			SELECT id FROM media_genres
 			WHERE media_genres.media_id = medias.id AND media_genres.genre_id IN ({{genres}})
@@ -113,6 +127,9 @@ func GenerateQuery(mode string, arg *FindMediasParams) (string, []interface{}) {
 	query = strings.Replace(query, "{{per_page}}", fmt.Sprint(PerPage), 1)
 	args := []interface{}{
 		arg.SearchQuery,
+		arg.Query,
+		arg.Query,
+		arg.Query,
 		arg.Query,
 		arg.SearchRating,
 		arg.Rating,
