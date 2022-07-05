@@ -1,12 +1,27 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
 
 
 option go_package = "./proto";
 
 
 package auth;
+
+// -------------------------------------- internal
+message InternalMeRequest {
+    string token = 1;
+}
+
+message InternalMeResponse {
+    int64 id = 1;
+    string email = 2;
+    string username = 3;
+    string firstname = 4;
+    string lastname = 5;
+    string external = 6;
+}
 
 message InternalRegisterRequest {
     string email = 1;
@@ -19,11 +34,7 @@ message InternalRegisterRequest {
 
 message InternalLoginRequest {
     string password = 2;
-    string userame = 3;
-}
-
-message InternalLoginResponse {
-    string jwt = 1;
+    string email = 3;
 }
 
 message InternalRecoverPasswordRequest {
@@ -36,10 +47,52 @@ message InternalChangePasswordRequest {
     string email = 3;
 }
 
-service AuthService {
-    rpc InternalRegister(InternalRegisterRequest) returns (InternalLoginResponse) {};
-    rpc InternalLogin(InternalLoginRequest) returns (InternalLoginResponse) {};
-    rpc InternalRecoverPassword(InternalRecoverPasswordRequest) returns (google.protobuf.Empty) {};
-    rpc InternalChangePassword(InternalChangePasswordRequest) returns (google.protobuf.Empty) {};
+// -------------------------------------- external
+message External42ConnectionRequest {
+    string code = 1;
 }
 
+// -------------------------------------- generic
+message GenericConnectionResponse {
+    string token = 1;
+}
+
+service AuthService {
+    // -------------------------------------- internal
+    rpc InternalMe(InternalMeRequest) returns (InternalMeResponse) {
+        option (google.api.http) = {
+            post: "/v1/internal/me"
+            body: "*"
+        };
+    };
+    rpc InternalRegister(InternalRegisterRequest) returns (GenericConnectionResponse) {
+        option (google.api.http) = {
+            post: "/v1/internal/register"
+            body: "*"
+        };
+    };
+    rpc InternalLogin(InternalLoginRequest) returns (GenericConnectionResponse) {
+        option (google.api.http) = {
+            post: "/v1/internal/login"
+            body: "*"
+        };
+    };
+    rpc InternalRecoverPassword(InternalRecoverPasswordRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/internal/recover-password"
+            body: "*"
+        };
+    };
+    rpc InternalChangePassword(InternalChangePasswordRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/internal/change-password"
+            body: "*"
+        };
+    };
+    // -------------------------------------- external
+    rpc External42Connection(External42ConnectionRequest) returns (GenericConnectionResponse) {
+        option (google.api.http) = {
+            get: "/v1/external/42/connection"
+        };
+    };
+}

@@ -3,3 +3,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+input {
+    @apply w-full p-2 rounded-sm duration-[0.35s] bg-white;
+}
+
+/* https://stackoverflow.com/questions/2781549/removing-input-background-colour-for-chrome-autocomplete */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+}
+
+input:disabled {
+    opacity: 0.3;
+}
+
+hr {
+    @apply border-white/60 inline-block w-28 -translate-y-1 mx-1;
+}
+
+label {
+    @apply block p-2 text-white;
+}
+
+label.required::after {
+    @apply content-['*'] text-blue-300;
+}

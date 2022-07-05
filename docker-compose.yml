@@ -9,10 +9,14 @@ services:
       - ./api-auth:/app
     depends_on:
       - postgres
+      - redis
     links:
       - postgres
+      - redis
     ports:
-      - "${API_AUTH_PORT}:${API_AUTH_PORT}"
+      - "${API_AUTH_GRPC_PORT}:${API_AUTH_GRPC_PORT}"
+      - "${API_AUTH_GRPC_GATEWAY_PORT}:${API_AUTH_GRPC_GATEWAY_PORT}"
+      - "${API_AUTH_HTTP_PORT}:${API_AUTH_HTTP_PORT}"
 
   api-scrapper:
     build: ./api-scrapper
@@ -56,6 +60,14 @@ services:
     # access to the psql CLI:
     # $> docker-compose exec postgres psql
 
+  redis:
+    image: redis:7.0.2-alpine
+    volumes:
+      - redis-data:/data
+
+    # access to the redis CLI:
+    # $> docker exec -it <container> /bin/sh -c 'redis-cli -h redis'
+
   pgadmin:
     image: dpage/pgadmin4
     env_file:
@@ -86,6 +98,8 @@ services:
 
 volumes:
   postgres-data:
+    driver: local
+  redis-data:
     driver: local
   pgadmin-data:
     driver: local
