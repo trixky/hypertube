@@ -1,4 +1,4 @@
-package server
+package internal
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/ptypes"
-	"github.com/trixky/hypertube/api-scrapper/postgres"
+	"github.com/trixky/hypertube/api-scrapper/databases"
 	pb "github.com/trixky/hypertube/api-scrapper/proto"
 	"github.com/trixky/hypertube/api-scrapper/scrapper"
 	st "github.com/trixky/hypertube/api-scrapper/sites"
@@ -22,12 +22,12 @@ type TorrentCreationResult struct {
 	files   []sqlc.TorrentFile
 }
 
-var categories []string = []string{
+var Categories []string = []string{
 	"movies",
 	// "shows",
 }
 
-func torrenToSQL(torrent *pb.UnprocessedTorrent) sqlc.CreateTorrentParams {
+func TorrenToSQL(torrent *pb.UnprocessedTorrent) sqlc.CreateTorrentParams {
 	return sqlc.CreateTorrentParams{
 		Name:            torrent.Name,
 		Type:            torrent.Type.String(),
@@ -41,10 +41,10 @@ func torrenToSQL(torrent *pb.UnprocessedTorrent) sqlc.CreateTorrentParams {
 	}
 }
 
-func torrentToProto(creation_result *TorrentCreationResult) (converted_torrent pb.Torrent) {
+func TorrentToProto(creation_result *TorrentCreationResult) (converted_torrent pb.Torrent) {
 	torrent := creation_result.torrent
 	var torrent_type pb.MediaCategory
-	if torrent.Type == categories[0] {
+	if torrent.Type == Categories[0] {
 		torrent_type = pb.MediaCategory_CATEGORY_MOVIE
 	} else {
 		torrent_type = pb.MediaCategory_CATEGORY_SERIE
@@ -110,8 +110,8 @@ func torrentToProto(creation_result *TorrentCreationResult) (converted_torrent p
 	return
 }
 
-func updateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, torrent *pb.UnprocessedTorrent) (created bool, creation_result TorrentCreationResult, err error) {
-	db_torrent, err := postgres.DB.SqlcQueries.GetTorrentByURL(ctx, torrent.FullUrl)
+func UpdateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, torrent *pb.UnprocessedTorrent) (created bool, creation_result TorrentCreationResult, err error) {
+	db_torrent, err := databases.DBs.SqlcQueries.GetTorrentByURL(ctx, torrent.FullUrl)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return
@@ -128,7 +128,7 @@ func updateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 			imdb_id = *torrent.ImdbId
 		}
 
-		created_torrent, err_creation := postgres.DB.SqlcQueries.CreateTorrent(ctx, torrenToSQL(torrent))
+		created_torrent, err_creation := databases.DBs.SqlcQueries.CreateTorrent(ctx, TorrenToSQL(torrent))
 		if err_creation != nil {
 			err = err_creation
 			return
@@ -147,7 +147,7 @@ func updateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 		if !db_torrent.TorrentUrl.Valid {
 			scrapper.ScrapeSingle(torrent)
 
-			postgres.DB.SqlcQueries.SetTorrentInformations(ctx, sqlc.SetTorrentInformationsParams{
+			databases.DBs.SqlcQueries.SetTorrentInformations(ctx, sqlc.SetTorrentInformationsParams{
 				ID:              db_torrent.ID,
 				DescriptionHtml: ut.MakeNullString(torrent.DescriptionHtml),
 				Magnet:          ut.MakeNullString(torrent.Magnet),
@@ -162,7 +162,7 @@ func updateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 		}
 
 		// Always update peers
-		err = postgres.DB.SqlcQueries.SetTorrentPeers(ctx, sqlc.SetTorrentPeersParams{
+		err = databases.DBs.SqlcQueries.SetTorrentPeers(ctx, sqlc.SetTorrentPeersParams{
 			ID:    db_torrent.ID,
 			Seed:  ut.MakeNullInt32(torrent.Seed),
 			Leech: ut.MakeNullInt32(torrent.Leech),
@@ -185,7 +185,7 @@ func updateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 			return
 		}
 		if media_id > 0 {
-			err = postgres.DB.SqlcQueries.AddTorrentMediaId(ctx, sqlc.AddTorrentMediaIdParams{
+			err = databases.DBs.SqlcQueries.AddTorrentMediaId(ctx, sqlc.AddTorrentMediaIdParams{
 				ID:      db_torrent.ID,
 				MediaID: ut.MakeNullInt32(&media_id),
 			})
@@ -206,7 +206,7 @@ func updateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 				return
 			}
 			if media_id > 0 {
-				err = postgres.DB.SqlcQueries.AddTorrentMediaId(ctx, sqlc.AddTorrentMediaIdParams{
+				err = databases.DBs.SqlcQueries.AddTorrentMediaId(ctx, sqlc.AddTorrentMediaIdParams{
 					ID:      db_torrent.ID,
 					MediaID: ut.MakeNullInt32(&media_id),
 				})
@@ -220,7 +220,7 @@ func updateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 
 		// Create associated files
 		for _, file := range torrent.Files {
-			created_file, err_file := postgres.DB.SqlcQueries.AddTorrentFile(ctx, sqlc.AddTorrentFileParams{
+			created_file, err_file := databases.DBs.SqlcQueries.AddTorrentFile(ctx, sqlc.AddTorrentFileParams{
 				TorrentID: int32(creation_result.torrent.ID),
 				Name:      file.Name,
 				Path:      ut.MakeNullString(file.Path),
@@ -235,107 +235,4 @@ func updateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 	}
 
 	return
-}
-
-func (s *ScrapperServer) ScrapeAll(request *pb.ScrapeRequest, out pb.ScrapperService_ScrapeAllServer) error {
-	ctx := context.Background()
-	log.Println("Scrape All", request)
-
-	for _, scrapper := range st.Scrappers {
-		for _, category := range categories {
-			var page uint32 = 1
-			for {
-				start := time.Now()
-				page_result, err := scrapper.ScrapeList(category, page)
-				if err != nil {
-					return err
-				}
-				new_torrents := make([]*pb.Torrent, 0, 30)
-
-				// Update each existing torrents or add them to the database
-				for _, torrent := range page_result.Torrents {
-					created, created_torrent, err := updateOrCreateTorrent(ctx, &scrapper, torrent)
-					if err != nil {
-						return err
-					}
-					if created {
-						converted_torrent := torrentToProto(&created_torrent)
-						new_torrents = append(new_torrents, &converted_torrent)
-					}
-				}
-
-				// Send the new torrents on the stream
-				if err := out.Send(&pb.ScrapeResponse{
-					MsDuration: uint32(time.Since(start).Milliseconds()),
-					Torrents:   new_torrents,
-				}); err != nil {
-					return err
-				}
-
-				// Update NextPage to loop or complete the job
-				page = page_result.NextPage
-				if page == 0 {
-					break
-				}
-				time.Sleep(time.Second)
-			}
-		}
-	}
-
-	log.Println("Done ScrapeAll")
-
-	return nil
-}
-
-func (s *ScrapperServer) ScrapeLatest(request *pb.ScrapeLatestRequest, out pb.ScrapperService_ScrapeLatestServer) error {
-	ctx := context.Background()
-	log.Println("Scrape Latest", request)
-
-	for _, scrapper := range st.Scrappers {
-		for _, category := range categories {
-			var page uint32 = 1
-			has_existing := false
-			for {
-				start := time.Now()
-				page_result, err := scrapper.ScrapeList(category, page)
-				if err != nil {
-					return err
-				}
-
-				// Update each existing torrents or add them to the database
-				new_torrents := make([]*pb.Torrent, 0, 30)
-				for _, torrent := range page_result.Torrents {
-					created, created_torrent, err := updateOrCreateTorrent(ctx, &scrapper, torrent)
-					if err != nil {
-						return err
-					}
-					if created {
-						converted_torrent := torrentToProto(&created_torrent)
-						new_torrents = append(new_torrents, &converted_torrent)
-					} else {
-						has_existing = true
-					}
-				}
-
-				// Send the new torrents on the stream
-				if err := out.Send(&pb.ScrapeResponse{
-					MsDuration: uint32(time.Since(start).Milliseconds()),
-					Torrents:   new_torrents,
-				}); err != nil {
-					return err
-				}
-
-				// Update NextPage to loop or complete the job
-				page = page_result.NextPage
-				if page == 0 || has_existing {
-					break
-				}
-				time.Sleep(time.Second)
-			}
-		}
-	}
-
-	log.Println("Done ScrapeLatest")
-
-	return nil
 }
