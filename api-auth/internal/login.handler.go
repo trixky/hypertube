@@ -1,10 +1,9 @@
-package server
+package internal
 
 import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
 
 	"github.com/google/uuid"
 	"github.com/trixky/hypertube/api-auth/databases"
@@ -14,8 +13,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
-
-// const expiration = time.Hour * 24 * 1000
 
 func sanitizeInternalLogin(in *pb.InternalLoginRequest) error {
 	if err := sanitizer.SanitizeEmail(in.GetEmail()); err != nil { // email
@@ -28,21 +25,20 @@ func sanitizeInternalLogin(in *pb.InternalLoginRequest) error {
 	return nil
 }
 
-func (s *AuthServer) InternalLogin(ctx context.Context, in *pb.InternalLoginRequest) (*pb.InternalLoginResponse, error) {
+func (s *AuthServer) InternalLogin(ctx context.Context, in *pb.InternalLoginRequest) (*pb.GenericConnectionResponse, error) {
 	// -------------------- sanitize
 	if err := sanitizeInternalLogin(in); err != nil {
 		return nil, err
 	}
 
 	// -------------------- db
-	new_user, err := databases.DBs.SqlcQueries.GetUserByCredentials(context.Background(), sqlc.GetUserByCredentialsParams{
-		Email:    in.GetEmail(),
-		Password: in.GetPassword(),
+	new_user, err := databases.DBs.SqlcQueries.GetInternalUserByCredentials(context.Background(), sqlc.GetInternalUserByCredentialsParams{
+		Email: in.GetEmail(),
+		Password: sql.NullString{
+			String: in.GetPassword(),
+			Valid:  true,
+		},
 	})
-
-	log.Println("apres le getuserbycredentials:")
-	log.Println(new_user.ID)
-	log.Println(err)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -54,11 +50,11 @@ func (s *AuthServer) InternalLogin(ctx context.Context, in *pb.InternalLoginRequ
 	// -------------------- cache
 	token := uuid.New().String() // token generation
 
-	if err := databases.AddToken(new_user.ID, token); err != nil {
+	if err := databases.AddToken(new_user.ID, token, databases.REDIS_EXTERNAL_none); err != nil {
 		return nil, status.Errorf(codes.Internal, "token generation failed")
 	}
 
-	return &pb.InternalLoginResponse{
+	return &pb.GenericConnectionResponse{
 		Token: token,
 	}, nil
 }

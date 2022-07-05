@@ -4,5 +4,6 @@ CREATE TABLE users (
     firstname VARCHAR (30) NOT NULL,
     lastname VARCHAR (30) NOT NULL,
     email VARCHAR (90) UNIQUE NOT NULL,
-    password VARCHAR (65) NOT NULL
+    id_42 INTEGER UNIQUE,
+    password VARCHAR (65)
 );

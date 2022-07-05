@@ -6,14 +6,10 @@
 	import ConfirmationButton from '../../components/buttons/confirmation-button.svelte';
 	import Eye from '../../components/inputs/eye.svelte';
 	import Warning from '../../components/inputs/warning.svelte';
-	import { browser } from '$app/env';
 	import * as cookies from '../../utils/cookies';
 	import * as sanitzer from '../../utils/sanitizer';
 	import { uppercase_first_character } from '../../utils/str';
 	import { encrypt_password } from '../../utils/password';
-	import { already_connected } from '../../utils/redirect'
-
-	already_connected(browser);
 
 	let loading = false;
 
@@ -37,17 +33,12 @@
 			login_attempts++;
 			let inputs_corrupted = false;
 
-			console.log('****** ouiii 1');
-
 			if (check_email()) inputs_corrupted = true;
 			if (check_password()) inputs_corrupted = true;
-			console.log('****** ouiii 2');
 
 			if (inputs_corrupted) return resolve(false);
 
-			console.log('****** ouiii 3');
 			setTimeout(async () => {
-				console.log('****** ouiii 4');
 				const res = await fetch('http://localhost:7070/v1/internal/login', {
 					method: 'POST',
 					headers: {
@@ -59,14 +50,11 @@
 						password: await encrypt_password(password)
 					})
 				});
-				console.log('****** ouiii 4');
 
 				if (res.ok) {
-					console.log('****** ouiii 5');
 					await res
 						.json()
 						.then((body) => {
-							console.log('****** ouiii 6');
 							if (body.hasOwnProperty('token')) {
 								cookies.add_a_cookie(cookies.labels.token, body.token);
 								resolve(true);
@@ -79,7 +67,6 @@
 							body.token;
 						})
 						.catch(() => {
-							console.log('****** ouiii 7');
 							notifies_response_warning(
 								'An error occured in the response from the server side, please try again'
 							);
@@ -170,6 +157,4 @@
 	.extra-link {
 		@apply text-slate-400 text-sm;
 	}
-
-
 </style>

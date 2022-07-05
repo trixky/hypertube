@@ -2,18 +2,13 @@
 <script lang="ts">
 	import { browser } from '$app/env';
 	import * as cookies from '../../utils/cookies';
+	import { disconnect } from '../../utils/redirect';
 
 	let connected = false;
 
 	if (browser && cookies.get_a_cookie('token')) {
 		connected = true;
 	}
-
-    function disconnect() {
-        cookies.del_a_cookie('token')
-
-		window.location.href = window.location.origin + '/login';
-    }
 </script>
 
 <!-- ========================= HTML -->

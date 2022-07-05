@@ -12,7 +12,7 @@ function del_a_cookie(name: string) {
 
 function get_a_cookie(name: string): string | undefined {
     // https://stackoverflow.com/questions/5639346/what-is-the-shortest-function-for-reading-a-cookie-by-name-in-javascript
-    
+
     return document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop()
 }
 

@@ -1,10 +1,6 @@
 package sanitizer
 
 import (
-	"errors"
-	"fmt"
-	"net/mail"
-	"regexp"
 	"strings"
 
 	"google.golang.org/grpc/codes"
@@ -12,37 +8,8 @@ import (
 )
 
 const (
-	LABEL_email     = "email"
-	LABEL_username  = "username"
-	LABEL_firstname = "firstname"
-	LABEL_lastname  = "lastname"
-	LABEL_password  = "password"
+	LABEL_password = "password"
 )
-
-func SanitizeEmail(email string) error {
-	if len(email) == 0 {
-		return status.Errorf(codes.InvalidArgument, LABEL_email+" missing")
-	}
-	if _, err := mail.ParseAddress(email); err != nil {
-		return status.Errorf(codes.InvalidArgument, LABEL_email+" corrupted")
-	}
-
-	return nil
-}
-
-func SanitizeName(name string, label string) error {
-	if len(name) == 0 {
-		return status.Errorf(codes.InvalidArgument, label+" missing")
-	}
-	if len(name) < 3 {
-		return status.Errorf(codes.InvalidArgument, label+" too short")
-	}
-	if len(name) > 30 {
-		return status.Errorf(codes.InvalidArgument, label+" too long")
-	}
-
-	return nil
-}
 
 func SanitizePassword(password string) error {
 	if len(password) == 0 {
@@ -80,26 +47,5 @@ func SanitizePassword(password string) error {
 }
 
 func SanitizeSHA256Password(password string) error {
-	// https://stackoverflow.com/questions/336210/regular-expression-for-alphanumeric-and-underscores
-	if len(password) == 0 {
-		return status.Errorf(codes.InvalidArgument, LABEL_password+" missing")
-	}
-	if len(password) != 64 {
-		return status.Errorf(codes.InvalidArgument, LABEL_password+" must be 64 characters long")
-	}
-
-	ok, err := regexp.MatchString("^[a-zA-Z0-9_]*$", password)
-
-	fmt.Println("apres regex:")
-	fmt.Println(ok)
-	fmt.Println(err)
-
-	if err != nil {
-		return err
-	}
-	if !ok {
-		return errors.New("contains corrupted characters")
-	}
-
-	return nil
+	return SanitizeHexa64(password, LABEL_password)
 }
