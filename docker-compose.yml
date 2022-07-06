@@ -30,7 +30,7 @@ services:
     links:
       - postgres
     ports:
-      - "${API_SCRAPPER_PORT}:${API_SCRAPPER_PORT}"
+      - "${API_SCRAPPER_GRPC_PORT}:${API_SCRAPPER_GRPC_PORT}"
 
   api-search:
     build: ./api-search
@@ -44,7 +44,7 @@ services:
     links:
       - postgres
     ports:
-      - "${API_SEARCH_PORT}:${API_SEARCH_PORT}"
+      - "${API_SEARCH_GRPC_PORT}:${API_SEARCH_GRPC_PORT}"
       - "${API_SEARCH_GRPC_GATEWAY_PORT}:${API_SEARCH_GRPC_GATEWAY_PORT}"
 
   postgres:
