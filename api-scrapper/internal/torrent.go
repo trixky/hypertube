@@ -27,6 +27,8 @@ var Categories []string = []string{
 	// "shows",
 }
 
+var ErrorBackOff []int32 = []int32{1, 3, 5}
+
 func TorrenToSQL(torrent *pb.UnprocessedTorrent) sqlc.CreateTorrentParams {
 	return sqlc.CreateTorrentParams{
 		Name:            torrent.Name,
