@@ -4,109 +4,24 @@
 	import { onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import Genres from './genres.svelte';
+	import { searching, loadingMore, results, totalResults, search } from '../../stores/search';
 
-	type Result = {
-		id: number;
-		type: string;
-		name: string;
-		names: { lang: string; title: string }[];
-		genres: string[];
-		description: string;
-		year: number | null;
-		duration: number | null;
-		thumbnail: string;
-		rating: number | null;
-	};
-
-	let value: string = '';
-	let results: Result[] = [];
-	let page = 1;
-	let totalResults = 0;
 	let sorts: string[] = ['#', 'Year', 'Duration'];
 
-	let searching = true;
-	let smallLoading = false;
-	$: loading = searching || smallLoading;
-	let searchTimeout = 0;
-	function onInput() {
-		clearTimeout(searchTimeout);
-		searchTimeout = setTimeout(async () => {
-			searching = true;
-			page = 1;
-			results = [];
-			let query: Record<string, any> = { page };
-			if (value != '') {
-				query.query = value;
-			}
-			let params = Object.keys(query)
-				.map((key) => {
-					return `${encodeURIComponent(key)}=${encodeURIComponent(query[key])}`;
-				})
-				.join('&');
-			const res = await fetch(`http://localhost:7072/v1/media/search?${params}`, {
-				method: 'GET',
-				headers: { accept: 'application/json' }
-			});
-			if (res.ok) {
-				const body = (await res.json()) as {
-					page: number;
-					results: number;
-					totalResults: number;
-					medias: Result[];
-				};
-				results = body.medias.map((media) => {
-					media.name = media.names.find((name) => name.lang == '__')!.title;
-					return media;
-				});
-				totalResults = body.totalResults;
-			}
-			searching = false;
-		}, 200);
-	}
+	$: loading = $searching || $loadingMore;
 
 	async function loadMore() {
 		if (loading) {
 			return;
 		}
 
-		smallLoading = true;
-		page = page + 1;
-		let query: Record<string, any> = { page };
-		if (value != '') {
-			query.query = value;
-		}
-		let params = Object.keys(query)
-			.map((key) => {
-				return `${encodeURIComponent(key)}=${encodeURIComponent(query[key])}`;
-			})
-			.join('&');
-		const res = await fetch(`http://localhost:7072/v1/media/search?${params}`, {
-			method: 'GET',
-			headers: { accept: 'application/json' }
-		});
-		if (res.ok) {
-			const body = (await res.json()) as {
-				page: number;
-				results: number;
-				totalResults: number;
-				medias: Result[];
-			};
-			results = [
-				...results,
-				...body.medias.map((media) => {
-					media.name = media.names.find((name) => name.lang == '__')!.title;
-					return media;
-				})
-			];
-		}
-		smallLoading = false;
-
+		await search.loadMore();
 		await tick();
 		document.documentElement.scrollTop = document.documentElement.scrollHeight;
 	}
 
 	onMount(async () => {
-		onInput();
+		search.execute();
 	});
 </script>
 
@@ -119,8 +34,8 @@
 				class="input"
 				placeholder="Search"
 				disabled={loading}
-				bind:value
-				on:input={onInput}
+				bind:value={$search.query}
+				on:input={search.execute}
 			/>
 			<label for="year" class="ml-4 ">Year</label>
 			<input
@@ -157,17 +72,17 @@
 			</select>
 		</div>
 	</div>
-	{#if searching}
+	{#if $searching}
 		<div class="w-full flex justify-center mt-8 text-white">
 			<Spinner size={96} />
 		</div>
-	{:else if results.length == 0}
+	{:else if $results.length == 0}
 		<div class="w-full flex justify-center mt-8">
 			<div class="text-5xl text-white">No results !</div>
 		</div>
 	{:else}
 		<div class="result-wrapper p-4">
-			{#each results as result (result.id)}
+			{#each $results as result (result.id)}
 				{@const cover = result.thumbnail ? result.thumbnail : '/no_cover.png'}
 				<div class="result overflow-hidden w-40 mx-auto">
 					<div class="cover" in:fade={{ duration: 150 }} style={`background-image: url(${cover})`}>
@@ -189,7 +104,7 @@
 					{/if}
 				</div>
 			{/each}
-			{#if totalResults != results.length}
+			{#if $totalResults != $results.length}
 				<div
 					class="result overflow-hidden min-h-[14rem] w-40 mx-auto cursor-pointer"
 					class:opacity-50={loading}
