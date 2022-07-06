@@ -36,7 +36,7 @@ function resultsStore() {
 export const results = resultsStore();
 export const totalResults = writable<number>(0);
 
-type SortColumns = 'id' | 'year' | 'duration';
+type SortColumns = 'id' | 'name' | 'year' | 'duration';
 type SortOrder = 'ASC' | 'DESC';
 type SearchStore = {
 	query?: string | null;
@@ -66,7 +66,7 @@ function buildParams(params: SearchStore): string {
 	}
 	if (params.genres.length > 0) {
 		for (const genre of params.genres) {
-			result.push(`${encodeURIComponent('genre_ids[]')}=${encodeURIComponent(genre)}`);
+			result.push(`${encodeURIComponent('genre_ids')}=${encodeURIComponent(genre)}`);
 		}
 	}
 	return result.join('&');
@@ -88,30 +88,15 @@ export function searchStore() {
 		subscribe,
 		set,
 		update,
-		addGenre(genre: number) {
-			store.genres.push(genre);
-			return set(store);
-		},
-		removeGenre(genre: number) {
-			const index = store.genres.indexOf(genre);
-			if (index >= 0) {
-				store.genres.splice(index, 1);
-			}
-			return set(store);
-		},
 		setGenres(genres: number[]) {
 			store.genres = genres;
 			return set(store);
 		},
-		setSortBy(column: SortColumns) {
-			if (column == 'id' || column == 'year' || column == 'duration') {
-				store.sortBy = column;
-			}
-			return set(store);
-		},
-		setSortOrder(order: SortOrder) {
-			if (order == 'ASC' || order == 'DESC') {
-				store.sortOrder = order;
+		toggleSort() {
+			if (store.sortOrder == 'ASC') {
+				store.sortOrder = 'DESC';
+			} else {
+				store.sortOrder = 'ASC';
 			}
 			return set(store);
 		},

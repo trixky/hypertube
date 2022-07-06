@@ -4,9 +4,12 @@
 	import { clickOutside } from '../../../src/directives/clickOutside';
 	import ChevronDown from '../../../src/components/icons/ChevronDown.svelte';
 	import ChevronUp from '../../../src/components/icons/ChevronUp.svelte';
-	import { loaded, loading, genres } from '../../stores/genres';
+	import { loaded, loading, genres } from '../../../src/stores/genres';
 	import { onMount } from 'svelte';
+	import { search } from '../../../src/stores/search';
+	import Times from '../../../src/components/icons/Times.svelte';
 
+	// * Popup logic
 	export let disabled = false;
 	let classes: string = '';
 	let show = false;
@@ -30,6 +33,20 @@
 		show = !show;
 	}
 
+	// * Value logic
+	let selected: number[] = [];
+	function onInput() {
+		search.setGenres(selected);
+		search.execute();
+	}
+
+	function clear() {
+		toggle();
+		selected = [];
+		search.setGenres(selected);
+		search.execute();
+	}
+
 	onMount(() => {
 		if (!$loaded) {
 			genres.load();
@@ -49,7 +66,12 @@
 	on:click={toggle}
 >
 	<div class="flex justify-between items-center p-2" use:clickOutside on:clickOutside={close}>
-		<span>Genres</span>
+		<span>
+			Genres
+			{#if selected.length > 0}
+				({selected.length})
+			{/if}
+		</span>
 		{#if isOpen}
 			<ChevronDown />
 		{:else}
@@ -58,9 +80,23 @@
 	</div>
 	{#if show}
 		<div class="details" transition:fly={{ duration: 150 }} on:outroend={hide}>
+			<div
+				class="flex items-center p-2 border-b last:border-b-0 last:rounded-b-md border-slate-400 text-blue-600"
+				on:click={clear}
+			>
+				<Times /> Clear
+			</div>
 			{#each $genres as genre (genre.id)}
 				<div class="inline-block p-2 border-b last:border-b-0 last:rounded-b-md border-slate-400">
-					<input type="checkbox" name="genres" id={genre.name} class=" inline-block" />
+					<input
+						type="checkbox"
+						class="inline-block"
+						name="genres"
+						id={genre.name}
+						bind:group={selected}
+						value={genre.id}
+						on:input={onInput}
+					/>
 					<label for={genre.name} class="inline-block flex-grow">{genre.name}</label>
 				</div>
 			{:else}
@@ -77,7 +113,7 @@
 <!-- ========================= CSS -->
 <style lang="postcss">
 	.wrapper {
-		@apply inline-block rounded-md bg-transparent border border-slate-400 bg-slate-900 text-white cursor-pointer;
+		@apply inline-block min-w-[10rem] rounded-md bg-transparent border border-slate-400 bg-slate-900 text-white cursor-pointer;
 		transition: height 150ms ease-in-out, width 150ms ease-in-out;
 	}
 
