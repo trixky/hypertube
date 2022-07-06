@@ -102,6 +102,13 @@ FROM medias
 WHERE imdb_id = $1
 LIMIT 1;
 
+-- name: FindMediaByNameYear :one
+SELECT medias.*
+FROM medias
+RIGHT JOIN media_names ON medias.id = media_names.media_id
+WHERE media_names.name == $1 AND medias.year = $2
+LIMIT 1;
+
 -- name: CheckMediaExistByIMDB :one
 SELECT count(id)
 FROM medias

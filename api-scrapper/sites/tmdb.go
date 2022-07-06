@@ -535,6 +535,19 @@ func TryInsertOrGetMedia(name string) (media_id int32, err error) {
 	year_int, err := strconv.Atoi(matches[2])
 	year := int32(year_int)
 
+	// Search for a media locally first
+	already_loaded_media, err := databases.DBs.SqlcQueries.FindMediaByNameYear(ctx, sqlc.FindMediaByNameYearParams{
+		Name: query,
+		Year: ut.MakeNullInt32(&year),
+	})
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return
+	}
+	if already_loaded_media.ID.Int64 > 0 {
+		log.Println("found local media from", query, year)
+		return int32(already_loaded_media.ID.Int64), nil
+	}
+
 	// Search for a Media
 	result, err := SearchTMDBMedia(query, year)
 	if result == 0 || err != nil {
