@@ -8,3 +8,13 @@ declare namespace App {
 	// interface Session {}
 	// interface Stuff {}
 }
+declare namespace NodeJS {
+	type Timeout = number;
+	type Timer = number;
+}
+
+declare namespace svelte.JSX {
+	interface HTMLProps<T> {
+		onclickOutside?: () => void;
+	}
+}

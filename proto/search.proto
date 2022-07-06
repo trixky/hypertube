@@ -73,17 +73,17 @@ message GenresResponse {
 service SearchService {
     rpc Search(SearchRequest) returns (SearchResponse) {
         option (google.api.http) = {
-            get: "/v1/internal/search"
+            get: "/v1/media/search"
         };
 	};
     rpc Get(GetRequest) returns (GetResponse) {
         option (google.api.http) = {
-            get: "/v1/internal/get/{id}"
+            get: "/v1/media/get/{id}"
         };
 	};
     rpc Genres(GenresRequest) returns (GenresResponse) {
         option (google.api.http) = {
-            get: "/v1/internal/genres"
+            get: "/v1/media/genres"
         };
 	};
 }

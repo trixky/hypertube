@@ -1,3 +1,8 @@
+<!-- ========================= SCRIPT -->
+<script lang="ts">
+	export let size: number = 20;
+</script>
+
 <!-- ========================= HTML -->
 <!-- https://loading.io/spinner/progress-pie/-circle-round-pie-progress-percent-ratio-pizza-color-palette -->
 
@@ -7,8 +12,8 @@
 
 <svg
 	class="inline-block"
-	width="20px"
-	height="20px"
+	width={`${size}px`}
+	height={`${size}px`}
 	viewBox="0 0 100 100"
 	preserveAspectRatio="xMidYMid"
 >
@@ -29,7 +34,7 @@
 		/>
 		<animate
 			attributeName="stroke"
-			values="#000000;#000000;#000000;#000000;#000000"
+			values="currentColor;currentColor;currentColor;currentColor;currentColor"
 			keyTimes="0;0.25;0.5;0.75;1"
 			dur="5s"
 			calcMode="discrete"
