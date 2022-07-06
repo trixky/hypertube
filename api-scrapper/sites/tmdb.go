@@ -365,7 +365,7 @@ func SearchTMDBMedia(query string, year int32) (tmdb_id int32, err error) {
 	return media.Id, nil
 }
 
-func GetIMDBMedia(imdb_id string) (informations *MediaInformations, err error) {
+func GetIMDBMedia(imdb_id string) (tmdb_id int32, err error) {
 	resp, err := http.Get("https://api.themoviedb.org/3/find/" + imdb_id + "?api_key=" + api_key + "&external_source=imdb_id")
 	if err != nil {
 		return
@@ -384,12 +384,7 @@ func GetIMDBMedia(imdb_id string) (informations *MediaInformations, err error) {
 
 	if len(find_response.MovieResults) == 1 {
 		tmdb_id := find_response.MovieResults[0].Id
-		time.Sleep(time.Second)
-		informations, err = GetTMDBMedia(tmdb_id)
-	}
-
-	if informations != nil {
-		informations.ImdbId = &imdb_id
+		return tmdb_id, nil
 	}
 
 	return
@@ -548,7 +543,7 @@ func TryInsertOrGetMedia(name string) (media_id int32, err error) {
 	} else {
 		log.Println("found TMDB ID", result, "from", query, year)
 	}
-	existing_media, err := databases.DBs.SqlcQueries.GetMediaByTMDBID(ctx, result)
+	existing_media, err := databases.DBs.SqlcQueries.GetMediaByTMDB(ctx, result)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return
 	}
@@ -589,11 +584,29 @@ func InsertOrGetMedia(imdb_id string) (media_id int32, err error) {
 	// ... or else find all informations and save them
 
 	// Get all informations from TMDB
-	informations, err := GetIMDBMedia(imdb_id)
+	tmdb_id, err := GetIMDBMedia(imdb_id)
+	if tmdb_id == 0 || err != nil {
+		return
+	}
+
+	// Check if there is already a corresponding movie
+	existing_media, err = databases.DBs.SqlcQueries.GetMediaByTMDB(ctx, tmdb_id)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return
+	}
+	err = nil
+	// If there is, just return it's ID and avoid searching TMDB
+	if existing_media.ID > 0 {
+		return int32(existing_media.ID), nil
+	}
+
+	// ... else search it with TMDB
+	time.Sleep(time.Second)
+	informations, err := GetTMDBMedia(tmdb_id)
 	if informations == nil || err != nil {
 		return
 	}
-	media_id, err = InsertMediaInformations(informations)
 
+	media_id, err = InsertMediaInformations(informations)
 	return
 }
