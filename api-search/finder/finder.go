@@ -23,7 +23,7 @@ WHERE
 		THEN
 			EXISTS (
 				SELECT id FROM media_names
-				WHERE media_names.media_id = medias.id AND media_names.name ILIKE '%' || $2 || '%'
+				WHERE (media_names.media_id = medias.id AND media_names.name ILIKE '%' || $2 || '%')
 				LIMIT 1
 			) OR (
 				medias.imdb_id ILIKE '%' || $3 || '%'
@@ -31,22 +31,32 @@ WHERE
 				medias.tmdb_id::varchar ILIKE '%' || $4 || '%'
 			) OR (
 				medias.description ILIKE '%' || $5 || '%'
+			) OR EXISTS (
+				SELECT media_staffs.id FROM media_staffs
+				RIGHT JOIN names ON names.id = media_staffs.name_id
+				WHERE (media_staffs.media_id = medias.id AND names.name ILIKE '%' || $6 || '%')
+				LIMIT 1
+			) OR EXISTS (
+				SELECT media_actors.id FROM media_actors
+				RIGHT JOIN names ON names.id = media_actors.name_id
+				WHERE (media_actors.media_id = medias.id AND names.name ILIKE '%' || $7 || '%')
+				LIMIT 1
 			)
 		ELSE true
 		END
 	)
 	AND (
-		CASE WHEN $6::bool
-		THEN medias.rating >= $7
-		ELSE true
-		END
-	) AND (
 		CASE WHEN $8::bool
-		THEN medias.year = $9
+		THEN medias.rating >= $9
 		ELSE true
 		END
 	) AND (
 		CASE WHEN $10::bool
+		THEN medias.year = $11
+		ELSE true
+		END
+	) AND (
+		CASE WHEN $12::bool
 		THEN EXISTS (
 			SELECT id FROM media_genres
 			WHERE media_genres.media_id = medias.id AND media_genres.genre_id IN ({{genres}})
@@ -79,22 +89,32 @@ WHERE
 				medias.tmdb_id::varchar ILIKE '%' || $5 || '%'
 			) OR (
 				medias.description ILIKE '%' || $6 || '%'
+			) OR EXISTS (
+				SELECT media_staffs.id FROM media_staffs
+				RIGHT JOIN names ON names.id = media_staffs.name_id
+				WHERE (media_staffs.media_id = medias.id AND names.name ILIKE '%' || $7 || '%')
+				LIMIT 1
+			) OR EXISTS (
+				SELECT media_actors.id FROM media_actors
+				RIGHT JOIN names ON names.id = media_actors.name_id
+				WHERE (media_actors.media_id = medias.id AND names.name ILIKE '%' || $8 || '%')
+				LIMIT 1
 			)
 		ELSE true
 		END
 	)
 	AND (
-		CASE WHEN $7::bool
-		THEN medias.rating >= $8
-		ELSE true
-		END
-	) AND (
 		CASE WHEN $9::bool
-		THEN medias.year = $10
+		THEN medias.rating >= $10
 		ELSE true
 		END
 	) AND (
 		CASE WHEN $11::bool
+		THEN medias.year = $12
+		ELSE true
+		END
+	) AND (
+		CASE WHEN $13::bool
 		THEN EXISTS (
 			SELECT id FROM media_genres
 			WHERE media_genres.media_id = medias.id AND media_genres.genre_id IN ({{genres}})
@@ -136,6 +156,8 @@ func GenerateQuery(mode string, arg *FindMediasParams) (string, []interface{}) {
 	query = strings.Replace(query, "{{per_page}}", fmt.Sprint(PerPage), 1)
 	args := []interface{}{
 		arg.SearchQuery,
+		arg.Query,
+		arg.Query,
 		arg.Query,
 		arg.Query,
 		arg.Query,
