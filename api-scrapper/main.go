@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/trixky/hypertube/api-scrapper/databases"
 	"github.com/trixky/hypertube/api-scrapper/environment"
@@ -33,5 +34,14 @@ func main() {
 	// ------------- grpc
 	grpc_addr := host + ":" + strconv.Itoa(environment.E.GrpcPort)
 
-	log.Fatalf("failed to serve grpc on: %v\n", internal.NewGrpcServer(grpc_addr))
+	go func() {
+		log.Fatalf("failed to serve grpc on: %v\n", internal.NewGrpcServer(grpc_addr))
+	}()
+
+	// ------------- loop forever to scrape
+	for {
+		internal.DoScrapeLatest(nil)
+		log.Println("Next scrape in 30min")
+		time.Sleep(time.Duration(30) * time.Minute)
+	}
 }
