@@ -3,7 +3,6 @@ module github.com/trixky/hypertube/api-search
 go 1.18
 
 require (
-	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.3
 	github.com/lib/pq v1.10.6
 	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd
