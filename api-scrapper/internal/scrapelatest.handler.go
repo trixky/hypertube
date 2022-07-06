@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
-	"net/http"
+	"os"
 	"time"
 
 	pb "github.com/trixky/hypertube/api-scrapper/proto"
@@ -68,11 +68,14 @@ func DoScrapeLatest(callback *func(response *pb.ScrapeResponse) error) error {
 		}
 
 		// Handle timeout errors and skip to the next site
-		if errors.Is(err, http.ErrHandlerTimeout) {
-			err = nil
-			continue
-		} else {
-			return err
+		if err != nil {
+			if errors.Is(err, context.DeadlineExceeded) || os.IsTimeout(err) {
+				log.Println("Skipped scrapper", scrapper, "on timeout error !")
+				err = nil
+				continue
+			} else {
+				return err
+			}
 		}
 	}
 

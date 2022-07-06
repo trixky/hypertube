@@ -2,7 +2,9 @@ package internal
 
 import (
 	"context"
+	"errors"
 	"log"
+	"os"
 	"time"
 
 	pb "github.com/trixky/hypertube/api-scrapper/proto"
@@ -14,13 +16,15 @@ func (s *ScrapperServer) ScrapeAll(request *pb.ScrapeRequest, out pb.ScrapperSer
 	log.Println("Scrape All", request)
 
 	for _, scrapper := range st.Scrappers {
+		var err error
 		for _, category := range Categories {
 			var page uint32 = 1
 			for {
 				start := time.Now()
-				page_result, err := scrapper.ScrapeList(category, page)
-				if err != nil {
-					return err
+				page_result, err_scrapper := scrapper.ScrapeList(category, page)
+				if err_scrapper != nil {
+					err = err_scrapper
+					break
 				}
 				new_torrents := make([]*pb.Torrent, 0, 30)
 
@@ -50,6 +54,20 @@ func (s *ScrapperServer) ScrapeAll(request *pb.ScrapeRequest, out pb.ScrapperSer
 					break
 				}
 				time.Sleep(time.Second)
+			}
+			if err != nil {
+				break
+			}
+		}
+
+		// Handle timeout errors and skip to the next site
+		if err != nil {
+			if errors.Is(err, context.DeadlineExceeded) || os.IsTimeout(err) {
+				log.Println("Skipped scrapper", scrapper, "on timeout error !")
+				err = nil
+				continue
+			} else {
+				return err
 			}
 		}
 	}
