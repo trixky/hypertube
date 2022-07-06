@@ -7,6 +7,6 @@
 <!-- ========================= HTML -->
 
 <Header />
-<main class="min-h-[90%] flex flex-row content-start justify-start relative">
+<main class="search min-h-[90%] flex flex-row content-start justify-start relative">
 	<slot />
 </main>

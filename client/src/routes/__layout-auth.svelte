@@ -8,7 +8,9 @@
 </script>
 
 <!-- ========================= HTML -->
-<main class="h-full relative flex content-center justify-center linear-gradient bg-no-repeat bg-cover bg-center">
+<main
+	class="auth h-full relative flex content-center justify-center linear-gradient bg-no-repeat bg-cover bg-center"
+>
 	<slot />
 </main>
 
