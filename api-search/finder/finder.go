@@ -58,8 +58,13 @@ WHERE
 `
 
 const findMedias = `-- name: FindMedias :many
-SELECT DISTINCT medias.id, medias.imdb_id, medias.tmdb_id, medias.description, medias.duration, medias.thumbnail, medias.background, medias.year, medias.rating
+SELECT DISTINCT medias.id, medias.imdb_id, medias.tmdb_id, medias.description, medias.duration, medias.thumbnail, medias.background, medias.year, medias.rating, media_names.name
 FROM medias
+RIGHT JOIN (
+	SELECT media_names.id, media_names.media_id, media_names.name FROM media_names
+	WHERE lang = '__'
+	ORDER BY name {{sort_order}}
+) media_names ON media_names.media_id = medias.id
 WHERE
 	(
 		CASE WHEN $2::bool
@@ -122,8 +127,12 @@ func GenerateQuery(mode string, arg *FindMediasParams) (string, []interface{}) {
 	if mode == "find" {
 		base = findMedias
 	}
-	query := strings.Replace(base, "{{sort_column}}", arg.SortColumn, 1)
-	query = strings.Replace(query, "{{sort_order}}", arg.SortOrder, 1)
+	query := strings.Replace(base, "{{sort_order}}", arg.SortOrder, 2)
+	if arg.SortColumn == "name" {
+		query = strings.Replace(query, "{{sort_column}}", "media_names.name", 1)
+	} else {
+		query = strings.Replace(query, "{{sort_column}}", arg.SortColumn, 1)
+	}
 	query = strings.Replace(query, "{{per_page}}", fmt.Sprint(PerPage), 1)
 	args := []interface{}{
 		arg.SearchQuery,
@@ -192,6 +201,7 @@ func FindMedias(ctx context.Context, arg FindMediasParams) ([]sqlc.Media, error)
 	var items []sqlc.Media
 	for rows.Next() {
 		var i sqlc.Media
+		var name string
 		if err := rows.Scan(
 			&i.ID,
 			&i.ImdbID,
@@ -202,6 +212,7 @@ func FindMedias(ctx context.Context, arg FindMediasParams) ([]sqlc.Media, error)
 			&i.Background,
 			&i.Year,
 			&i.Rating,
+			&name,
 		); err != nil {
 			return nil, err
 		}

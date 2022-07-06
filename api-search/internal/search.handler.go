@@ -51,8 +51,8 @@ func (s *SearchServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Se
 		params.Genres = in.GenreIds
 	}
 	if in.SortBy != nil {
-		column := strings.ToLower(*in.SortOrder)
-		if column == "id" || column == "year" || column == "duration" {
+		column := strings.ToLower(*in.SortBy)
+		if column == "id" || column == "name" || column == "year" || column == "duration" {
 			params.SortColumn = column
 		}
 	}
