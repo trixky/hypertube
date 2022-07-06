@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"log"
 	"strings"
 
@@ -23,7 +22,7 @@ func (s *SearchServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Se
 	}
 
 	search := md.Get("search")
-	fmt.Println("search:", search)
+	log.Println("search:", search)
 
 	// Check and set arguments for the query
 	params := finder.FindMediasParams{
@@ -86,6 +85,7 @@ func (s *SearchServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Se
 	pb_medias := make([]*pb.Media, 0)
 	for _, media := range medias {
 		rating := float32(media.Rating.Float64)
+		thumbnail := media.Thumbnail.String
 		pb_media := pb.Media{
 			Id:          uint32(media.ID),
 			Type:        pb.MediaCategory_CATEGORY_MOVIE,
@@ -94,7 +94,7 @@ func (s *SearchServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Se
 			Duration:    &media.Duration.Int32,
 			Names:       make([]*pb.MediaName, 0),
 			Genres:      make([]string, 0),
-			Thumbnail:   &media.Thumbnail.String,
+			Thumbnail:   &thumbnail,
 			Rating:      &rating,
 		}
 

@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/trixky/hypertube/api-search/databases"
@@ -19,7 +18,7 @@ func (s *SearchServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespo
 	}
 
 	get := md.Get("get")
-	fmt.Println("get:", get)
+	log.Println("get:", get)
 
 	// Find the media
 	media, err := databases.DBs.SqlcQueries.GetMediaByID(ctx, int64(in.Id))
