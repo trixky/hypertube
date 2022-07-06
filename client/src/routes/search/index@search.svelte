@@ -5,8 +5,15 @@
 	import { fade } from 'svelte/transition';
 	import { searching, loadingMore, results, totalResults, search } from '../../stores/search';
 	import Genres from './genres.svelte';
+	import SortAsc from '../../../src/components/icons/SortAsc.svelte';
+	import SortDesc from '../../../src/components/icons/SortDesc.svelte';
 
-	let sorts: string[] = ['#', 'Year', 'Duration'];
+	let columns: { value: string; name: string }[] = [
+		{ value: 'year', name: 'Year' },
+		{ value: 'name', name: 'Name' },
+		{ value: 'duration', name: 'Duration' },
+		{ value: 'id', name: 'ID' }
+	];
 
 	$: loading = $searching || $loadingMore;
 
@@ -20,6 +27,11 @@
 		document.documentElement.scrollTop = document.documentElement.scrollHeight;
 	}
 
+	function toggleSort() {
+		search.toggleSort();
+		search.execute();
+	}
+
 	onMount(async () => {
 		search.execute();
 	});
@@ -27,7 +39,7 @@
 
 <!-- ========================= HTML -->
 <div class="bg-black min-h-[90%] w-full flex-grow">
-	<div class="flex w-full sticky top-0 p-4 bg-black z-10 border-b-2 border-blue-500">
+	<div class="flex items-center w-full sticky top-0 p-4 bg-black z-10 border-b-2 border-blue-500">
 		<div>
 			<input
 				type="text"
@@ -68,14 +80,18 @@
 		<div class="flex-grow" />
 		<div>
 			<label for="sort">Sort By</label>
-			<select
-				name="sort"
-				class="p-2 rounded-mdbg-transparent border border-slate-400 bg-slate-900 text-white"
-			>
-				<option value="id">ID</option>
-				<option value="year">Year</option>
-				<option value="duration">Duration</option>
+			<select class="input" name="sort" bind:value={$search.sortBy} on:input={search.execute}>
+				{#each columns as column (column.name)}
+					<option value={column.value}>{column.name}</option>
+				{/each}
 			</select>
+		</div>
+		<div class="input ml-2 cursor-pointer" class:opacity-80={loading} on:click={toggleSort}>
+			{#if $search.sortOrder == 'ASC'}
+				Asc <SortAsc />
+			{:else}
+				Desc <SortDesc />
+			{/if}
 		</div>
 	</div>
 	{#if $searching}
