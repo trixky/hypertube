@@ -41,6 +41,7 @@ type SortOrder = 'ASC' | 'DESC';
 type SearchStore = {
 	query?: string | null;
 	page: number;
+	startAt: number;
 	year?: number | null;
 	rating?: number | null;
 	genres: number[];
@@ -75,6 +76,7 @@ export function searchStore() {
 	const store: SearchStore = {
 		query: '',
 		page: 1,
+		startAt: 0,
 		genres: [],
 		sortBy: 'id',
 		sortOrder: 'DESC'
@@ -86,38 +88,6 @@ export function searchStore() {
 		subscribe,
 		set,
 		update,
-		setQuery(query: string | undefined | null) {
-			if (query) {
-				store.query = query;
-			} else {
-				store.query = '';
-			}
-			return set(store);
-		},
-		resetPage() {
-			store.page = 1;
-			return set(store);
-		},
-		nextPage() {
-			store.page += 1;
-			return set(store);
-		},
-		setYear(year: number | null | undefined) {
-			if (year) {
-				store.year = year;
-			} else {
-				store.year = undefined;
-			}
-			return set(store);
-		},
-		setRating(rating: number | null | undefined) {
-			if (rating) {
-				store.rating = rating;
-			} else {
-				store.rating = undefined;
-			}
-			return set(store);
-		},
 		addGenre(genre: number) {
 			store.genres.push(genre);
 			return set(store);
@@ -153,6 +123,7 @@ export function searchStore() {
 
 				// Reset form
 				store.page = 1;
+				store.startAt = 0;
 				set(store);
 				results.setResults([]);
 
@@ -185,6 +156,7 @@ export function searchStore() {
 			loadingMore.set(true);
 
 			// Reset form
+			store.startAt = store.page * 20;
 			store.page = store.page + 1;
 			set(store);
 

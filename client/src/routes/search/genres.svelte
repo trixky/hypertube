@@ -4,11 +4,13 @@
 	import { clickOutside } from '../../../src/directives/clickOutside';
 	import ChevronDown from '../../../src/components/icons/ChevronDown.svelte';
 	import ChevronUp from '../../../src/components/icons/ChevronUp.svelte';
+	import { loaded, loading, genres } from '../../stores/genres';
+	import { onMount } from 'svelte';
 
+	export let disabled = false;
 	let classes: string = '';
 	let show = false;
 	let isOpen = false;
-	let genres: string[] = ['Adventure', 'Comedy', 'Animation', 'War'];
 	let wrapper: HTMLElement;
 	let offset: [number, number] = [0, 0];
 
@@ -28,6 +30,12 @@
 		show = !show;
 	}
 
+	onMount(() => {
+		if (!$loaded) {
+			genres.load();
+		}
+	});
+
 	export { classes as class };
 </script>
 
@@ -36,6 +44,7 @@
 	bind:this={wrapper}
 	class={`wrapper ${classes}`}
 	class:absolute={isOpen}
+	class:opacity-50={disabled}
 	style={`left: ${offset[0] - 8}px; top: ${offset[1]}px`}
 	on:click={toggle}
 >
@@ -49,11 +58,17 @@
 	</div>
 	{#if show}
 		<div class="details" transition:fly={{ duration: 150 }} on:outroend={hide}>
-			{#each genres as genre (genre)}
+			{#each $genres as genre (genre.id)}
 				<div class="inline-block p-2 border-b last:border-b-0 last:rounded-b-md border-slate-400">
-					<input type="checkbox" name="genres" id={genre} class=" inline-block" />
-					<label for={genre} class="inline-block flex-grow">{genre}</label>
+					<input type="checkbox" name="genres" id={genre.name} class=" inline-block" />
+					<label for={genre.name} class="inline-block flex-grow">{genre.name}</label>
 				</div>
+			{:else}
+				{#if $loading}
+					Loading...
+				{:else}
+					No genres, yet !
+				{/if}
 			{/each}
 		</div>
 	{/if}

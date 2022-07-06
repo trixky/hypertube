@@ -3,8 +3,8 @@
 	import Spinner from '../../../src/components/animations/spinner.svelte';
 	import { onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import Genres from './genres.svelte';
 	import { searching, loadingMore, results, totalResults, search } from '../../stores/search';
+	import Genres from './genres.svelte';
 
 	let sorts: string[] = ['#', 'Year', 'Duration'];
 
@@ -39,25 +39,31 @@
 			/>
 			<label for="year" class="ml-4 ">Year</label>
 			<input
-				type="text"
-				class="input w-14"
+				type="number"
+				class="input w-20"
 				placeholder="Year"
 				name="year"
 				min="0"
+				max="9999"
+				step="1"
 				disabled={loading}
+				bind:value={$search.year}
+				on:input={search.execute}
 			/>
 			<label for="rating">Rating</label>
 			<input
-				type="text"
-				class="input w-14"
+				type="number"
+				class="input w-20"
 				placeholder="Min. Rating"
 				name="rating"
 				min="0"
 				max="10"
 				step="0.1"
 				disabled={loading}
+				bind:value={$search.rating}
+				on:input={search.execute}
 			/>
-			<Genres class="ml-2" />
+			<Genres disabled={loading} class="ml-2" />
 		</div>
 		<div class="flex-grow" />
 		<div>
@@ -82,10 +88,14 @@
 		</div>
 	{:else}
 		<div class="result-wrapper p-4">
-			{#each $results as result (result.id)}
+			{#each $results as result, index (result.id)}
 				{@const cover = result.thumbnail ? result.thumbnail : '/no_cover.png'}
 				<div class="result overflow-hidden w-40 mx-auto">
-					<div class="cover" in:fade={{ duration: 150 }} style={`background-image: url(${cover})`}>
+					<div
+						class="cover"
+						in:fade={{ duration: 150, delay: (index - $search.startAt) * 10 }}
+						style={`background-image: url(${cover})`}
+					>
 						{#if result.rating}
 							{@const rating = Math.round(result.rating * 10) / 10}
 							<div class="rating">
