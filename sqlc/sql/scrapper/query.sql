@@ -90,7 +90,7 @@ VALUES
 	)
 RETURNING *;
 
--- name: GetMediaByTMDBID :one
+-- name: GetMediaByTMDB :one
 SELECT *
 FROM medias
 WHERE tmdb_id = $1
