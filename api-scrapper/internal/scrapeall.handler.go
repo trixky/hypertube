@@ -19,16 +19,29 @@ func (s *ScrapperServer) ScrapeAll(request *pb.ScrapeRequest, out pb.ScrapperSer
 		var err error
 		for _, category := range Categories {
 			var page uint32 = 1
+			var consecutive_errors int32 = 0
 			for {
 				start := time.Now()
 				page_result, err_scrapper := scrapper.ScrapeList(category, page)
+
+				// On errors, sleep up to 3 times to retry requests
+				// -- before skipping the site
 				if err_scrapper != nil {
-					err = err_scrapper
-					break
+					if (errors.Is(err, context.DeadlineExceeded) || os.IsTimeout(err)) && consecutive_errors < 3 {
+						log.Println("Scraping error, retrying in", ErrorBackOff[consecutive_errors], "minutes")
+						time.Sleep(time.Duration(ErrorBackOff[consecutive_errors]) * time.Minute)
+						consecutive_errors += 1
+						continue
+					} else {
+						err = err_scrapper
+						break
+					}
+				} else {
+					consecutive_errors = 0
 				}
-				new_torrents := make([]*pb.Torrent, 0, 30)
 
 				// Update each existing torrents or add them to the database
+				new_torrents := make([]*pb.Torrent, 0, 30)
 				for _, torrent := range page_result.Torrents {
 					created, created_torrent, err := UpdateOrCreateTorrent(ctx, &scrapper, torrent)
 					if err != nil {
@@ -63,7 +76,6 @@ func (s *ScrapperServer) ScrapeAll(request *pb.ScrapeRequest, out pb.ScrapperSer
 		// Handle timeout errors and skip to the next site
 		if err != nil {
 			if errors.Is(err, context.DeadlineExceeded) || os.IsTimeout(err) {
-				log.Println("Skipped scrapper", scrapper, "on timeout error !")
 				err = nil
 				continue
 			} else {
