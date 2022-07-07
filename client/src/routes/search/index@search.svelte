@@ -1,8 +1,9 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
-	import Spinner from '../../../src/components/animations/spinner.svelte';
-	import { onMount, tick } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
+	import { browser } from '$app/env';
 	import { fade } from 'svelte/transition';
+	import Spinner from '../../../src/components/animations/spinner.svelte';
 	import { searching, loadingMore, results, totalResults, search } from '../../stores/search';
 	import Genres from './genres.svelte';
 	import SortAsc from '../../../src/components/icons/SortAsc.svelte';
@@ -17,14 +18,54 @@
 
 	$: loading = $searching || $loadingMore;
 
+	// * Infinite loader
+	// Obser the Load More card when it's visible and loadMore if the user can see it
+	let observer: IntersectionObserver;
+	function onIntersectionEvent(entries: IntersectionObserverEntry[]) {
+		if (loading || $totalResults == $results.length) {
+			return;
+		}
+		for (const entry of entries) {
+			if (entry.isIntersecting) {
+				loadMore();
+			}
+		}
+	}
+	if (browser) {
+		observer = new IntersectionObserver(onIntersectionEvent, { threshold: 0 });
+	}
+	let loader: HTMLElement | undefined;
+	let observing: HTMLElement | undefined;
+	$: {
+		if (loader) {
+			observer.observe(loader);
+			observing = loader;
+		} else if (observing) {
+			observer.unobserve(observing);
+			observing = undefined;
+		}
+	}
+
+	// Store wrapper to update UI
+	let searchTimeout = 0;
+	function debounceSearch() {
+		if (loading) {
+			return;
+		}
+
+		clearTimeout(searchTimeout);
+		searchTimeout = setTimeout(async () => {
+			search.execute();
+		}, 200);
+	}
+
 	async function loadMore() {
 		if (loading) {
 			return;
 		}
 
 		await search.loadMore();
-		await tick();
-		document.documentElement.scrollTop = document.documentElement.scrollHeight;
+		onScroll();
 	}
 
 	function toggleSort() {
@@ -32,8 +73,30 @@
 		search.execute();
 	}
 
+	function onScroll() {
+		if (browser) {
+			const element = document.documentElement;
+			const offset = element.scrollHeight - element.clientHeight - element.scrollTop;
+			if (!$loadingMore && offset <= 100) {
+				loadMore();
+			}
+		}
+	}
+
 	onMount(async () => {
-		search.execute();
+		await search.execute();
+		onScroll();
+		if (browser) {
+			window.addEventListener('scroll', onScroll, { passive: true });
+			window.addEventListener('resize', onScroll, { passive: true });
+		}
+	});
+
+	onDestroy(() => {
+		if (browser) {
+			window.removeEventListener('scroll', onScroll);
+			window.removeEventListener('resize', onScroll);
+		}
 	});
 </script>
 
@@ -47,7 +110,7 @@
 				placeholder="Search"
 				disabled={loading}
 				bind:value={$search.query}
-				on:input={search.execute}
+				on:input={debounceSearch}
 			/>
 			<label for="year" class="ml-4 ">Year</label>
 			<input
@@ -60,7 +123,7 @@
 				step="1"
 				disabled={loading}
 				bind:value={$search.year}
-				on:input={search.execute}
+				on:input={debounceSearch}
 			/>
 			<label for="rating">Rating</label>
 			<input
@@ -73,14 +136,20 @@
 				step="0.1"
 				disabled={loading}
 				bind:value={$search.rating}
-				on:input={search.execute}
+				on:input={debounceSearch}
 			/>
 			<Genres disabled={loading} class="ml-2" />
 		</div>
 		<div class="flex-grow" />
 		<div>
 			<label for="sort">Sort By</label>
-			<select class="input" name="sort" bind:value={$search.sortBy} on:input={search.execute}>
+			<select
+				class="input"
+				name="sort"
+				disabled={loading}
+				bind:value={$search.sortBy}
+				on:input={debounceSearch}
+			>
 				{#each columns as column (column.name)}
 					<option value={column.value}>{column.name}</option>
 				{/each}
@@ -132,6 +201,7 @@
 			{/each}
 			{#if $totalResults != $results.length}
 				<div
+					bind:this={loader}
 					class="result overflow-hidden min-h-[14rem] w-40 mx-auto cursor-pointer"
 					class:opacity-50={loading}
 					on:click={loadMore}

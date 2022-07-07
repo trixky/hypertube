@@ -28,7 +28,12 @@ function resultsStore() {
 			return set(results);
 		},
 		append(results: Result[]) {
-			list.push(...results);
+			// Avoid duplicate entries on DB update within pages
+			for (const result of results) {
+				if (!list.find((media) => media.id == result.id)) {
+					list.push(result);
+				}
+			}
 			return set(list);
 		}
 	};
@@ -81,7 +86,6 @@ export function searchStore() {
 	};
 	const { subscribe, set, update } = writable<SearchStore>(store);
 
-	let searchTimeout = 0;
 	return {
 		subscribe,
 		set,
@@ -98,42 +102,39 @@ export function searchStore() {
 			}
 			return set(store);
 		},
-		execute() {
-			clearTimeout(searchTimeout);
-			searchTimeout = setTimeout(async () => {
-				searching.set(true);
-				loadingMore.set(false);
+		async execute() {
+			searching.set(true);
+			loadingMore.set(false);
 
-				// Reset form
-				store.page = 1;
-				store.startAt = 0;
-				set(store);
-				results.setResults([]);
+			// Reset form
+			store.page = 1;
+			store.startAt = 0;
+			set(store);
+			results.setResults([]);
 
-				// Send request
-				const params = buildParams(store);
-				const res = await fetch(`http://localhost:7072/v1/media/search?${params}`, {
-					method: 'GET',
-					headers: { accept: 'application/json' }
-				});
-				if (res.ok) {
-					const body = (await res.json()) as {
-						page: number;
-						results: number;
-						totalResults: number;
-						medias: Result[];
-					};
-					results.setResults(
-						body.medias.map((media) => {
-							media.name = media.names.find((name) => name.lang == '__')!.title;
-							return media;
-						})
-					);
-					totalResults.set(body.totalResults);
-				}
+			// Send request
+			const params = buildParams(store);
+			const res = await fetch(`http://localhost:7072/v1/media/search?${params}`, {
+				method: 'GET',
+				headers: { accept: 'application/json' }
+			});
+			if (res.ok) {
+				const body = (await res.json()) as {
+					page: number;
+					results: number;
+					totalResults: number;
+					medias: Result[];
+				};
+				results.setResults(
+					body.medias.map((media) => {
+						media.name = media.names.find((name) => name.lang == '__')!.title;
+						return media;
+					})
+				);
+				totalResults.set(body.totalResults);
+			}
 
-				searching.set(false);
-			}, 200);
+			searching.set(false);
 		},
 		async loadMore() {
 			loadingMore.set(true);
