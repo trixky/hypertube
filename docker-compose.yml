@@ -92,6 +92,7 @@ services:
       - api-auth
     links:
       - api-auth
+      - api-search
     ports:
       - "${CLIENT_PORT}:${CLIENT_PORT}"
 

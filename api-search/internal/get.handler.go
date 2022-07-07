@@ -39,6 +39,7 @@ func (s *SearchServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespo
 			Names:       make([]*pb.MediaName, 0),
 			Genres:      make([]string, 0),
 			Thumbnail:   &media.Thumbnail.String,
+			Background:  &media.Background.String,
 			Rating:      &rating,
 		},
 		Torrents: make([]*pb.TorrentPublicInformations, 0),

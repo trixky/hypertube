@@ -76,14 +76,14 @@ service SearchService {
             get: "/v1/media/search"
         };
 	};
-    rpc Get(GetRequest) returns (GetResponse) {
-        option (google.api.http) = {
-            get: "/v1/media/get/{id}"
-        };
-	};
     rpc Genres(GenresRequest) returns (GenresResponse) {
         option (google.api.http) = {
             get: "/v1/media/genres"
+        };
+	};
+    rpc Get(GetRequest) returns (GetResponse) {
+        option (google.api.http) = {
+            get: "/v1/media/get/{id}"
         };
 	};
 }

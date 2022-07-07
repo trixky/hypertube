@@ -22,7 +22,7 @@
 	// Obser the Load More card when it's visible and loadMore if the user can see it
 	let observer: IntersectionObserver;
 	function onIntersectionEvent(entries: IntersectionObserverEntry[]) {
-		if (loading || $totalResults == $results.length) {
+		if (loading || $results.length == 0 || $totalResults == $results.length) {
 			return;
 		}
 		for (const entry of entries) {
@@ -75,17 +75,22 @@
 
 	function onScroll() {
 		if (browser) {
+			if ($loadingMore || $results.length == 0 || $totalResults == $results.length) {
+				return;
+			}
 			const element = document.documentElement;
 			const offset = element.scrollHeight - element.clientHeight - element.scrollTop;
-			if (!$loadingMore && offset <= 100) {
+			if (offset <= 100) {
 				loadMore();
 			}
 		}
 	}
 
 	onMount(async () => {
-		await search.execute();
-		onScroll();
+		if (!$search.hasResults) {
+			await search.execute();
+			onScroll();
+		}
 		if (browser) {
 			window.addEventListener('scroll', onScroll, { passive: true });
 			window.addEventListener('resize', onScroll, { passive: true });
@@ -181,7 +186,7 @@
 		<div class="result-wrapper p-4">
 			{#each $results as result, index (result.id)}
 				{@const cover = result.thumbnail ? result.thumbnail : '/no_cover.png'}
-				<div class="result overflow-hidden w-40 mx-auto">
+				<a href={`/media/${result.id}`} class="result overflow-hidden w-40 mx-auto">
 					<div
 						class="cover"
 						in:fade={{ duration: 150, delay: (index - $search.startAt) * 10 }}
@@ -203,7 +208,7 @@
 					{#if result.year}
 						<div class="text-white text-sm opacity-80">{result.year}</div>
 					{/if}
-				</div>
+				</a>
 			{/each}
 			{#if $totalResults != $results.length}
 				<div
@@ -237,6 +242,10 @@
 
 	.cover {
 		@apply h-56 w-40 rounded-md overflow-hidden cursor-pointer transition-all bg-center bg-cover relative;
+	}
+
+	.result {
+		@apply block;
 	}
 
 	.result .rating {

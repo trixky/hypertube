@@ -44,6 +44,7 @@ export const totalResults = writable<number>(0);
 type SortColumns = 'id' | 'name' | 'year' | 'duration';
 type SortOrder = 'ASC' | 'DESC';
 type SearchStore = {
+	hasResults: boolean;
 	query?: string | null;
 	page: number;
 	startAt: number;
@@ -77,6 +78,7 @@ function buildParams(params: SearchStore): string {
 
 export function searchStore() {
 	const store: SearchStore = {
+		hasResults: false,
 		query: '',
 		page: 1,
 		startAt: 0,
@@ -132,6 +134,8 @@ export function searchStore() {
 					})
 				);
 				totalResults.set(body.totalResults);
+				store.hasResults = true;
+				set(store);
 			}
 
 			searching.set(false);
