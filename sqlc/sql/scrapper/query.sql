@@ -106,7 +106,7 @@ LIMIT 1;
 SELECT medias.*
 FROM medias
 RIGHT JOIN media_names ON medias.id = media_names.media_id
-WHERE media_names.name == $1 AND medias.year = $2
+WHERE media_names.name = $1 AND medias.year = $2
 LIMIT 1;
 
 -- name: CheckMediaExistByIMDB :one
