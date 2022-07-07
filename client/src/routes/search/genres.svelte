@@ -5,7 +5,7 @@
 	import ChevronDown from '../../../src/components/icons/ChevronDown.svelte';
 	import ChevronUp from '../../../src/components/icons/ChevronUp.svelte';
 	import { loaded, loading, genres } from '../../../src/stores/genres';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { search } from '../../../src/stores/search';
 	import Times from '../../../src/components/icons/Times.svelte';
 
@@ -25,12 +25,24 @@
 		isOpen = false;
 	}
 
-	function toggle() {
+	let maxHeight = 0;
+	let details: HTMLElement | undefined;
+	async function toggle() {
 		if (!show) {
 			offset = [wrapper.offsetLeft, wrapper.offsetTop];
 			isOpen = true;
 		}
 		show = !show;
+		await tick();
+		if (details) {
+			let rect = details.getBoundingClientRect();
+			console.log('height + offset', rect.top + rect.height, rect);
+			console.log('window height', window.outerHeight - 50);
+			console.log('set to', window.outerHeight - rect.top - rect.height - 50);
+			if (rect.top + rect.height - 50 > window.outerHeight) {
+				maxHeight = window.outerHeight - rect.top - 50;
+			}
+		}
 	}
 
 	// * Value logic
@@ -62,7 +74,7 @@
 	class={`wrapper ${classes}`}
 	class:absolute={isOpen}
 	class:opacity-50={disabled}
-	style={`left: ${offset[0] - 8}px; top: ${offset[1]}px`}
+	style={`left: ${offset[0]}px; top: ${offset[1]}px`}
 	on:click={toggle}
 >
 	<div class="flex justify-between items-center p-2" use:clickOutside on:clickOutside={close}>
@@ -79,7 +91,13 @@
 		{/if}
 	</div>
 	{#if show}
-		<div class="details" transition:fly={{ duration: 150 }} on:outroend={hide}>
+		<div
+			bind:this={details}
+			class="details"
+			transition:fly={{ duration: 150 }}
+			style={maxHeight > 0 ? `max-height: ${maxHeight}px` : ''}
+			on:outroend={hide}
+		>
 			<div
 				class="flex items-center p-2 border-b last:border-b-0 last:rounded-b-md border-slate-400 text-blue-600"
 				on:click={clear}
@@ -113,12 +131,12 @@
 <!-- ========================= CSS -->
 <style lang="postcss">
 	.wrapper {
-		@apply inline-block min-w-[10rem] rounded-md bg-transparent border border-slate-400 bg-slate-900 text-white cursor-pointer;
+		@apply inline-block min-w-[10rem] w-full md:w-auto rounded-md bg-transparent border border-slate-400 bg-slate-900 text-white cursor-pointer;
 		transition: height 150ms ease-in-out, width 150ms ease-in-out;
 	}
 
 	.details {
-		@apply flex flex-col text-white border-t border-slate-400 overflow-hidden;
+		@apply flex flex-col text-white border-t border-slate-400 overflow-auto;
 	}
 
 	.details > div:nth-child(even) {
