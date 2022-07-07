@@ -36,7 +36,7 @@
 		}[];
 	};
 
-	export const load: Load = async ({ params, fetch, session, stuff }) => {
+	export const load: Load = async ({ params, fetch }) => {
 		const url = browser
 			? `http://localhost:7072/v1/media/get/${params.id}`
 			: `http://api-search:7072/v1/media/get/${params.id}`;
@@ -59,9 +59,10 @@
 </script>
 
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import { browser } from '$app/env';
 	import ArrowLeft from '../../../src/components/icons/ArrowLeft.svelte';
-	import { fade } from 'svelte/transition';
 
 	/// @ts-expect-error media is given as a prop
 	export let props: MediaProps;
@@ -110,80 +111,155 @@
 		}
 		return 'text-green-600';
 	}
+
+	// Image average color
+	// @source https://stackoverflow.com/a/49837149
+	let gradientColor: string | undefined;
+	function averageRGB(image: HTMLImageElement): [number, number, number] | undefined {
+		var context = document.createElement('canvas').getContext('2d');
+		if (!context) {
+			return undefined;
+		}
+		context.imageSmoothingEnabled = true;
+		context.drawImage(image as HTMLImageElement, 0, 0, 1, 1);
+		const i = context.getImageData(0, 0, 1, 1).data;
+		let colors = [i[0], i[1], i[2]];
+		// Clamp each channels to 150 to avoid bright colors
+		let difference = colors.reduce((carry, value) => {
+			if (value > 70) {
+				return Math.max(carry, value - 70);
+			}
+			return carry;
+		}, 0);
+		return colors.map((color) => Math.max(0, color - difference)) as [number, number, number];
+	}
+
+	let loadingGradient = true;
+	let background: string | undefined;
+	onMount(() => {
+		if (browser) {
+			// Load background first to have a clean fade-in
+			const useBackground = media.background
+				? media.background
+				: media.thumbnail
+				? media.thumbnail
+				: undefined;
+			if (useBackground) {
+				const image = new Image();
+				image.setAttribute('crossOrigin', '');
+				image.src = useBackground;
+				image.addEventListener('load', () => {
+					background = useBackground;
+				});
+			}
+
+			// Load the image used for the gradient
+			const useImage = media.thumbnail ? media.thumbnail : undefined;
+			if (useImage && useImage != '') {
+				const image = new Image();
+				image.setAttribute('crossOrigin', '');
+				image.src = useImage;
+				image.addEventListener('load', () => {
+					let color = averageRGB(image);
+					if (color) {
+						gradientColor = `rgba(${color.join(',')}, 0.7)`;
+					}
+					loadingGradient = false;
+				});
+			} else {
+				loadingGradient = false;
+			}
+		}
+	});
 </script>
 
 <!-- ========================= HTML -->
 <div class="flex flex-col w-full h-auto bg-black">
-	<div
-		class="header min-h-[30rem] flex-grow-0 border-b-stone-200 border-b"
-		in:fade={{ duration: 150 }}
-		style={`background-image: url("${media.background ? media.background : media.thumbnail}")`}
-	>
-		<div class="header-gradient">
-			<div class="m-2 px-2 py-1 bg-white border-2 border-gray-400 rounded-sm inline-block">
-				<a href="/search"><ArrowLeft /> Go Back</a>
-			</div>
-			<div class="flex flex-row w-11/12 md:w-8/12 lg:w-1/2 mx-auto">
-				<img
-					src={cover}
-					alt={`${userFavoriteTitle} Cover`}
-					in:fade={{ duration: 150, delay: 50 }}
-					class="h-96 rounded-md flex-grow-0 flex-shrink-0"
+	<div class="header min-h-[30rem] flex-grow-0 border-b-stone-200 border-b">
+		{#if !loadingGradient}
+			{#if background}
+				<div
+					class="header-image transition-all"
+					in:fade={{ duration: 250 }}
+					style={`background-image: url("${background}")`}
 				/>
-				<div class="ml-4 text-white">
-					<div class="text-3xl">{userFavoriteTitle.title}</div>
-					{#if userFavoriteTitle.lang != '__'}
-						<div class="text-xl opacity-80">{defaultTitle.title}</div>
+			{/if}
+			{#if gradientColor}
+				<div
+					class="header-gradient transition-all"
+					style={gradientColor ? `--gradient-color: ${gradientColor}` : ''}
+				/>
+			{/if}
+		{:else}
+			<div class="header-gradient transition-all" />
+		{/if}
+		<div
+			class="absolute top-0 left-0 m-2 px-2 py-1 text-stone-200 inline-block hover:text-blue-500 transition-colors"
+		>
+			<a href="/search"><ArrowLeft /> Go Back</a>
+		</div>
+		<div
+			class="relative flex flex-col md:flex-row justify-center items-center w-11/12 md:w-8/12 lg:w-1/2 mx-auto py-10"
+		>
+			<img
+				src={cover}
+				alt={`${userFavoriteTitle} Cover`}
+				in:fade={{ duration: 150, delay: 50 }}
+				class="h-[500px] rounded-md flex-grow-0 "
+			/>
+			<div class="ml-4 text-white">
+				<div class="text-3xl mt-4 lg:mt-0">{userFavoriteTitle.title}</div>
+				{#if userFavoriteTitle.lang != '__'}
+					<div class="text-xl opacity-80">{defaultTitle.title}</div>
+				{/if}
+				<div class="text-white mt-4">
+					{#if media.year}
+						{media.year}
 					{/if}
-					<div class="text-white mt-4">
-						{#if media.year}
-							{media.year}
-						{/if}
-						{#if media.year && media.genres.length > 0}
-							<span class="mx-1">&#x2022;</span>
-						{/if}
-						{#if media.genres.length > 0}
-							{media.genres.join(', ')}
-						{/if}
-						{#if (media.year || media.genres.length > 0) && media.duration}
-							<span class="mx-1">&#x2022;</span>
-						{/if}
-						{#if media.duration}
-							{durationStr}
-						{/if}
-					</div>
-					<div class="text-white mt-4">{media.description}</div>
-					{#if staffs.length > 0}
-						<div class="text-lg mt-4">Staffs</div>
-						<div class="max-h-16 overflow-hidden">
-							{#each staffs as staff (staff.id + (staff.role ?? ''))}
-								<div>{staff.id}</div>
-								<div>{staff.name}</div>
-								<div>{staff.role}</div>
-								<div>{staff.thumbnail}</div>
-							{/each}
-						</div>
+					{#if media.year && media.genres.length > 0}
+						<span class="mx-1">&#x2022;</span>
 					{/if}
-					{#if actors.length > 0}
-						<div class="text-lg mt-4">Actors</div>
-						<div class="max-h-16 overflow-hidden">
-							{#each actors as actor (actor.id + (actor.character ?? ''))}
-								<div>{actor.id}</div>
-								<div>{actor.name}</div>
-								<div>{actor.character}</div>
-								<div>{actor.thumbnail}</div>
-							{/each}
-						</div>
+					{#if media.genres.length > 0}
+						{media.genres.join(', ')}
+					{/if}
+					{#if (media.year || media.genres.length > 0) && media.duration}
+						<span class="mx-1">&#x2022;</span>
+					{/if}
+					{#if media.duration}
+						{durationStr}
 					{/if}
 				</div>
+				<div class="text-white mt-4">{media.description}</div>
+				{#if staffs.length > 0}
+					<div class="text-lg mt-4">Staffs</div>
+					<div class="max-h-16 overflow-hidden">
+						{#each staffs as staff (staff.id + (staff.role ?? ''))}
+							<div>{staff.id}</div>
+							<div>{staff.name}</div>
+							<div>{staff.role}</div>
+							<div>{staff.thumbnail}</div>
+						{/each}
+					</div>
+				{/if}
+				{#if actors.length > 0}
+					<div class="text-lg mt-4">Actors</div>
+					<div class="max-h-16 overflow-hidden">
+						{#each actors as actor (actor.id + (actor.character ?? ''))}
+							<div>{actor.id}</div>
+							<div>{actor.name}</div>
+							<div>{actor.character}</div>
+							<div>{actor.thumbnail}</div>
+						{/each}
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>
-	<div class="w-11/12 md:w-8/12 lg:w-1/2 mx-auto text-white mt-4">
+	<div class="w-full p-4 md:w-8/12 lg:w-1/2 mx-auto text-white mt-4">
 		<h1 class="text-2xl">Torrents</h1>
 		{#if torrents.length > 0}
 			<table class="w-full">
-				<thead>
+				<thead class="none lg:visible">
 					<tr>
 						<td>Name</td>
 						<td>Size</td>
@@ -192,18 +268,25 @@
 						<td />
 					</tr>
 				</thead>
-				<tbody>
+				<tbody class="w-full">
 					{#each torrents as torrent (torrent.id)}
-						<tr>
-							<td class="p-2 pl-0 truncate" title={torrent.name}>{torrent.name}</td>
-							<td class="p-2">
+						<tr class="w-full">
+							<td class="w-full max-h-full block lg:table-cell p-2 truncate" title={torrent.name}>
+								{torrent.name}
+							</td>
+							<td class="w-full max-h-full block lg:table-cell p-2">
 								{#if torrent.size}
 									{torrent.size}
 								{/if}
 							</td>
-							<td class={`p-2 mx-2 ${seedColor(torrent.seed)}`}>{torrent.seed}</td>
-							<td class="p-2 mx-2 text-red-600">{torrent.leech}</td>
-							<td class="p-2">Watch</td>
+							<td
+								class={`w-full max-h-full block lg:table-cell p-2 mx-2 ${seedColor(torrent.seed)}`}
+								>{torrent.seed}</td
+							>
+							<td class="w-full max-h-full block lg:table-cell p-2 mx-2 text-red-600"
+								>{torrent.leech}</td
+							>
+							<td class="w-full max-h-full block lg:table-cell p-2">Watch</td>
 						</tr>
 					{/each}
 				</tbody>
@@ -212,7 +295,7 @@
 			<div>No torrents for this media, yet !</div>
 		{/if}
 	</div>
-	<div class="w-11/12 md:w-8/12 lg:w-1/2 mx-auto text-white mt-4">
+	<div class="w-11/12 md:w-8/12 lg:w-1/2 mx-auto text-white my-4">
 		<h1 class="text-2xl">Comments</h1>
 		{#if [].length > 0}
 			<div class="max-h-16 overflow-hidden">
@@ -232,14 +315,20 @@
 <!-- ========================= CSS -->
 <style lang="postcss">
 	.header {
-		@apply relative bg-center bg-cover bg-no-repeat;
-		background-image: linear-gradient(to bottom right, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.64));
+		@apply relative;
+	}
+
+	.header-image {
+		@apply absolute w-full h-full z-0 bg-center bg-cover bg-no-repeat;
+		--gradient-color: rgba(0, 0, 0, 0.7);
+		background-image: linear-gradient(to bottom right, rgba(0, 0, 0, 0.9), var(--gradient-color));
+		transition: background 150ms linear;
 	}
 
 	.header-gradient {
-		@apply h-full w-full;
-		background-image: linear-gradient(to bottom right, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.64));
+		@apply absolute w-full h-full z-0;
+		--gradient-color: rgba(0, 0, 0, 0.7);
+		background-image: linear-gradient(to bottom right, rgba(0, 0, 0, 0.9), var(--gradient-color));
+		transition: background 150ms linear;
 	}
-	/*
- */
 </style>
