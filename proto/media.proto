@@ -24,5 +24,6 @@ message Media {
 	repeated string genres = 6;
 	optional int32 duration = 7;
 	optional string thumbnail = 8;
-	optional float rating = 9;
+	optional string background = 9;
+	optional float rating = 10;
 }
