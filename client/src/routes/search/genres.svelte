@@ -35,7 +35,7 @@
 
 	// * Value logic
 	let selected: number[] = [];
-	function onInput() {
+	async function onChange() {
 		search.setGenres(selected);
 		search.execute();
 	}
@@ -95,7 +95,7 @@
 						id={genre.name}
 						bind:group={selected}
 						value={genre.id}
-						on:input={onInput}
+						on:change={onChange}
 					/>
 					<label for={genre.name} class="inline-block flex-grow">{genre.name}</label>
 				</div>

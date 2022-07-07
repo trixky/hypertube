@@ -64,10 +64,8 @@ function buildParams(params: SearchStore): string {
 	if (params.rating) {
 		result.push(`rating=${encodeURIComponent(params.rating)}`);
 	}
-	if (params.genres.length > 0) {
-		for (const genre of params.genres) {
-			result.push(`${encodeURIComponent('genre_ids')}=${encodeURIComponent(genre)}`);
-		}
+	for (const genre of params.genres) {
+		result.push(`${encodeURIComponent('genre_ids')}=${encodeURIComponent(genre)}`);
 	}
 	return result.join('&');
 }
