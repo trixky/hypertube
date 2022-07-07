@@ -62,6 +62,7 @@
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { browser } from '$app/env';
+	import { goto } from '$app/navigation';
 	import ArrowLeft from '../../../src/components/icons/ArrowLeft.svelte';
 
 	/// @ts-expect-error media is given as a prop
@@ -100,6 +101,16 @@
 		}
 		return `${total.minutes}m`;
 	})();
+
+	function goBack(event: Event) {
+		event.preventDefault();
+		// TODO Avoid exit when opening the media page directly
+		if (history.length > 1) {
+			history.back();
+		} else {
+			goto('/search');
+		}
+	}
 
 	// Utility
 	function seedColor(amount: number) {
@@ -196,10 +207,10 @@
 		<div
 			class="absolute top-0 left-0 m-2 px-2 py-1 text-stone-200 inline-block hover:text-blue-500 transition-colors"
 		>
-			<a href="/search"><ArrowLeft /> Go Back</a>
+			<a href="/search" on:click={goBack} class="cursor-pointer"><ArrowLeft /> Go Back</a>
 		</div>
 		<div
-			class="relative flex flex-col md:flex-row justify-center items-center w-11/12 md:w-8/12 lg:w-1/2 mx-auto py-10"
+			class="relative flex flex-col md:flex-row justify-center items-center w-11/12 md:w-4/5 lg:w-1/2 mx-auto py-10"
 		>
 			<img
 				src={cover}
@@ -207,7 +218,7 @@
 				in:fade={{ duration: 150, delay: 50 }}
 				class="h-[500px] rounded-md flex-grow-0 "
 			/>
-			<div class="ml-4 text-white">
+			<div class="md:ml-8 text-white">
 				<div class="text-3xl mt-4 lg:mt-0">{userFavoriteTitle.title}</div>
 				{#if userFavoriteTitle.lang != '__'}
 					<div class="text-xl opacity-80">{defaultTitle.title}</div>
@@ -255,48 +266,41 @@
 			</div>
 		</div>
 	</div>
-	<div class="w-full p-4 md:w-8/12 lg:w-1/2 mx-auto text-white mt-4">
-		<h1 class="text-2xl">Torrents</h1>
+	<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white mt-4">
+		<h1 class="text-2xl mb-4">Torrents</h1>
 		{#if torrents.length > 0}
-			<table class="w-full">
-				<thead class="none lg:visible">
-					<tr>
-						<td>Name</td>
-						<td>Size</td>
-						<td>Seed</td>
-						<td>Leech</td>
-						<td />
-					</tr>
-				</thead>
-				<tbody class="w-full">
-					{#each torrents as torrent (torrent.id)}
-						<tr class="w-full">
-							<td class="w-full max-h-full block lg:table-cell p-2 truncate" title={torrent.name}>
-								{torrent.name}
-							</td>
-							<td class="w-full max-h-full block lg:table-cell p-2">
-								{#if torrent.size}
-									{torrent.size}
-								{/if}
-							</td>
-							<td
-								class={`w-full max-h-full block lg:table-cell p-2 mx-2 ${seedColor(torrent.seed)}`}
-								>{torrent.seed}</td
-							>
-							<td class="w-full max-h-full block lg:table-cell p-2 mx-2 text-red-600"
-								>{torrent.leech}</td
-							>
-							<td class="w-full max-h-full block lg:table-cell p-2">Watch</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
+			<div class="w-full">
+				{#each torrents as torrent (torrent.id)}
+					<div class="flex flex-col xl:flex-row w-full my-2">
+						<div class="flex-grow truncate" title={torrent.name}>
+							{torrent.name}
+						</div>
+						{#if torrent.size}
+							<div class="hidden xl:block flex-shrink-0 opacity-80">
+								{torrent.size}
+							</div>
+						{/if}
+						<div class="xl:hidden">
+							{#if torrent.size}
+								Size: {torrent.size} &#x2022;
+							{/if}
+							Seed: <span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> &#x2022; Leech:
+							<span class=" text-red-600">{torrent.leech}</span>
+						</div>
+						<div class="hidden xl:block mx-4 flex-shrink-0 min-w-[3rem] text-center">
+							<span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> /
+							<span class="text-red-600">{torrent.leech}</span>
+						</div>
+						<div class=" ">Watch</div>
+					</div>
+				{/each}
+			</div>
 		{:else}
 			<div>No torrents for this media, yet !</div>
 		{/if}
 	</div>
-	<div class="w-11/12 md:w-8/12 lg:w-1/2 mx-auto text-white my-4">
-		<h1 class="text-2xl">Comments</h1>
+	<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4">
+		<h1 class="text-2xl mb-4">Comments</h1>
 		{#if [].length > 0}
 			<div class="max-h-16 overflow-hidden">
 				{#each actors as actor (actor.id + (actor.character ?? ''))}
