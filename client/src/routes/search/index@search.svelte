@@ -102,20 +102,22 @@
 
 <!-- ========================= HTML -->
 <div class="bg-black min-h-[90%] w-full flex-grow">
-	<div class="flex items-center w-full sticky top-0 p-4 bg-black z-10 border-b-2 border-blue-500">
+	<div
+		class="flex flex-col md:flex-row items-center w-full sticky top-0 p-4 bg-black z-10 border-b-2 border-blue-500"
+	>
 		<div>
 			<input
 				type="text"
-				class="input"
+				class="input block w-full mb-2 lg:inline-block lg:w-auto lg:mb-0"
 				placeholder="Search"
 				disabled={loading}
 				bind:value={$search.query}
 				on:input={debounceSearch}
 			/>
-			<label for="year" class="ml-4 ">Year</label>
+			<label for="year" class="lg:ml-4">Year</label>
 			<input
 				type="number"
-				class="input w-20"
+				class="input w-20 mb-2 lg:mb-0"
 				placeholder="Year"
 				name="year"
 				min="0"
@@ -138,10 +140,10 @@
 				bind:value={$search.rating}
 				on:input={debounceSearch}
 			/>
-			<Genres disabled={loading} class="ml-2" />
+			<Genres disabled={loading} class="lg:ml-2" />
 		</div>
 		<div class="flex-grow" />
-		<div>
+		<div class="mt-2 lg:mt-0">
 			<label for="sort">Sort By</label>
 			<select
 				class="input"
@@ -154,13 +156,17 @@
 					<option value={column.value}>{column.name}</option>
 				{/each}
 			</select>
-		</div>
-		<div class="input ml-2 cursor-pointer" class:opacity-80={loading} on:click={toggleSort}>
-			{#if $search.sortOrder == 'ASC'}
-				Asc <SortAsc />
-			{:else}
-				Desc <SortDesc />
-			{/if}
+			<div
+				class="input inline-block ml-2 cursor-pointer"
+				class:opacity-80={loading}
+				on:click={toggleSort}
+			>
+				{#if $search.sortOrder == 'ASC'}
+					Asc <SortAsc />
+				{:else}
+					Desc <SortDesc />
+				{/if}
+			</div>
 		</div>
 	</div>
 	{#if $searching}
