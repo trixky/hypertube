@@ -13,7 +13,8 @@ WHERE media_names.media_id = $1;
 SELECT torrents.*
 FROM torrents
 RIGHT JOIN medias ON torrents.media_id = medias.id
-WHERE torrents.media_id = $1;
+WHERE torrents.media_id = $1
+ORDER BY seed DESC, leech ASC;
 
 -- name: GetMediaGenres :many
 SELECT genres.*

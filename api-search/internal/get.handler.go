@@ -64,11 +64,15 @@ func (s *SearchServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespo
 		return nil, err
 	}
 	for _, torrent := range torrents {
+		size := torrent.Size.String
+		seed := torrent.Seed.Int32
+		leech := torrent.Leech.Int32
 		response.Torrents = append(response.Torrents, &pb.TorrentPublicInformations{
 			Id:    int32(torrent.ID.Int64),
 			Name:  torrent.Name.String,
-			Seed:  &torrent.Seed.Int32,
-			Leech: &torrent.Leech.Int32,
+			Size:  &size,
+			Seed:  &seed,
+			Leech: &leech,
 		})
 	}
 
