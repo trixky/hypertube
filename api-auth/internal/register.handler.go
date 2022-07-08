@@ -3,12 +3,14 @@ package internal
 import (
 	"context"
 	"database/sql"
+	"encoding/base64"
 
 	"github.com/google/uuid"
 	"github.com/trixky/hypertube/api-auth/databases"
 	pb "github.com/trixky/hypertube/api-auth/proto"
 	"github.com/trixky/hypertube/api-auth/sanitizer"
 	"github.com/trixky/hypertube/api-auth/sqlc"
+	"github.com/trixky/hypertube/api-auth/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -61,11 +63,25 @@ func (s *AuthServer) InternalRegister(ctx context.Context, in *pb.InternalRegist
 	// -------------------- cache
 	token := uuid.New().String() // token generation
 
-	if err := databases.AddToken(new_user.ID, token, databases.REDIS_EXTERNAL_none); err != nil {
+	if err := databases.AddToken(new_user.ID, token, databases.EXTERNAL_none); err != nil {
 		return nil, status.Errorf(codes.Internal, "token generation failed")
+	}
+
+	me, err := utils.HeaderCookieMeGeneration(utils.CookieMe{
+		Id:        int(new_user.ID),
+		Username:  new_user.Username,
+		Firstname: new_user.Firstname,
+		Lastname:  new_user.Lastname,
+		Email:     new_user.Email,
+		External:  databases.EXTERNAL_none,
+	}, false)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "cookie generation failed")
 	}
 
 	return &pb.GenericConnectionResponse{
 		Token: token,
+		Me:    base64.StdEncoding.EncodeToString([]byte(me.Value)),
 	}, nil
 }

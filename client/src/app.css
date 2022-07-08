@@ -24,14 +24,14 @@ input:disabled {
     opacity: 0.3;
 }
 
-hr {
-    @apply border-white/60 inline-block w-28 -translate-y-1 mx-1;
-}
-
 label {
     @apply block p-2 text-white;
 }
 
 label.required::after {
     @apply content-['*'] text-blue-300;
+}
+
+.extra-link {
+    @apply text-slate-400 text-sm;
 }

@@ -9,8 +9,6 @@ import (
 )
 
 const (
-	REDIS_EXTERNAL_none     = "none"
-	REDIS_EXTERNAL_42       = "42"
 	REDIS_EXTERNAL_google   = "google"
 	REDIS_SEPARATOR         = "."
 	REDIS_PATTERN_KEY_token = "token"
@@ -23,7 +21,7 @@ type Token_info struct {
 
 func AddToken(user_id int64, token string, external string) error {
 	if len(external) == 0 {
-		external = REDIS_EXTERNAL_none
+		external = EXTERNAL_none
 	}
 
 	err := DBs.Redis.Append(REDIS_PATTERN_KEY_token+REDIS_SEPARATOR+token+REDIS_SEPARATOR+strconv.Itoa(int(user_id)), external).Err()

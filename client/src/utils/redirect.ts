@@ -1,27 +1,28 @@
 import * as cookies from './cookies'
+import { goto } from '$app/navigation';
 
 function disconnect() {
-    cookies.del_a_cookie('token')
-
-    window.location.href = window.location.origin + '/login';
+    cookies.del_a_cookie(cookies.labels.token)
+    cookies.del_a_cookie(cookies.labels.me)
+    goto('/login')
 }
 
 function already_connected(browser: boolean): boolean {
-    if (browser && cookies.get_a_cookie(cookies.labels.token)) {
-		window.location.href = window.location.origin + '/';
-        
+    if (browser && cookies.get_token()) {
+        goto('/')
+
         return true
-	}
+    }
 
     return false
 }
 
 function not_connected(browser: boolean): boolean {
-    if (browser && !cookies.get_a_cookie(cookies.labels.token)) {
-		window.location.href = window.location.origin + '/login';
+    if (browser && !cookies.get_token()) {
+        goto('/login')
 
         return true
-	}
+    }
 
     return false
 }
