@@ -1,30 +1,41 @@
 syntax = "proto3";
 
+import "google/api/annotations.proto";
+
+
 option go_package = "./proto";
 
-package user;
 
-message ModifyEmail {
-    string email = 1;
+package auth;
+
+message GetMeRequest {
+    string token = 1;
 }
 
-message ModifyPassword {
-    string current_password = 1;
-    string new_password = 2;
+message UpdateMeRequest {
+    string token = 1;
+    string username = 2;
+    string firstname = 3;
+    string lastname = 4;
+    string email = 5;
+    string current_password = 6;
+    string new_password = 7;
 }
 
-message ModifyUsername {
-    bytes username = 1;
+message MeResponse {
+    string me = 1;
 }
 
-message ModifyFirstname {
-    bytes firstname = 1;
-}
+service UserService {
+    rpc GetMe(GetMeRequest) returns (MeResponse) {
+        option (google.api.http) = {
+            get: "/v1/me"
+        };
+    };
 
-message ModifyLastname {
-    bytes lastname = 1;
-}
-
-message ModifyProfilePicture {
-    bytes image = 1;
+    rpc UpdateMe(UpdateMeRequest) returns (MeResponse) {
+        option (google.api.http) = {
+            patch: "/v1/me"
+        };
+    };
 }

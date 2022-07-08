@@ -13,7 +13,7 @@
 
 <!-- ========================= HTML -->
 <button
-	class="absolute right-10 p-1 translate-y-1"
+	class="absolute right-2 p-1 translate-y-1"
 	on:click|preventDefault={handle_click}
     tabindex="-1"
 >

@@ -15,7 +15,8 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
 ## Compile to the auth api
 
 ```
-protoc -Iproto --go_out=api-auth --go-grpc_out=api-auth --grpc-gateway_out=api-auth  proto/*.proto
+protoc -Iproto --go_out=api-auth --go-grpc_out=api-auth --grpc-gateway_out=api-auth  proto/auth.proto
+protoc -Iproto --go_out=api-user --go-grpc_out=api-user --grpc-gateway_out=api-user  proto/user.proto
 ```
 
 # GRPC/api_rest compatibility

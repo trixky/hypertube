@@ -13,4 +13,9 @@ type Databases struct {
 	Redis       *redis.Client
 }
 
+const (
+	EXTERNAL_none = "none"
+	EXTERNAL_42   = "42"
+)
+
 var DBs Databases

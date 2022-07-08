@@ -20,6 +20,27 @@ services:
 
     # access to the server:
     # $> docker-compose exec server sh
+
+  api-user:
+    build: ./api-user
+    env_file:
+      - ./api-user/.env
+      - ./postgres/.env
+    volumes:
+      - ./api-user:/app
+    depends_on:
+      - postgres
+      - redis
+    links:
+      - postgres
+      - redis
+    ports:
+      - "${API_USER_GRPC_PORT}:${API_USER_GRPC_PORT}"
+      - "${API_USER_GRPC_GATEWAY_PORT}:${API_USER_GRPC_GATEWAY_PORT}"
+      - "${API_USER_HTTP_PORT}:${API_USER_HTTP_PORT}"
+
+    # access to the server:
+    # $> docker-compose exec server sh
   
   postgres:
     image: postgres

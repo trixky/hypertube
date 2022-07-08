@@ -31,9 +31,13 @@ INSERT INTO users (
     $1, $2, $3, $4, $5, $6
 ) RETURNING *;
 
--- name: UpdateUserUsername :exec
+-- name: UpdateUser :exec
 UPDATE users
-set username = $2
+set username = $2,
+firstname = $3,
+lastname = $4,
+email = $5,
+password = $6
 WHERE id = $1;
 
 -- name: DeleteUser :exec
