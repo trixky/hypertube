@@ -66,6 +66,8 @@
 	import { quintInOut } from 'svelte/easing';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
+	// @ts-expect-error No types for quantize
+	import quantize from 'quantize';
 	import ArrowLeft from '../../../src/components/icons/ArrowLeft.svelte';
 	import Play from '../../../src/components/icons/Play.svelte';
 	import Hd from '../../../src/components/icons/HD.svelte';
@@ -166,6 +168,48 @@
 		}
 	}
 
+	// Background animation
+	let palette: string[] = [];
+	let paletteLength = palette.length;
+
+	function randomNumber(minInc: number, maxExcl: number) {
+		return Math.random() * (maxExcl - minInc) + minInc;
+	}
+
+	const nbLines = 10;
+	let lines: {
+		id: number;
+		visible: boolean;
+		left: number;
+		height: number;
+		color: string;
+		duration: number;
+	}[] = [];
+	function startBackground() {
+		for (let index = 0; index < nbLines; index++) {
+			lines.push({ id: index, visible: false, left: 0, height: 0, color: '', duration: 0 });
+			setTimeout(() => {
+				resetLine(index);
+			}, randomNumber(0, 500));
+		}
+	}
+	function removeLine(index: number) {
+		const line = lines[index];
+		line.visible = false;
+		lines = lines;
+	}
+	function resetLine(index: number) {
+		const line = lines[index];
+		line.left = Math.round(randomNumber(0, window.outerWidth));
+		line.height = Math.round(randomNumber(32, 64));
+		line.color = palette[Math.round(randomNumber(0, paletteLength))];
+		line.duration = 1500; // Math.round(randomNumber(1500, 1500));
+		setTimeout(function () {
+			line.visible = true;
+			lines = lines;
+		}, randomNumber(100, 500));
+	}
+
 	// Utility
 	function goBack(event: Event) {
 		event.preventDefault();
@@ -196,17 +240,35 @@
 			return undefined;
 		}
 		context.imageSmoothingEnabled = true;
-		context.drawImage(image as HTMLImageElement, 0, 0, 1, 1);
-		const i = context.getImageData(0, 0, 1, 1).data;
-		let colors = [i[0], i[1], i[2]];
-		// Clamp each channels to 150 to avoid bright colors
-		let difference = colors.reduce((carry, value) => {
-			if (value > 70) {
-				return Math.max(carry, value - 70);
+		context.drawImage(image, 0, 0, image.width, image.height);
+
+		// Extract pixels RGB channels as an array of pixel data
+		let offset = 0;
+		const pixels = context.getImageData(0, 0, image.width, image.height).data;
+		const imageData: [number, number, number][] = [];
+		for (let row = 0; row < image.height; row++) {
+			for (let col = 0; col < image.width; col++) {
+				let [r, g, b] = [pixels[offset], pixels[offset + 1], pixels[offset + 2]];
+				let a = pixels[offset + 3];
+				// If pixel is mostly opaque and not white
+				if (typeof a === 'undefined' || a >= 125) {
+					if (!(r > 250 && g > 250 && b > 250) && !(r < 30 && g < 30 && b < 30)) {
+						imageData.push([r, g, b]);
+					}
+				}
+				offset += 4;
 			}
-			return carry;
-		}, 0);
-		return colors.map((color) => Math.max(0, color - difference)) as [number, number, number];
+		}
+
+		// Extract a color palette
+		const rawPalette: [number, number, number][] = quantize(imageData, 5, 10).palette();
+		palette = rawPalette.map((color) => {
+			return `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+		});
+		paletteLength = palette.length;
+		startBackground();
+
+		return rawPalette[0];
 	}
 
 	const comments: {
@@ -277,51 +339,6 @@
 			}
 		}
 	});
-
-	// Background animation
-	function randomNumber(minInc: number, maxExcl: number) {
-		return Math.random() * (maxExcl - minInc) + minInc;
-	}
-
-	const nbLines = 5;
-	let colors: string[] = [
-		'rgb(96, 165, 250)',
-		'rgb(170, 50, 201)',
-		'rgb(219, 126, 20)',
-		'rgb(16, 121, 39)'
-	];
-	let lines: {
-		id: number;
-		visible: boolean;
-		left: number;
-		height: number;
-		color: string;
-		duration: number;
-	}[] = [];
-	if (browser) {
-		for (let index = 0; index < nbLines; index++) {
-			lines.push({ id: index, visible: false, left: 0, height: 0, color: '', duration: 0 });
-			setTimeout(() => {
-				resetLine(index);
-			}, randomNumber(0, 1000));
-		}
-	}
-	function removeLine(index: number) {
-		const line = lines[index];
-		line.visible = false;
-		lines = lines;
-	}
-	function resetLine(index: number) {
-		const line = lines[index];
-		line.left = Math.round(randomNumber(0, window.outerWidth));
-		line.height = Math.round(randomNumber(32, 64));
-		line.color = colors[Math.round(randomNumber(0, 4))];
-		line.duration = Math.round(randomNumber(1000, 1500));
-		setTimeout(function () {
-			line.visible = true;
-			lines = lines;
-		}, randomNumber(100, 500));
-	}
 </script>
 
 <!-- ========================= HTML -->
@@ -433,8 +450,8 @@
 					<div
 						class="absolute top-0 w-1 rounded-sm"
 						style={`left: ${line.left}px; height: ${line.height}px; background-color: ${line.color}`}
-						in:fly={{ duration: 150, y: -line.height, opacity: 1 }}
-						out:fly={{ y: window.outerHeight, duration: line.duration, easing: quintInOut }}
+						in:fade={{ duration: 0 }}
+						out:fly={{ y: window.outerHeight, duration: line.duration, delay: 0 }}
 						on:introend={removeLine.bind(null, line.id)}
 						on:outroend={resetLine.bind(null, line.id)}
 					/>
