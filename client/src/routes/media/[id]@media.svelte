@@ -21,6 +21,8 @@
 			size?: string | null;
 			leech: number;
 			seed: number;
+			quality?: string;
+			hover: boolean;
 		}[];
 		staffs: {
 			id: number;
@@ -64,10 +66,28 @@
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
 	import ArrowLeft from '../../../src/components/icons/ArrowLeft.svelte';
+	import Play from '../../../src/components/icons/Play.svelte';
+	import Hd from '../../../src/components/icons/HD.svelte';
+	import Icon4K from '../../../src/components/icons/4K.svelte';
+	import Icon8K from '../../../src/components/icons/8K.svelte';
+	import Sd from '../../../src/components/icons/SD.svelte';
 
 	/// @ts-expect-error media is given as a prop
 	export let props: MediaProps;
 	const { media, torrents, staffs, actors } = props;
+
+	// Find quality for torrents
+	for (const torrent of torrents) {
+		if (/sd|720p?|(hq)?\s*cam(\s*rip)?/i.exec(torrent.name)) {
+			torrent.quality = 'sd';
+		} else if (/hd|1080p?/i.exec(torrent.name)) {
+			torrent.quality = 'hd';
+		} else if (/2160p?|4k/i.exec(torrent.name)) {
+			torrent.quality = '4k';
+		} else if (/8k/i.exec(torrent.name)) {
+			torrent.quality = '8k';
+		}
+	}
 
 	const cover = media.thumbnail ? media.thumbnail : '/no_cover.png';
 
@@ -334,7 +354,20 @@
 		{#if torrents.length > 0}
 			<div class="w-full">
 				{#each torrents as torrent (torrent.id)}
-					<div class="flex flex-col xl:flex-row w-full my-2">
+					<div class="flex flex-col xl:flex-row xl:items-center w-full my-2">
+						{#if torrent.quality}
+							<div class="flex-shrink-0 mr-2">
+								{#if torrent.quality == 'hd'}
+									<Hd />
+								{:else if torrent.quality == '4k'}
+									<Icon4K />
+								{:else if torrent.quality == '8k'}
+									<Icon8K />
+								{:else}
+									<Sd />
+								{/if}
+							</div>
+						{/if}
 						<div class="flex-grow truncate" title={torrent.name}>
 							{torrent.name}
 						</div>
@@ -354,7 +387,21 @@
 							<span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> /
 							<span class="text-red-600">{torrent.leech}</span>
 						</div>
-						<div class="">Watch</div>
+						<button
+							class="flex items-center p-[2px] rounded-md font-bold border border-stone-400 hover:border-transparent transition-all relative overflow-hidden"
+							on:mouseenter={() => (torrent.hover = true)}
+							on:mouseleave={() => (torrent.hover = false)}
+						>
+							{#if torrent.hover}
+								<div class="loader" transition:fade />
+							{/if}
+							<div
+								class="w-full h-full px-2 py-1 rounded-md relative overflow-hidden bg-black hover:bg-stone-900 transition-all text-blue-400"
+							>
+								<Play />
+								<div class="inline-block text-white">Watch</div>
+							</div>
+						</button>
 					</div>
 				{/each}
 			</div>
@@ -374,6 +421,12 @@
 
 <!-- ========================= CSS -->
 <style lang="postcss">
+	@keyframes move-background {
+		50% {
+			background-position: 100% 50%;
+		}
+	}
+
 	.header {
 		@apply relative;
 	}
@@ -390,5 +443,14 @@
 		--gradient-color: rgba(0, 0, 0, 0.7);
 		background-image: linear-gradient(to bottom right, rgba(0, 0, 0, 0.9), var(--gradient-color));
 		transition: background 150ms linear;
+	}
+
+	.loader {
+		@apply absolute top-0 right-0 bottom-0 left-0;
+		background: rgb(170, 50, 201);
+		background: linear-gradient(90deg, rgb(170, 50, 201) 0%, rgba(107, 139, 176, 1) 100%);
+		background-size: 300% 300%;
+		background-position: 0 50%;
+		animation: move-background 1s alternate infinite;
 	}
 </style>
