@@ -208,6 +208,37 @@
 		return colors.map((color) => Math.max(0, color - difference)) as [number, number, number];
 	}
 
+	const comments: {
+		id: number;
+		user: {
+			id: number;
+			name: string;
+		};
+		date: Date;
+		content: string;
+	}[] = [
+		{
+			id: 1,
+			user: {
+				id: 1,
+				name: 'ncolomer'
+			},
+			date: new Date(),
+			content:
+				'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Provident non debitis enim autem dolor in consequatur odit, nisi nemo nesciunt cumque eligendi obcaecati. Expedita impedit sit animi nam aliquam quasi?'
+		},
+		{
+			id: 2,
+			user: {
+				id: 2,
+				name: 'mcolomer'
+			},
+			date: new Date(),
+			content:
+				'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Provident non debitis enim autem dolor in consequatur odit, nisi nemo nesciunt cumque eligendi obcaecati. Expedita impedit sit animi nam aliquam quasi?'
+		}
+	];
+
 	let loadingGradient = true;
 	let background: string | undefined;
 	onMount(() => {
@@ -410,9 +441,27 @@
 		{/if}
 	</div>
 	<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4">
-		<h1 class="text-2xl mb-4">Comments</h1>
-		{#if [].length > 0}
-			<div>No comments on this media, yet, be the first one !</div>
+		<h1 class="text-2xl mb-4">
+			Comments {#if comments.length > 0}
+				({comments.length})
+			{/if}
+		</h1>
+		{#if comments.length > 0}
+			{#each comments as comment (comment.id)}
+				<div class="comment" class:self={comment.user.id == 1}>
+					{#if comment.user.id == 1}
+						<div class="bordered" />
+					{/if}
+					<div class="comment-header">
+						<div>
+							<span class="opacity-60 text-sm">#{comment.id}</span>
+							<span class="font-bold">{comment.user.name}</span>
+						</div>
+						<div class="text-sm">{comment.date}</div>
+					</div>
+					<div class="comment-content">{comment.content}</div>
+				</div>
+			{/each}
 		{:else}
 			<div>No comments on this media, yet, be the first one !</div>
 		{/if}
@@ -452,5 +501,47 @@
 		background-size: 300% 300%;
 		background-position: 0 50%;
 		animation: move-background 1s alternate infinite;
+	}
+
+	.comment {
+		@apply mb-4 p-2 border border-stone-400 rounded-md bg-stone-900 relative;
+	}
+
+	.comment.self {
+		@apply border-transparent overflow-hidden;
+		padding: 1px;
+	}
+
+	.comment.self .comment-header {
+		@apply p-2 pb-0 bg-stone-900 rounded-t-md;
+	}
+	.comment.self .comment-content {
+		@apply p-2 pt-0 bg-stone-900 rounded-b-md;
+	}
+
+	.comment.self .bordered {
+		@apply absolute top-0 right-0 bottom-0 left-0;
+		background: rgb(170, 50, 201);
+		background: linear-gradient(to bottom right, rgb(170, 50, 201) 0%, rgba(107, 139, 176, 1) 100%);
+	}
+
+	.comment-header {
+		@apply flex justify-between w-full relative;
+	}
+
+	.comment-content {
+		@apply relative;
+	}
+
+	.comment-content::before {
+		@apply block w-full mb-1;
+		content: '';
+		height: 1px;
+		background: linear-gradient(
+			to right,
+			rgba(0, 0, 0, 0) 25%,
+			rgba(255, 255, 255, 0.8) 50%,
+			rgba(0, 0, 0, 0) 75%
+		);
 	}
 </style>
