@@ -102,6 +102,50 @@
 		return `${total.minutes}m`;
 	})();
 
+	// Filter and merge actors and staffs once
+	const cleanStaffs: {
+		id: number;
+		name: string;
+		thumbnail: string;
+		roles: string[];
+	}[] = [];
+	for (const staff of staffs.filter((staff) => staff.thumbnail && staff.role)) {
+		let existingStaff = cleanStaffs.find((existingStaff) => existingStaff.id == staff.id);
+		if (existingStaff) {
+			existingStaff.roles.push(staff.role!);
+		} else {
+			existingStaff = {
+				id: staff.id,
+				name: staff.name,
+				thumbnail: staff.thumbnail!,
+				roles: [staff.role!]
+			};
+			cleanStaffs.push(existingStaff);
+		}
+	}
+
+	const cleanActors: {
+		id: number;
+		name: string;
+		thumbnail: string;
+		characters: string[];
+	}[] = [];
+	for (const actor of actors.filter((actor) => actor.thumbnail && actor.character)) {
+		let existingActor = cleanActors.find((existingActor) => existingActor.id == actor.id);
+		if (existingActor) {
+			existingActor.characters.push(actor.character!);
+		} else {
+			existingActor = {
+				id: actor.id,
+				name: actor.name,
+				thumbnail: actor.thumbnail!,
+				characters: [actor.character!]
+			};
+			cleanActors.push(existingActor);
+		}
+	}
+
+	// Utility
 	function goBack(event: Event) {
 		event.preventDefault();
 		// TODO Avoid exit when opening the media page directly
@@ -112,7 +156,6 @@
 		}
 	}
 
-	// Utility
 	function seedColor(amount: number) {
 		if (amount == 0) {
 			return 'text-red-600';
@@ -218,7 +261,9 @@
 				in:fade={{ duration: 150, delay: 50 }}
 				class="h-[500px] rounded-md flex-grow-0 "
 			/>
-			<div class="md:ml-8 text-white">
+			<div
+				class="md:ml-8 max-w-full md:max-w-[348px] lg:max-w-[612px] xl:max-w-[720px] text-white transition-all"
+			>
 				<div class="text-3xl mt-4 lg:mt-0">{userFavoriteTitle.title}</div>
 				{#if userFavoriteTitle.lang != '__'}
 					<div class="text-xl opacity-80">{defaultTitle.title}</div>
@@ -241,27 +286,45 @@
 					{/if}
 				</div>
 				<div class="text-white mt-4">{media.description}</div>
-				{#if staffs.length > 0}
-					<div class="text-lg mt-4">Staffs</div>
-					<div class="max-h-16 overflow-hidden">
-						{#each staffs as staff (staff.id + (staff.role ?? ''))}
-							<div>{staff.id}</div>
-							<div>{staff.name}</div>
-							<div>{staff.role}</div>
-							<div>{staff.thumbnail}</div>
-						{/each}
-					</div>
-				{/if}
-				{#if actors.length > 0}
+				{#if cleanActors.length > 0}
 					<div class="text-lg mt-4">Actors</div>
-					<div class="max-h-16 overflow-hidden">
-						{#each actors as actor (actor.id + (actor.character ?? ''))}
-							<div>{actor.id}</div>
-							<div>{actor.name}</div>
-							<div>{actor.character}</div>
-							<div>{actor.thumbnail}</div>
+					<ol class="flex pb-4 overflow-x-auto overflow-y-hidden">
+						{#each cleanActors as actor (actor.id)}
+							<li class="mr-6 last:mr-0 max-w-[6rem]">
+								<div
+									class="h-24 w-24 rounded-full border-4 border-black border-opacity-80 bg-center bg-cover transition-all"
+									style={`background-image: url("${actor.thumbnail}"); ${
+										gradientColor ? `border-color: ${gradientColor}` : ''
+									}`}
+									in:fade={{ duration: 150 }}
+								/>
+								<div class="font-medium">{actor.name}</div>
+								<div class="opacity-80 text-sm truncate" title={actor.characters.join(', ')}>
+									{actor.characters.join(', ')}
+								</div>
+							</li>
 						{/each}
-					</div>
+					</ol>
+				{/if}
+				{#if cleanStaffs.length > 0}
+					<div class="text-lg mt-4">Staffs</div>
+					<ol class="flex pb-4 overflow-x-auto overflow-y-hidden">
+						{#each cleanStaffs as staff (staff.id)}
+							<li class="mr-6 last:mr-0 max-w-[6rem]">
+								<div
+									class="h-24 w-24 rounded-full border-4 border-black border-opacity-80 bg-center bg-cover transition-all"
+									style={`background-image: url("${staff.thumbnail}"); ${
+										gradientColor ? `border-color: ${gradientColor}` : ''
+									}`}
+									in:fade={{ duration: 150 }}
+								/>
+								<div class="font-medium">{staff.name}</div>
+								<div class="opacity-80 text-sm truncate" title={staff.roles.join(', ')}>
+									{staff.roles.join(', ')}
+								</div>
+							</li>
+						{/each}
+					</ol>
 				{/if}
 			</div>
 		</div>
@@ -291,7 +354,7 @@
 							<span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> /
 							<span class="text-red-600">{torrent.leech}</span>
 						</div>
-						<div class=" ">Watch</div>
+						<div class="">Watch</div>
 					</div>
 				{/each}
 			</div>
@@ -302,14 +365,7 @@
 	<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4">
 		<h1 class="text-2xl mb-4">Comments</h1>
 		{#if [].length > 0}
-			<div class="max-h-16 overflow-hidden">
-				{#each actors as actor (actor.id + (actor.character ?? ''))}
-					<div>{actor.id}</div>
-					<div>{actor.name}</div>
-					<div>{actor.character}</div>
-					<div>{actor.thumbnail}</div>
-				{/each}
-			</div>
+			<div>No comments on this media, yet, be the first one !</div>
 		{:else}
 			<div>No comments on this media, yet, be the first one !</div>
 		{/if}
