@@ -62,7 +62,8 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
+	import { quintInOut } from 'svelte/easing';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
 	import ArrowLeft from '../../../src/components/icons/ArrowLeft.svelte';
@@ -276,6 +277,51 @@
 			}
 		}
 	});
+
+	// Background animation
+	function randomNumber(minInc: number, maxExcl: number) {
+		return Math.random() * (maxExcl - minInc) + minInc;
+	}
+
+	const nbLines = 5;
+	let colors: string[] = [
+		'rgb(96, 165, 250)',
+		'rgb(170, 50, 201)',
+		'rgb(219, 126, 20)',
+		'rgb(16, 121, 39)'
+	];
+	let lines: {
+		id: number;
+		visible: boolean;
+		left: number;
+		height: number;
+		color: string;
+		duration: number;
+	}[] = [];
+	if (browser) {
+		for (let index = 0; index < nbLines; index++) {
+			lines.push({ id: index, visible: false, left: 0, height: 0, color: '', duration: 0 });
+			setTimeout(() => {
+				resetLine(index);
+			}, randomNumber(0, 1000));
+		}
+	}
+	function removeLine(index: number) {
+		const line = lines[index];
+		line.visible = false;
+		lines = lines;
+	}
+	function resetLine(index: number) {
+		const line = lines[index];
+		line.left = Math.round(randomNumber(0, window.outerWidth));
+		line.height = Math.round(randomNumber(32, 64));
+		line.color = colors[Math.round(randomNumber(0, 4))];
+		line.duration = Math.round(randomNumber(1000, 1500));
+		setTimeout(function () {
+			line.visible = true;
+			lines = lines;
+		}, randomNumber(100, 500));
+	}
 </script>
 
 <!-- ========================= HTML -->
@@ -380,91 +426,112 @@
 			</div>
 		</div>
 	</div>
-	<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white mt-4">
-		<h1 class="text-2xl mb-4">Torrents</h1>
-		{#if torrents.length > 0}
-			<div class="w-full">
-				{#each torrents as torrent (torrent.id)}
-					<div class="flex flex-col xl:flex-row xl:items-center w-full my-2">
-						{#if torrent.quality}
-							<div class="flex-shrink-0 mr-2">
-								{#if torrent.quality == 'hd'}
-									<Hd />
-								{:else if torrent.quality == '4k'}
-									<Icon4K />
-								{:else if torrent.quality == '8k'}
-									<Icon8K />
-								{:else}
-									<Sd />
-								{/if}
-							</div>
-						{/if}
-						<div class="flex-grow truncate" title={torrent.name}>
-							{torrent.name}
-						</div>
-						{#if torrent.size}
-							<div class="hidden xl:block flex-shrink-0 opacity-80">
-								{torrent.size}
-							</div>
-						{/if}
-						<div class="xl:hidden">
-							{#if torrent.size}
-								Size: {torrent.size} &#x2022;
-							{/if}
-							Seed: <span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> &#x2022; Leech:
-							<span class=" text-red-600">{torrent.leech}</span>
-						</div>
-						<div class="hidden xl:block mx-4 flex-shrink-0 min-w-[3rem] text-center">
-							<span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> /
-							<span class="text-red-600">{torrent.leech}</span>
-						</div>
-						<button
-							class="flex items-center p-[2px] rounded-md font-bold border border-stone-400 hover:border-transparent transition-all relative overflow-hidden"
-							on:mouseenter={() => (torrent.hover = true)}
-							on:mouseleave={() => (torrent.hover = false)}
-						>
-							{#if torrent.hover}
-								<div class="loader" transition:fade />
-							{/if}
-							<div
-								class="w-full h-full px-2 py-1 rounded-md relative overflow-hidden bg-black hover:bg-stone-900 transition-all text-blue-400"
-							>
-								<Play />
-								<div class="inline-block text-white">Watch</div>
-							</div>
-						</button>
-					</div>
-				{/each}
-			</div>
-		{:else}
-			<div>No torrents for this media, yet !</div>
-		{/if}
-	</div>
-	<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4">
-		<h1 class="text-2xl mb-4">
-			Comments {#if comments.length > 0}
-				({comments.length})
-			{/if}
-		</h1>
-		{#if comments.length > 0}
-			{#each comments as comment (comment.id)}
-				<div class="comment" class:self={comment.user.id == 1}>
-					{#if comment.user.id == 1}
-						<div class="bordered" />
-					{/if}
-					<div class="comment-header">
-						<div>
-							<span class="opacity-60 text-sm">#{comment.id}</span>
-							<span class="font-bold">{comment.user.name}</span>
-						</div>
-						<div class="text-sm">{comment.date}</div>
-					</div>
-					<div class="comment-content">{comment.content}</div>
-				</div>
+	<div class="relative flex-grow">
+		<div class="absolute top-0 right-0 bottom-0 left-0 overflow-hidden text-white">
+			{#each lines as line (line.id)}
+				{#if line.visible}
+					<div
+						class="absolute top-0 w-1 rounded-sm"
+						style={`left: ${line.left}px; height: ${line.height}px; background-color: ${line.color}`}
+						in:fly={{ duration: 150, y: -line.height, opacity: 1 }}
+						out:fly={{ y: window.outerHeight, duration: line.duration, easing: quintInOut }}
+						on:introend={removeLine.bind(null, line.id)}
+						on:outroend={resetLine.bind(null, line.id)}
+					/>
+				{/if}
 			{/each}
-		{:else}
-			<div>No comments on this media, yet, be the first one !</div>
-		{/if}
+		</div>
+		<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4 flex-grow relative">
+			<div>
+				<h1 class="text-2xl mb-4">Torrents</h1>
+				{#if torrents.length > 0}
+					<div class="w-full">
+						{#each torrents as torrent (torrent.id)}
+							<div
+								class="flex flex-col xl:flex-row xl:items-center w-full my-2 bg-black bg-opacity-80"
+							>
+								{#if torrent.quality}
+									<div class="flex-shrink-0 mr-2">
+										{#if torrent.quality == 'hd'}
+											<Hd />
+										{:else if torrent.quality == '4k'}
+											<Icon4K />
+										{:else if torrent.quality == '8k'}
+											<Icon8K />
+										{:else}
+											<Sd />
+										{/if}
+									</div>
+								{/if}
+								<div class="flex-grow truncate" title={torrent.name}>
+									{torrent.name}
+								</div>
+								{#if torrent.size}
+									<div class="hidden xl:block flex-shrink-0 opacity-80">
+										{torrent.size}
+									</div>
+								{/if}
+								<div class="xl:hidden">
+									{#if torrent.size}
+										Size: {torrent.size} &#x2022;
+									{/if}
+									Seed: <span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> &#x2022;
+									Leech:
+									<span class=" text-red-600">{torrent.leech}</span>
+								</div>
+								<div class="hidden xl:block mx-4 flex-shrink-0 min-w-[3rem] text-center">
+									<span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> /
+									<span class="text-red-600">{torrent.leech}</span>
+								</div>
+								<button
+									class="flex flex-shrink-0 items-center p-[2px] rounded-md font-bold border border-stone-400 hover:border-transparent transition-all relative overflow-hidden"
+									on:mouseenter={() => (torrent.hover = true)}
+									on:mouseleave={() => (torrent.hover = false)}
+								>
+									{#if torrent.hover}
+										<div class="loader" transition:fade />
+									{/if}
+									<div
+										class="w-full h-full px-2 py-1 rounded-md relative overflow-hidden bg-black hover:bg-stone-900 transition-all text-blue-400"
+									>
+										<Play />
+										<div class="inline-block text-white">Watch</div>
+									</div>
+								</button>
+							</div>
+						{/each}
+					</div>
+				{:else}
+					<div>No torrents for this media, yet !</div>
+				{/if}
+			</div>
+			<div class="my-4">
+				<h1 class="text-2xl mb-4">
+					Comments {#if comments.length > 0}
+						({comments.length})
+					{/if}
+				</h1>
+				{#if comments.length > 0}
+					{#each comments as comment (comment.id)}
+						<div class="comment" class:self={comment.user.id == 1}>
+							{#if comment.user.id == 1}
+								<div class="bordered" />
+							{/if}
+							<div class="comment-header">
+								<div>
+									<span class="opacity-60 text-sm">#{comment.id}</span>
+									<span class="font-bold">{comment.user.name}</span>
+								</div>
+								<div class="text-sm">{comment.date}</div>
+							</div>
+							<div class="comment-content">{comment.content}</div>
+						</div>
+					{/each}
+				{:else}
+					<div>No comments on this media, yet, be the first one !</div>
+				{/if}
+			</div>
+		</div>
 	</div>
 </div>
 
