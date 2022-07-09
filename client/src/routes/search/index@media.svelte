@@ -196,7 +196,7 @@
 				>
 					<div
 						class="cover"
-						in:fade={{ duration: 150, delay: (index - $search.startAt) * 20 }}
+						in:fade={{ duration: 150, delay: (index - $search.startAt) * 10 }}
 						style={`background-image: url(${cover})`}
 					>
 						{#if result.rating}

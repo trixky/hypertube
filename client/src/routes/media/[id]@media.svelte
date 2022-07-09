@@ -63,7 +63,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
-	import { quintInOut } from 'svelte/easing';
+	import { linear } from 'svelte/easing';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
 	// @ts-expect-error No types for quantize
@@ -93,9 +93,7 @@
 		}
 	}
 
-	const cover = media.thumbnail
-		? `http://localhost:7260${media.thumbnail}`
-		: '/no_cover.png';
+	const cover = media.thumbnail ? `http://localhost:7260${media.thumbnail}` : '/no_cover.png';
 
 	const defaultTitle = media.names.find((name) => name.lang == '__')!;
 	const userFavoriteTitle = (() => {
@@ -208,7 +206,7 @@
 		line.left = Math.round(randomNumber(0, window.outerWidth));
 		line.height = Math.round(randomNumber(32, 64));
 		line.color = palette[Math.round(randomNumber(0, paletteLength))];
-		line.duration = 1500; // Math.round(randomNumber(1500, 1500));
+		line.duration = Math.round(randomNumber(1500, 3500));
 		setTimeout(function () {
 			line.visible = true;
 			lines = lines;
@@ -239,6 +237,7 @@
 	// Image average color
 	// @source https://stackoverflow.com/a/49837149
 	let gradientColor: string | undefined;
+	let backgroundHeight: number = 0;
 	function extractPalette(image: HTMLImageElement) {
 		var context = document.createElement('canvas').getContext('2d');
 		if (!context) {
@@ -272,7 +271,16 @@
 		paletteLength = palette.length;
 		startBackground();
 
-		gradientColor = `rgb(${rawPalette[0][0]}, ${rawPalette[0][1]}, ${rawPalette[0][2]})`;
+		// Clamp each channels to 150 to avoid bright colors
+		let color = [rawPalette[0][0], rawPalette[0][1], rawPalette[0][2]];
+		let difference = color.reduce((carry, value) => {
+			if (value > 70) {
+				return Math.max(carry, value - 70);
+			}
+			return carry;
+		}, 0);
+		color = color.map((color) => Math.max(0, color - difference)) as [number, number, number];
+		gradientColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
 		loadingGradient = false;
 	}
 
@@ -415,7 +423,7 @@
 				{/if}
 				<div class="text-white mt-4">{media.description}</div>
 				{#if cleanActors.length > 0}
-					<div class="text-lg mt-4">Actors</div>
+					<div class="text-lg mt-4 mb-2">Actors</div>
 					<ol class="flex w-full pb-4 overflow-x-auto overflow-y-hidden">
 						{#each cleanActors as actor (actor.id)}
 							<LazyLoad tag="li" class="mr-6 last:mr-0 w-24 flex-shrink-0 h-full">
@@ -434,7 +442,7 @@
 					</ol>
 				{/if}
 				{#if cleanStaffs.length > 0}
-					<div class="text-lg mt-4">Staffs</div>
+					<div class="text-lg mt-4 mb-2">Staffs</div>
 					<ol class="flex w-full pb-4 overflow-x-auto overflow-y-hidden">
 						{#each cleanStaffs as staff (staff.id)}
 							<LazyLoad tag="li" class="mr-6 last:mr-0 w-24 flex-shrink-0 h-full">
@@ -456,14 +464,17 @@
 		</div>
 	</div>
 	<div class="relative flex-grow">
-		<div class="absolute top-0 right-0 bottom-0 left-0 overflow-hidden text-white">
+		<div
+			bind:clientHeight={backgroundHeight}
+			class="absolute top-0 right-0 bottom-0 left-0 overflow-hidden text-white"
+		>
 			{#each lines as line (line.id)}
 				{#if line.visible}
 					<div
 						class="absolute top-0 w-1 rounded-sm"
 						style={`left: ${line.left}px; height: ${line.height}px; background-color: ${line.color}`}
 						in:fade={{ duration: 0 }}
-						out:fly={{ y: window.outerHeight, duration: line.duration, delay: 0 }}
+						out:fly={{ y: backgroundHeight, duration: line.duration, delay: 0, easing: linear }}
 						on:introend={removeLine.bind(null, line.id)}
 						on:outroend={resetLine.bind(null, line.id)}
 					/>
@@ -472,9 +483,6 @@
 		</div>
 		<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4 flex-grow relative">
 			<div>
-				{#each palette as color}
-					<div class="w-32 h-32 inline-block" style={`background-color: ${color}`}>{color}</div>
-				{/each}
 				<h1 class="text-2xl mb-4">Torrents</h1>
 				{#if torrents.length > 0}
 					<div class="w-full">
