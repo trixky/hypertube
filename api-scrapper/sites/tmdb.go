@@ -224,7 +224,7 @@ var match_name = regexp.MustCompile("(?i)(.+?)\\s*(?:\\(?(\\d{4})\\)?)(?:\\s*-\\
 var api_key = os.Getenv("TMDB_API_KEY")
 
 func GenerateImage(size string, path string) string {
-	return "https://image.tmdb.org/t/p/" + size + path
+	return "/t/p/" + size + path
 }
 
 func GetTMDBMedia(tmdb_id int32) (informations *MediaInformations, err error) {

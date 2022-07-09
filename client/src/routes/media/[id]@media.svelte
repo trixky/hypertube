@@ -93,7 +93,9 @@
 		}
 	}
 
-	const cover = media.thumbnail ? media.thumbnail : '/no_cover.png';
+	const cover = media.thumbnail
+		? `http://localhost:7260${media.thumbnail}`
+		: '/no_cover.png';
 
 	const defaultTitle = media.names.find((name) => name.lang == '__')!;
 	const userFavoriteTitle = (() => {
@@ -141,7 +143,7 @@
 			existingStaff = {
 				id: staff.id,
 				name: staff.name,
-				thumbnail: staff.thumbnail!,
+				thumbnail: `http://localhost:7260${staff.thumbnail}`,
 				roles: [staff.role!]
 			};
 			cleanStaffs.push(existingStaff);
@@ -163,7 +165,7 @@
 			existingActor = {
 				id: actor.id,
 				name: actor.name,
-				thumbnail: actor.thumbnail!,
+				thumbnail: `http://localhost:7260${actor.thumbnail}`,
 				characters: [actor.character!]
 			};
 			cleanActors.push(existingActor);
@@ -310,12 +312,13 @@
 	onMount(() => {
 		if (browser) {
 			// Load background first to have a clean fade-in
-			const useBackground = media.background
+			let useBackground = media.background
 				? media.background
 				: media.thumbnail
 				? media.thumbnail
 				: undefined;
 			if (useBackground) {
+				useBackground = `http://localhost:7260${useBackground}`;
 				const image = new Image();
 				image.setAttribute('crossOrigin', 'anonymous');
 				image.src = useBackground;
@@ -325,8 +328,9 @@
 			}
 
 			// Load the image used for the gradient
-			const useImage = media.thumbnail ? media.thumbnail : undefined;
+			let useImage = media.thumbnail ? media.thumbnail : undefined;
 			if (useImage && useImage != '') {
+				useImage = `http://localhost:7260${useImage}`;
 				const image = new Image();
 				image.setAttribute('crossOrigin', 'anonymous');
 				image.src = useImage;
