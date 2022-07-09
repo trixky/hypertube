@@ -8,6 +8,7 @@
 	import Genres from './genres.svelte';
 	import SortAsc from '../../../src/components/icons/SortAsc.svelte';
 	import SortDesc from '../../../src/components/icons/SortDesc.svelte';
+	import LazyLoad from '../../../src/components/lazy/LazyLoad.svelte';
 
 	let columns: { value: string; name: string }[] = [
 		{ value: 'year', name: 'Year' },
@@ -186,10 +187,14 @@
 		<div class="result-wrapper p-4">
 			{#each $results as result, index (result.id)}
 				{@const cover = result.thumbnail ? result.thumbnail : '/no_cover.png'}
-				<a href={`/media/${result.id}`} class="result overflow-hidden w-40 mx-auto">
+				<LazyLoad
+					tag="a"
+					href={`/media/${result.id}`}
+					class="result overflow-hidden w-40 min-h-[220px] mx-auto"
+				>
 					<div
 						class="cover"
-						in:fade={{ duration: 150, delay: (index - $search.startAt) * 10 }}
+						in:fade={{ duration: 150, delay: (index - $search.startAt) * 20 }}
 						style={`background-image: url(${cover})`}
 					>
 						{#if result.rating}
@@ -208,7 +213,7 @@
 					{#if result.year}
 						<div class="text-white text-sm opacity-80">{result.year}</div>
 					{/if}
-				</a>
+				</LazyLoad>
 			{/each}
 			{#if $totalResults != $results.length}
 				<div
@@ -242,34 +247,5 @@
 
 	.cover {
 		@apply h-56 w-40 rounded-md overflow-hidden cursor-pointer transition-all bg-center bg-cover relative;
-	}
-
-	.result {
-		@apply block;
-	}
-
-	.result .rating {
-		@apply opacity-0 transition-all absolute top-0 right-0 bottom-0 left-0 p-2 flex items-end text-white;
-		background: rgb(0, 0, 0);
-		background: linear-gradient(360deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
-	}
-
-	.result .rating .stars {
-		@apply inline-block text-sm;
-		--percent: calc(var(--rating) / 10 * 100%);
-		font-family: Times;
-	}
-
-	.result .rating .stars::before {
-		@apply bg-clip-text;
-		content: '★★★★★';
-		letter-spacing: 3px;
-		background: linear-gradient(90deg, #fc0 var(--percent), #fff var(--percent));
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-	}
-
-	.result:hover .rating {
-		@apply opacity-100;
 	}
 </style>

@@ -74,6 +74,7 @@
 	import Icon4K from '../../../src/components/icons/4K.svelte';
 	import Icon8K from '../../../src/components/icons/8K.svelte';
 	import Sd from '../../../src/components/icons/SD.svelte';
+	import LazyLoad from '../../../src/components/lazy/LazyLoad.svelte';
 
 	/// @ts-expect-error media is given as a prop
 	export let props: MediaProps;
@@ -126,7 +127,7 @@
 	})();
 
 	// Filter and merge actors and staffs once
-	const cleanStaffs: {
+	let cleanStaffs: {
 		id: number;
 		name: string;
 		thumbnail: string;
@@ -146,8 +147,9 @@
 			cleanStaffs.push(existingStaff);
 		}
 	}
+	cleanStaffs = cleanStaffs.slice(0, 5);
 
-	const cleanActors: {
+	let cleanActors: {
 		id: number;
 		name: string;
 		thumbnail: string;
@@ -167,6 +169,7 @@
 			cleanActors.push(existingActor);
 		}
 	}
+	cleanActors = cleanActors.slice(0, 5);
 
 	// Background animation
 	let palette: string[] = [];
@@ -234,7 +237,7 @@
 	// Image average color
 	// @source https://stackoverflow.com/a/49837149
 	let gradientColor: string | undefined;
-	function averageRGB(image: HTMLImageElement): [number, number, number] | undefined {
+	function extractPalette(image: HTMLImageElement) {
 		var context = document.createElement('canvas').getContext('2d');
 		if (!context) {
 			return undefined;
@@ -243,20 +246,19 @@
 		context.drawImage(image, 0, 0, image.width, image.height);
 
 		// Extract pixels RGB channels as an array of pixel data
-		let offset = 0;
 		const pixels = context.getImageData(0, 0, image.width, image.height).data;
 		const imageData: [number, number, number][] = [];
-		for (let row = 0; row < image.height; row++) {
-			for (let col = 0; col < image.width; col++) {
-				let [r, g, b] = [pixels[offset], pixels[offset + 1], pixels[offset + 2]];
-				let a = pixels[offset + 3];
-				// If pixel is mostly opaque and not white
-				if (typeof a === 'undefined' || a >= 125) {
-					if (!(r > 250 && g > 250 && b > 250) && !(r < 30 && g < 30 && b < 30)) {
-						imageData.push([r, g, b]);
-					}
+		for (var i = 0; i < pixels.length; i += 4) {
+			let rgb: [number, number, number] = [pixels[i], pixels[i + 1], pixels[i + 2]];
+			let a = pixels[i + 3];
+			// If pixel is mostly opaque and not white
+			if (typeof a === 'undefined' || a >= 125) {
+				if (
+					!(rgb[0] > 250 && rgb[1] > 250 && rgb[2] > 250) &&
+					!(rgb[0] < 30 && rgb[1] < 30 && rgb[2] < 30)
+				) {
+					imageData.push(rgb);
 				}
-				offset += 4;
 			}
 		}
 
@@ -268,7 +270,8 @@
 		paletteLength = palette.length;
 		startBackground();
 
-		return rawPalette[0];
+		gradientColor = `rgb(${rawPalette[0][0]}, ${rawPalette[0][1]}, ${rawPalette[0][2]})`;
+		loadingGradient = false;
 	}
 
 	const comments: {
@@ -314,7 +317,7 @@
 				: undefined;
 			if (useBackground) {
 				const image = new Image();
-				image.setAttribute('crossOrigin', '');
+				image.setAttribute('crossOrigin', 'anonymous');
 				image.src = useBackground;
 				image.addEventListener('load', () => {
 					background = useBackground;
@@ -325,14 +328,10 @@
 			const useImage = media.thumbnail ? media.thumbnail : undefined;
 			if (useImage && useImage != '') {
 				const image = new Image();
-				image.setAttribute('crossOrigin', '');
+				image.setAttribute('crossOrigin', 'anonymous');
 				image.src = useImage;
 				image.addEventListener('load', () => {
-					let color = averageRGB(image);
-					if (color) {
-						gradientColor = `rgba(${color.join(',')}, 0.7)`;
-					}
-					loadingGradient = false;
+					extractPalette(image);
 				});
 			} else {
 				loadingGradient = false;
@@ -399,44 +398,53 @@
 						{durationStr}
 					{/if}
 				</div>
+				{#if media.rating}
+					{@const rating = Math.round(media.rating * 10) / 10}
+					<div>
+						<div class="rating">
+							<div class="flex items-center w-full">
+								<div class="stars h-4" style={`--rating: ${rating};`} />
+								<div class="text-sm">{rating}/10</div>
+							</div>
+						</div>
+					</div>
+				{/if}
 				<div class="text-white mt-4">{media.description}</div>
 				{#if cleanActors.length > 0}
 					<div class="text-lg mt-4">Actors</div>
-					<ol class="flex pb-4 overflow-x-auto overflow-y-hidden">
+					<ol class="flex w-full pb-4 overflow-x-auto overflow-y-hidden">
 						{#each cleanActors as actor (actor.id)}
-							<li class="mr-6 last:mr-0 max-w-[6rem]">
+							<LazyLoad tag="li" class="mr-6 last:mr-0 w-24 flex-shrink-0 h-full">
 								<div
 									class="h-24 w-24 rounded-full border-4 border-black border-opacity-80 bg-center bg-cover transition-all"
 									style={`background-image: url("${actor.thumbnail}"); ${
 										gradientColor ? `border-color: ${gradientColor}` : ''
 									}`}
-									in:fade={{ duration: 150 }}
 								/>
 								<div class="font-medium">{actor.name}</div>
 								<div class="opacity-80 text-sm truncate" title={actor.characters.join(', ')}>
 									{actor.characters.join(', ')}
 								</div>
-							</li>
+							</LazyLoad>
 						{/each}
 					</ol>
 				{/if}
 				{#if cleanStaffs.length > 0}
 					<div class="text-lg mt-4">Staffs</div>
-					<ol class="flex pb-4 overflow-x-auto overflow-y-hidden">
+					<ol class="flex w-full pb-4 overflow-x-auto overflow-y-hidden">
 						{#each cleanStaffs as staff (staff.id)}
-							<li class="mr-6 last:mr-0 max-w-[6rem]">
+							<LazyLoad tag="li" class="mr-6 last:mr-0 w-24 flex-shrink-0 h-full">
 								<div
 									class="h-24 w-24 rounded-full border-4 border-black border-opacity-80 bg-center bg-cover transition-all"
 									style={`background-image: url("${staff.thumbnail}"); ${
 										gradientColor ? `border-color: ${gradientColor}` : ''
 									}`}
-									in:fade={{ duration: 150 }}
 								/>
 								<div class="font-medium">{staff.name}</div>
 								<div class="opacity-80 text-sm truncate" title={staff.roles.join(', ')}>
 									{staff.roles.join(', ')}
 								</div>
-							</li>
+							</LazyLoad>
 						{/each}
 					</ol>
 				{/if}
@@ -460,6 +468,9 @@
 		</div>
 		<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4 flex-grow relative">
 			<div>
+				{#each palette as color}
+					<div class="w-32 h-32 inline-block" style={`background-color: ${color}`}>{color}</div>
+				{/each}
 				<h1 class="text-2xl mb-4">Torrents</h1>
 				{#if torrents.length > 0}
 					<div class="w-full">
