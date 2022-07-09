@@ -24,7 +24,7 @@ var time_prefixes []string = []string{
 	"th", "st", "nd", "rd",
 }
 
-// 1337x has 3 date formats
+// 1377x has 3 date formats
 // test: https://go.dev/play/p/koVP_R5IaEi
 func parseDateTime(value string) (timestamp *timestamppb.Timestamp, err error) {
 	layout := "3:04pm" // -- XX:XX{am,pm}
@@ -91,7 +91,7 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 				log.Println("found empty relative url in", e.Request.URL, "for", name)
 				return
 			}
-			full_url := "https://1337x.to" + relative_href
+			full_url := "https://www.1377x.to" + relative_href
 
 			seed64, _ := strconv.ParseInt(el.ChildText("td.seeds"), 10, 32)
 			seed := int32(seed64)
@@ -108,8 +108,8 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 				Name:       name,
 				FullUrl:    full_url,
 				Type:       category,
-				Seed:       &seed,
-				Leech:      &leech,
+				Seed:       seed,
+				Leech:      leech,
 				Size:       &size,
 				UploadTime: upload_timestamp,
 			})
@@ -159,6 +159,12 @@ func scrapeSingle(torrent *pb.UnprocessedTorrent) error {
 			}
 		}
 
+		seed64, _ := strconv.ParseInt(e.ChildText(".seeds"), 10, 32)
+		torrent.Seed = int32(seed64)
+
+		leech64, _ := strconv.ParseInt(e.ChildText(".leeches"), 10, 32)
+		torrent.Leech = int32(leech64)
+
 		magnet := e.ChildAttr("a[href^='magnet:']", "href")
 		if magnet != "" {
 			torrent.Magnet = &magnet
@@ -197,7 +203,13 @@ func scrapeSingle(torrent *pb.UnprocessedTorrent) error {
 	return nil
 }
 
+func canUpdate(url string) bool {
+	return strings.HasPrefix(url, "https://www.1377x.to/") ||
+		strings.HasPrefix(url, "https://1377x.to/")
+}
+
 var Scrapper = st.Scrapper{
 	ScrapeList:   scrapeList,
 	ScrapeSingle: scrapeSingle,
+	CanUpdate:    canUpdate,
 }

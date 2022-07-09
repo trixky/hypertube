@@ -19,6 +19,7 @@ type ScrapperPageResult struct {
 type Scrapper struct {
 	ScrapeList   func(page_type string, page uint32) (ScrapperPageResult, error)
 	ScrapeSingle func(torrent *pb.UnprocessedTorrent) error
+	CanUpdate    func(url string) bool
 }
 
 var IMDBre = regexp.MustCompile("(?:imdb\\.com\\/title\\/)?(tt\\d+)")

@@ -56,8 +56,8 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 					Name:       name,
 					FullUrl:    fmt.Sprintf("http://www.legittorrents.info/index.php?page=torrent-details&id=%s", id),
 					Type:       category,
-					Seed:       &seed,
-					Leech:      &leech,
+					Seed:       seed,
+					Leech:      leech,
 					UploadTime: upload_timestamp,
 					TorrentUrl: &torrent_url,
 				})
@@ -117,10 +117,10 @@ func scrapeSingle(torrent *pb.UnprocessedTorrent) error {
 		if len(matches) == 3 {
 			seed64, _ := strconv.ParseInt(matches[1], 10, 32)
 			seed := int32(seed64)
-			torrent.Seed = &seed
+			torrent.Seed = seed
 			leech64, _ := strconv.ParseInt(matches[2], 10, 32)
 			leech := int32(leech64)
-			torrent.Seed = &leech
+			torrent.Seed = leech
 		}
 
 		size := e.ChildText("tr:nth-child(7) > td.header + td.lista")
@@ -154,7 +154,12 @@ func scrapeSingle(torrent *pb.UnprocessedTorrent) error {
 	return nil
 }
 
+func canUpdate(url string) bool {
+	return strings.HasPrefix(url, "http://www.legittorrents.info")
+}
+
 var Scrapper = st.Scrapper{
 	ScrapeList:   scrapeList,
 	ScrapeSingle: scrapeSingle,
+	CanUpdate:    canUpdate,
 }
