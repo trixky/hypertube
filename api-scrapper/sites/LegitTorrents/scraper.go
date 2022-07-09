@@ -3,6 +3,7 @@ package sites
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -94,6 +95,7 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 
 func scrapeSingle(torrent *pb.UnprocessedTorrent) error {
 	c := colly.NewCollector(colly.IgnoreRobotsTxt())
+	re := regexp.MustCompile("(?i)seeds?:\\s+(\\d+),\\s+leech(?:ers|s)?:\\s+(\\d+)")
 
 	c.OnRequest(func(r *colly.Request) {
 		log.Println("Visiting", r.URL)
@@ -108,6 +110,17 @@ func scrapeSingle(torrent *pb.UnprocessedTorrent) error {
 			if len(imdb_id_match) == 2 {
 				torrent.ImdbId = &imdb_id_match[1]
 			}
+		}
+
+		peers_node := e.ChildText("tr:nth-child(13) > td.header + td.lista")
+		matches := re.FindStringSubmatch(peers_node)
+		if len(matches) == 3 {
+			seed64, _ := strconv.ParseInt(matches[1], 10, 32)
+			seed := int32(seed64)
+			torrent.Seed = &seed
+			leech64, _ := strconv.ParseInt(matches[2], 10, 32)
+			leech := int32(leech64)
+			torrent.Seed = &leech
 		}
 
 		size := e.ChildText("tr:nth-child(7) > td.header + td.lista")
