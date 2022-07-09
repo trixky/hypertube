@@ -186,7 +186,9 @@
 	{:else}
 		<div class="result-wrapper p-4">
 			{#each $results as result, index (result.id)}
-				{@const cover = result.thumbnail ? result.thumbnail : '/no_cover.png'}
+				{@const cover = result.thumbnail
+					? `http://localhost:7260${result.thumbnail}`
+					: '/no_cover.png'}
 				<LazyLoad
 					tag="a"
 					href={`/media/${result.id}`}
