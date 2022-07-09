@@ -36,3 +36,34 @@ input:-webkit-autofill:active {
 input:disabled {
     opacity: 0.3;
 }
+
+.result {
+    @apply block;
+}
+
+.result .rating {
+    @apply opacity-0 transition-all absolute top-0 right-0 bottom-0 left-0 p-2 flex items-end text-white;
+    background: rgb(0, 0, 0);
+    background: linear-gradient(360deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+.result:hover .rating {
+    @apply opacity-100;
+}
+
+
+.rating .stars {
+    @apply inline-block text-sm;
+    --percent: calc(var(--rating) / 10 * 100%);
+    font-family: Times;
+}
+
+.rating .stars::before {
+    @apply bg-clip-text;
+    content: '★★★★★';
+    letter-spacing: 3px;
+    background: linear-gradient(90deg, #fc0 var(--percent), #fff var(--percent));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
