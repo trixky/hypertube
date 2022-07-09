@@ -81,6 +81,17 @@ services:
     volumes:
       - pgadmin-data:/var/lib/pgadmin
 
+  tmdb-proxy:
+    build: ./tmdb-proxy
+    env_file:
+      - ./tmdb-proxy/.env
+    volumes:
+      - ./tmdb-proxy/Caddyfile:/etc/caddy/Caddyfile
+      - ./tmdb-proxy/data:/data
+      - ./tmdb-proxy/config:/config
+    ports:
+      - "${TMDB_PROXY_PORT}:80"
+
   client:
     build: ./client
     env_file:
@@ -90,9 +101,11 @@ services:
       - ./client:/app
     depends_on:
       - api-auth
+      - api-search
     links:
       - api-auth
       - api-search
+      - tmdb-proxy
     ports:
       - "${CLIENT_PORT}:${CLIENT_PORT}"
 

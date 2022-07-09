@@ -1,0 +1,37 @@
+{
+	order cache first
+}
+
+http://localhost:80 {
+	log {
+		format json
+		output stdout
+	}
+
+    header {
+        Access-Control-Allow-Origin *
+        Access-Control-Allow-Credentials false
+        Access-Control-Allow-Methods GET
+        Access-Control-Allow-Headers *
+        defer
+    }
+
+    cache {
+        log_level debug
+		allowed_http_verbs GET
+        default_max_age 30m
+		stale 30m
+		match_path /
+        match_header Content-Type image/jpg image/jpeg image/png image/webp
+		default_cache_control "public, max-age=86400"
+        path /tmp
+    }
+
+    reverse_proxy * image.tmdb.org:80 {
+		header_up Host {image.tmdb.org}
+        header_down -Access-Control-Allow-Origin
+        header_down -Access-Control-Allow-Credentials
+        header_down -Access-Control-Allow-Methods
+        header_down -Access-Control-Allow-Headers
+	}
+}
