@@ -16,8 +16,8 @@ import (
 )
 
 var URLS st.Urls = st.Urls{
-	Movies: "https://1337x.to/cat/Movies/$page/",
-	Shows:  "https://1337x.to/cat/TV/$page/",
+	Movies: "https://www.1377x.to/sort-cat/Movies/time/desc/$page/",
+	Shows:  "https://www.1377x.to/sort-cat/TV/time/desc/$page/",
 }
 
 var time_prefixes []string = []string{
@@ -61,7 +61,8 @@ func parseDateTime(value string) (timestamp *timestamppb.Timestamp, err error) {
 
 func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResult, err error) {
 	torrents := make([]*pb.UnprocessedTorrent, 0, 25)
-	c := colly.NewCollector(colly.IgnoreRobotsTxt())
+	c := colly.NewCollector(colly.IgnoreRobotsTxt(), colly.UserAgent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:101.0) Gecko/20100101 Firefox/101.0"))
+	re := regexp.MustCompile("\\d+$")
 
 	var category pb.MediaCategory
 	if page_type == "movies" {
@@ -76,18 +77,28 @@ func scrapeList(page_type string, page uint32) (page_result st.ScrapperPageResul
 
 	c.OnHTML(".featured-list table.table-list.table tbody", func(e *colly.HTMLElement) {
 		e.ForEach("tr", func(_ int, el *colly.HTMLElement) {
-			name := el.ChildText("td.name a[href^='/torrent/']")
+			// Try to use the HTML content of the name node since Colly add ellipsis somehow
+			name := ""
+			name_node := el.DOM.Find("td.name a[href^='/torrent/']")
+			if name_node != nil {
+				name, _ = name_node.Html()
+			} else {
+				name = el.ChildText("td.name a[href^='/torrent/']")
+			}
+
 			relative_href := el.ChildAttr("td.name a[href^='/torrent/']", "href")
 			if relative_href == "" || relative_href == "/" {
 				log.Println("found empty relative url in", e.Request.URL, "for", name)
 				return
 			}
 			full_url := "https://1337x.to" + relative_href
+
 			seed64, _ := strconv.ParseInt(el.ChildText("td.seeds"), 10, 32)
 			seed := int32(seed64)
+
 			leech64, _ := strconv.ParseInt(el.ChildText("td.leeches"), 10, 32)
 			leech := int32(leech64)
-			re := regexp.MustCompile("\\d+$")
+
 			size := el.ChildText("td.size")
 			size = re.ReplaceAllString(size, "")
 			upload_date_value := el.ChildText("td.coll-date")
