@@ -1,3 +1,9 @@
+-- name: GetTorrentByID :one
+SELECT *
+FROM torrents
+WHERE id = $1
+LIMIT 1;
+
 -- name: GetTorrentByURL :one
 SELECT *
 FROM torrents
@@ -38,7 +44,8 @@ RETURNING *;
 -- name: SetTorrentPeers :exec
 UPDATE torrents
 SET seed = $2,
-	leech = $3
+	leech = $3,
+	last_update = NOW()
 WHERE id = $1;
 
 -- name: SetTorrentInformations :exec
@@ -46,12 +53,13 @@ UPDATE torrents
 SET torrent_url = $2,
 	magnet = $3,
 	description_html = $4,
-	size = $5
+	size = $5,
+	last_update = NOW()
 WHERE id = $1;
 
 -- name: AddTorrentMediaId :exec
 UPDATE torrents
-SET media_id = $2
+SET media_id = $2, last_update = NOW()
 WHERE id = $1;
 
 -- name: AddTorrentFile :one

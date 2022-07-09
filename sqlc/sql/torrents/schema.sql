@@ -12,7 +12,8 @@ CREATE TABLE torrents (
     upload_time TIMESTAMP WITH TIME ZONE NULL,
     description_html TEXT NULL,
     torrent_url TEXT NULL,
-    magnet TEXT NULL
+    magnet TEXT NULL,
+    last_update TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE UNIQUE INDEX unique_torrent_url ON torrents(full_url);
 ALTER TABLE ONLY torrents

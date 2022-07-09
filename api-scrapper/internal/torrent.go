@@ -35,9 +35,9 @@ func TorrenToSQL(torrent *pb.UnprocessedTorrent) sqlc.CreateTorrentParams {
 		Type:            torrent.Type.String(),
 		FullUrl:         torrent.FullUrl,
 		DescriptionHtml: ut.MakeNullString(torrent.DescriptionHtml),
-		Leech:           ut.MakeNullInt32(torrent.Leech),
+		Leech:           ut.MakeNullInt32(&torrent.Leech),
 		Magnet:          ut.MakeNullString(torrent.Magnet),
-		Seed:            ut.MakeNullInt32(torrent.Seed),
+		Seed:            ut.MakeNullInt32(&torrent.Seed),
 		Size:            ut.MakeNullString(torrent.Size),
 		TorrentUrl:      ut.MakeNullString(torrent.TorrentUrl),
 	}
@@ -50,14 +50,6 @@ func TorrentToProto(creation_result *TorrentCreationResult) (converted_torrent p
 		torrent_type = pb.MediaCategory_CATEGORY_MOVIE
 	} else {
 		torrent_type = pb.MediaCategory_CATEGORY_SERIE
-	}
-	var seed *int32
-	if torrent.Seed.Valid {
-		seed = &torrent.Seed.Int32
-	}
-	var leech *int32
-	if torrent.Leech.Valid {
-		leech = &torrent.Leech.Int32
 	}
 	var size *string
 	if torrent.Size.Valid {
@@ -83,8 +75,8 @@ func TorrentToProto(creation_result *TorrentCreationResult) (converted_torrent p
 		Type:            torrent_type,
 		FullUrl:         torrent.FullUrl,
 		TorrentUrl:      torrent.FullUrl,
-		Seed:            seed,
-		Leech:           leech,
+		Seed:            torrent.Seed.Int32,
+		Leech:           torrent.Leech.Int32,
 		Size:            size,
 		UploadTime:      upload_time,
 		DescriptionHtml: description,
@@ -166,8 +158,8 @@ func UpdateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 		// Always update peers
 		err = databases.DBs.SqlcQueries.SetTorrentPeers(ctx, sqlc.SetTorrentPeersParams{
 			ID:    db_torrent.ID,
-			Seed:  ut.MakeNullInt32(torrent.Seed),
-			Leech: ut.MakeNullInt32(torrent.Leech),
+			Seed:  ut.MakeNullInt32(&torrent.Seed),
+			Leech: ut.MakeNullInt32(&torrent.Leech),
 		})
 		if err != nil {
 			return
