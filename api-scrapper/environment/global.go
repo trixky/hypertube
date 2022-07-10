@@ -15,6 +15,13 @@ func (e *Env) GetAll() {
 	}
 
 	// --------- get GrpcGatewayPort
+	if http_port, err := read_port(ENV_grpc_gateway_port); err != nil {
+		log.Fatal(err)
+	} else {
+		e.GrpcGatewayPort = http_port
+	}
+
+	// --------- get TMDB api key
 	if e.TmdbApiKey = os.Getenv(ENV_tmdb_api_key); len(e.TmdbApiKey) == 0 {
 		log.Fatalf("%s environement variable missing", ENV_tmdb_api_key)
 	}
