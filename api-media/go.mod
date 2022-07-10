@@ -1,4 +1,4 @@
-module github.com/trixky/hypertube/api-search
+module github.com/trixky/hypertube/api-media
 
 go 1.18
 

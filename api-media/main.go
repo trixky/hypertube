@@ -4,9 +4,9 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/trixky/hypertube/api-search/databases"
-	"github.com/trixky/hypertube/api-search/environment"
-	"github.com/trixky/hypertube/api-search/internal"
+	"github.com/trixky/hypertube/api-media/databases"
+	"github.com/trixky/hypertube/api-media/environment"
+	"github.com/trixky/hypertube/api-media/internal"
 )
 
 const (

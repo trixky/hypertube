@@ -7,14 +7,14 @@ import (
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	pb "github.com/trixky/hypertube/api-search/proto"
-	"github.com/trixky/hypertube/api-search/utils"
+	pb "github.com/trixky/hypertube/api-media/proto"
+	"github.com/trixky/hypertube/api-media/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type SearchServer struct {
-	pb.SearchServiceServer
+type MediaServer struct {
+	pb.MediaServiceServer
 }
 
 func NewGrpcServer(grpc_addr string) error {
@@ -25,7 +25,7 @@ func NewGrpcServer(grpc_addr string) error {
 
 	s := grpc.NewServer()
 
-	pb.RegisterSearchServiceServer(s, &SearchServer{})
+	pb.RegisterMediaServiceServer(s, &MediaServer{})
 
 	log.Printf("start to serve grpc services on %s\n", grpc_addr)
 
@@ -47,7 +47,7 @@ func NewGrpcGatewayServer(grpc_gateway_addr string, grpc_addr string) error {
 		basic_middleware,
 	))
 
-	err = pb.RegisterSearchServiceHandler(context.Background(), gwmux, conn)
+	err = pb.RegisterMediaServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
 		return err
 	}

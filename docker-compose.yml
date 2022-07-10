@@ -33,13 +33,13 @@ services:
       - "${API_SCRAPPER_GRPC_PORT}:${API_SCRAPPER_GRPC_PORT}"
       - "${API_SCRAPPER_GRPC_GATEWAY_PORT}:${API_SCRAPPER_GRPC_GATEWAY_PORT}"
 
-  api-search:
-    build: ./api-search
+  api-media:
+    build: ./api-media
     env_file:
-      - ./api-search/.env
+      - ./api-media/.env
       - ./postgres/.env
     volumes:
-      - ./api-search:/app
+      - ./api-media:/app
     depends_on:
       - postgres
     links:
@@ -101,10 +101,10 @@ services:
       - ./client:/app
     depends_on:
       - api-auth
-      - api-search
+      - api-media
     links:
       - api-auth
-      - api-search
+      - api-media
       - tmdb-proxy
     ports:
       - "${CLIENT_PORT}:${CLIENT_PORT}"

@@ -4,13 +4,13 @@ import (
 	"context"
 	"log"
 
-	"github.com/trixky/hypertube/api-search/databases"
-	pb "github.com/trixky/hypertube/api-search/proto"
-	ut "github.com/trixky/hypertube/api-search/utils"
+	"github.com/trixky/hypertube/api-media/databases"
+	pb "github.com/trixky/hypertube/api-media/proto"
+	ut "github.com/trixky/hypertube/api-media/utils"
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
 
-func (s *SearchServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetResponse, error) {
+func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetResponse, error) {
 	md, ok := grpcMetadata.FromIncomingContext(ctx)
 	if !ok {
 		log.Println("missing args")
