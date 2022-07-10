@@ -12,6 +12,10 @@ message GetMeRequest {
     string token = 1;
 }
 
+message GetUserRequest {
+    int64 id = 1;
+}
+
 message UpdateMeRequest {
     string token = 1;
     string username = 2;
@@ -22,20 +26,26 @@ message UpdateMeRequest {
     string new_password = 7;
 }
 
-message MeResponse {
-    string me = 1;
+message UserInfoResponse {
+    string user_info = 1; // base 64
 }
 
 service UserService {
-    rpc GetMe(GetMeRequest) returns (MeResponse) {
+    rpc GetMe(GetMeRequest) returns (UserInfoResponse) {
         option (google.api.http) = {
             get: "/v1/me"
         };
     };
 
-    rpc UpdateMe(UpdateMeRequest) returns (MeResponse) {
+    rpc UpdateMe(UpdateMeRequest) returns (UserInfoResponse) {
         option (google.api.http) = {
             patch: "/v1/me"
+        };
+    };
+
+    rpc GetUser(GetUserRequest) returns (UserInfoResponse) {
+        option (google.api.http) = {
+            get: "/v1/user"
         };
     };
 }

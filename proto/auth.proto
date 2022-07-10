@@ -42,7 +42,7 @@ message External42ConnectionRequest {
 // -------------------------------------- generic
 message GenericConnectionResponse {
     string token = 1;
-    string me = 2;
+    string user_info = 2;
 }
 
 service AuthService {

@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	COOKIE_token = "token"
-	COOKIE_me    = "me"
+	COOKIE_token     = "token"
+	COOKIE_user_info = "userInfo"
 )
 
 var (

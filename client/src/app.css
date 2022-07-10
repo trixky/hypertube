@@ -5,11 +5,11 @@
 @tailwind utilities;
 
 main {
-    @apply relative flex content-center justify-center
+    @apply relative flex content-center justify-center;
 }
 
 input {
-    @apply w-full p-2 rounded-sm duration-[0.35s] bg-white;
+    @apply w-full p-2 rounded-sm duration-[0.35s] bg-white my-2;
 }
 
 /* https://stackoverflow.com/questions/2781549/removing-input-background-colour-for-chrome-autocomplete */
@@ -25,7 +25,7 @@ input:disabled {
 }
 
 label {
-    @apply block p-2 text-white;
+    @apply text-white;
 }
 
 label.required::after {

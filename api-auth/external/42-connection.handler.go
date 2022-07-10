@@ -173,7 +173,7 @@ func redirect42(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, token_cookie)
 
-	me, err := utils.HeaderCookieMeGeneration(utils.CookieMe{
+	me, err := utils.HeaderCookieMeGeneration(utils.User{
 		Id:        int(user.ID),
 		Username:  user.Username,
 		Firstname: user.Firstname,

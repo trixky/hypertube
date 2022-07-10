@@ -22,7 +22,7 @@ func sanitizeUpdateMe(in *pb.UpdateMeRequest) error {
 	return nil
 }
 
-func (s *UserServer) UpdateMe(ctx context.Context, in *pb.UpdateMeRequest) (*pb.MeResponse, error) {
+func (s *UserServer) UpdateMe(ctx context.Context, in *pb.UpdateMeRequest) (*pb.UserInfoResponse, error) {
 	// -------------------- get token
 	sanitized_token, err := utils.ExtractSanitizedTokenFromGrpcGatewayCookies(in.GetToken(), ctx)
 
@@ -135,7 +135,7 @@ func (s *UserServer) UpdateMe(ctx context.Context, in *pb.UpdateMeRequest) (*pb.
 		}
 	}
 
-	me, err := utils.HeaderCookieMeGeneration(utils.CookieMe{
+	me, err := utils.HeaderCookieUserGeneration(utils.User{
 		Id:        int(user.ID),
 		Username:  user.Username,
 		Firstname: user.Firstname,
@@ -148,7 +148,7 @@ func (s *UserServer) UpdateMe(ctx context.Context, in *pb.UpdateMeRequest) (*pb.
 		return nil, status.Errorf(codes.Internal, "cookie generation failed")
 	}
 
-	return &pb.MeResponse{
-		Me: base64.StdEncoding.EncodeToString([]byte(me.Value)),
+	return &pb.UserInfoResponse{
+		UserInfo: base64.StdEncoding.EncodeToString([]byte(me.Value)),
 	}, nil
 }

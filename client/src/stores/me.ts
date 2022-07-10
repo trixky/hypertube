@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { get_me } from '../utils/cookies';
+import { get_me_from_cookie } from '../utils/cookies';
 
 interface Me {
     id: number
@@ -23,8 +23,7 @@ function create_me() {
     return {
         subscribe,
         refresh_from_cookies: () => {
-            let me_from_cookie = get_me()
-
+            let me_from_cookie = get_me_from_cookie()
             if (me_from_cookie != undefined) {
                 set(<Me>{
                     id: me_from_cookie.id,

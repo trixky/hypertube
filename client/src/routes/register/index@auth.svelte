@@ -90,10 +90,10 @@
 						.then((body) => {
 							if (
 								body.hasOwnProperty(cookies.labels.token) &&
-								body.hasOwnProperty(cookies.labels.me)
+								body.hasOwnProperty(cookies.labels.user_info)
 							) {
 								cookies.add_a_cookie(cookies.labels.token, body.token);
-								cookies.add_a_cookie(cookies.labels.me, body.me);
+								cookies.add_a_cookie(cookies.labels.user_info, body[cookies.labels.user_info]);
 								resolve(true);
 								goto('/')
 							} else {
@@ -172,9 +172,8 @@
 </script>
 
 <!-- ========================= HTML -->
-<BlackBox>
+<BlackBox title="register">
 	<Logo alone />
-	<h1 class="mt-2 mb-1 text-2xl text-white">Register</h1>
 	<form action="" class="pt-1">
 		<label for="username" class="required">Username</label>
 		<input
@@ -282,7 +281,7 @@
 
 <!-- ========================= CSS -->
 <style lang="postcss">
-	.extra-link {
-		@apply text-slate-400 text-sm;
+	label {
+		@apply ml-2;
 	}
 </style>

@@ -19,7 +19,7 @@
 >
 	<Logo />
 	{#if $me_store.username.length > 0}
-		<button class="absolute right-8 top-4" on:click={handle_click_on_me}>
+		<button class="absolute right-8 top-7" on:click={handle_click_on_me}>
 			<p class="text-white inline">{$me_store.username}</p>
 			<img
 				class="invert inline-block -translate-y-[1px] translate-x-1"

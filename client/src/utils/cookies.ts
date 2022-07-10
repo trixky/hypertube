@@ -11,7 +11,7 @@ interface Me {
 
 const labels = {
     token: "token",
-    me: "me",
+    user_info: "userInfo",
 }
 
 function add_a_cookie(name: string, value: string) {
@@ -37,22 +37,23 @@ function get_token(): string | undefined {
     return get_a_cookie(labels.token)
 }
 
-function get_me(): Me | undefined {
-    let me_64 = get_a_cookie(labels.me)
+function get_me_from_cookie(): Me | undefined {
+    if (browser) {
+        const me_64 = get_a_cookie(labels.user_info)
 
-    if (me_64) {
-        let me_json = atob(me_64)
-        let me = JSON.parse(me_json)
-        if (me) {
-            let ret = <Me>{
-                id: me.id,
-                username: me.username,
-                firstname: me.firstname,
-                lastname: me.lastname,
-                email: me.email,
-                external: me.external,
+        if (me_64 != undefined) {
+            const me_json = atob(me_64)
+            const me = JSON.parse(me_json)
+            if (me) {
+                return <Me>{
+                    id: me.id,
+                    username: me.username,
+                    firstname: me.firstname,
+                    lastname: me.lastname,
+                    email: me.email,
+                    external: me.external,
+                }
             }
-            return ret
         }
     }
     return undefined
@@ -64,5 +65,5 @@ export {
     del_a_cookie,
     get_a_cookie,
     get_token,
-    get_me,
+    get_me_from_cookie,
 }

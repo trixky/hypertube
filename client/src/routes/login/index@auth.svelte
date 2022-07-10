@@ -64,7 +64,7 @@
 						.then((body) => {
 							if (body.hasOwnProperty('token')) {
 								cookies.add_a_cookie(cookies.labels.token, body.token);
-								cookies.add_a_cookie(cookies.labels.me, body.me);
+								cookies.add_a_cookie(cookies.labels.user_info, body[cookies.labels.user_info]);
 								resolve(true);
 								goto('/');
 							} else {
@@ -110,9 +110,8 @@
 </script>
 
 <!-- ========================= HTML -->
-<BlackBox>
+<BlackBox title="login">
 	<Logo alone />
-	<h1 class="mt-2 mb-1 text-2xl text-white">Login</h1>
 	<External disabled={loading} />
 	<Separator content="or" />
 	<form action="" class="pt-1">
@@ -147,7 +146,7 @@
 			<Eye bind:open={show_password} />
 		</div>
 		<Warning content={password_warning} color="red" />
-		<p class="extra-link mt-2 pl-28 mb-4 float-right">
+		<p class="extra-link pl-28 mb-4 float-right">
 			<a href="/register">Forgot your password ?</a>
 		</p>
 		<ConfirmationButton name="login" handler={handle_login} bind:loading bind:disabled />
@@ -157,3 +156,10 @@
 		<a href="/register">Not on Hypertube yet ? <span class="underline">Sign up</span></a>
 	</p>
 </BlackBox>
+
+<!-- ========================= CSS -->
+<style lang="postcss">
+	label {
+		@apply ml-2;
+	}
+</style>
