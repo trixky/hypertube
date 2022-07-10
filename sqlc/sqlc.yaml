@@ -22,5 +22,7 @@ packages:
     schema:
       - "sql/medias/schema.sql"
       - "sql/torrents/schema.sql"
+      - "sql/comments/schema.sql"
     queries:
       - "sql/search/query.sql"
+      - "sql/comments/query.sql"

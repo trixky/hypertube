@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+option go_package = "./proto";
+
+package comment;
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "media.proto";
+
+message GetCommentsRequest {
+	uint64 media_id = 1;
+}
+
+message CommentUser {
+	uint64 id = 1;
+	string name = 2;
+}
+
+message Comment {
+	uint64 id = 1;
+	CommentUser user = 2;
+	google.protobuf.Timestamp date = 3;
+	string content = 4;
+}
+
+message GetCommentsResponse {
+	uint32 total_comments = 1;
+	repeated Comment comments = 2;
+}
+
+message PostCommentRequest {
+	uint64 media_id = 1;
+	string content = 2;
+}
+
+message PostCommentResponse {
+	uint64 id = 1;
+	google.protobuf.Timestamp date = 2;
+}
+
+
+message CommentRequest {
+	repeated int32 genre_ids = 1;
+    optional string query = 2;
+	optional uint32 page = 3;
+    optional media.MediaCategory category = 4;
+	optional string sort_by = 5;
+	optional string sort_order = 6;
+	optional uint32 year = 7;
+	optional float rating = 8;
+}
+
+message CommentResponse {
+	uint32 page = 1;
+	uint32 results = 2;
+	uint32 total_results = 3;
+	repeated media.Media medias = 4;
+}
+
+service CommentService {
+    rpc GetComments(GetCommentsRequest) returns (GetCommentsResponse) {
+        option (google.api.http) = {
+            get: "/v1/media/{media_id}/comments"
+        };
+	};
+    rpc PostComment(PostCommentRequest) returns (PostCommentResponse) {
+        option (google.api.http) = {
+            post: "/v1/media/{media_id}/comment"
+            body: "*"
+        };
+	};
+}

@@ -127,3 +127,17 @@ CREATE TABLE torrent_files (
 );
 ALTER TABLE ONLY torrent_files
 ADD CONSTRAINT torrent_files_torrent_id_foreign FOREIGN KEY (torrent_id) REFERENCES torrents(id) ON DELETE CASCADE NOT DEFERRABLE;
+
+-- Comments
+
+CREATE TABLE comments (
+    id BIGSERIAL PRIMARY KEY,
+	user_id INTEGER NOT NULL,
+	media_id INTEGER NOT NULL,
+	content TEXT NOT NULL,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE ONLY comments
+ADD CONSTRAINT comments_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;
+ALTER TABLE ONLY comments
+ADD CONSTRAINT comments_media_id_foreign FOREIGN KEY (media_id) REFERENCES medias(id) ON DELETE SET NULL;
