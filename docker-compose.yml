@@ -83,11 +83,12 @@ services:
       - pgadmin-data:/var/lib/pgadmin
 
   tmdb-proxy:
-    build: ./tmdb-proxy
+    image: nginx:1.23-alpine
     env_file:
       - ./tmdb-proxy/.env
     volumes:
       - ./tmdb-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx-proxy-data:/var/www/cache
     ports:
       - "${TMDB_PROXY_PORT}:80"
 
@@ -114,4 +115,6 @@ volumes:
   redis-data:
     driver: local
   pgadmin-data:
+    driver: local
+  nginx-proxy-data:
     driver: local
