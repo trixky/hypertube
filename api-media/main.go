@@ -6,6 +6,7 @@ import (
 
 	"github.com/trixky/hypertube/api-media/databases"
 	"github.com/trixky/hypertube/api-media/environment"
+	"github.com/trixky/hypertube/api-media/external"
 	"github.com/trixky/hypertube/api-media/internal"
 )
 
@@ -37,8 +38,14 @@ func main() {
 		log.Fatalf("failed to serve grpc on: %v\n", internal.NewGrpcServer(grpc_addr))
 	}()
 
+	// ------------- api-scrapper client
+	conn, err := external.NewApiScrapperClient()
+	defer conn.Close()
+	if err != nil {
+		log.Fatalf("failed to connect to api-scrapper: %v", err)
+	}
+
 	// ------------- grpc-gateway
 	grpc_gateway_addr := ":" + strconv.Itoa(environment.E.GrpcGatewayPort)
-
 	log.Fatalf("failed to serve grpc-gateway on: %v\n", internal.NewGrpcGatewayServer(grpc_gateway_addr, grpc_addr))
 }

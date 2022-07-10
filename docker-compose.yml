@@ -36,14 +36,17 @@ services:
   api-media:
     build: ./api-media
     env_file:
+      - ./api-scrapper/.env
       - ./api-media/.env
       - ./postgres/.env
     volumes:
       - ./api-media:/app
     depends_on:
       - postgres
+      - api-scrapper
     links:
       - postgres
+      - api-scrapper
     ports:
       - "${API_SEARCH_GRPC_PORT}:${API_SEARCH_GRPC_PORT}"
       - "${API_SEARCH_GRPC_GATEWAY_PORT}:${API_SEARCH_GRPC_GATEWAY_PORT}"

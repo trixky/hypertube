@@ -40,8 +40,8 @@
 
 	export const load: Load = async ({ params, fetch }) => {
 		const url = browser
-			? `http://localhost:7072/v1/media/get/${params.id}`
-			: `http://api-media:7072/v1/media/get/${params.id}`;
+			? `http://localhost:7072/v1/media/${params.id}/get`
+			: `http://api-media:7072/v1/media/${params.id}/get`;
 		const response = await fetch(url, {
 			method: 'GET',
 			headers: { accept: 'application/json' }
@@ -319,7 +319,7 @@
 	let refreshingPeers = false;
 	async function refreshPeers() {
 		refreshingPeers = true;
-		const response = await fetch(`http://localhost:7021/v1/media/refresh/${media.id}`, {
+		const response = await fetch(`http://localhost:7072/v1/media/${media.id}/refresh`, {
 			method: 'GET',
 			headers: { accept: 'application/json' }
 		});

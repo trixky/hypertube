@@ -37,12 +37,6 @@ func main() {
 		log.Fatalf("failed to serve grpc on: %v\n", internal.NewGrpcServer(grpc_addr))
 	}()
 
-	// ------------- grpc-gateway
-	grpc_gateway_addr := ":" + strconv.Itoa(environment.E.GrpcGatewayPort)
-	go func() {
-		log.Fatalf("failed to serve grpc-gateway on: %v\n", internal.NewGrpcGatewayServer(grpc_gateway_addr, grpc_addr))
-	}()
-
 	// ------------- loop forever to scrape
 	for {
 		internal.DoScrapeLatest(nil)
