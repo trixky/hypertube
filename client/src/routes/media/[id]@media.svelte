@@ -75,6 +75,7 @@
 	import Icon8K from '../../../src/components/icons/8K.svelte';
 	import Sd from '../../../src/components/icons/SD.svelte';
 	import LazyLoad from '../../../src/components/lazy/LazyLoad.svelte';
+	import Spinner from '../../../src/components/animations/spinner.svelte';
 
 	/// @ts-expect-error media is given as a prop
 	export let props: MediaProps;
@@ -522,13 +523,27 @@
 			<div>
 				<h1 class="flex justify-between items-center text-2xl mb-4">
 					<span>Torrents</span>
-					<button
-						class="text-sm opacity-80 hover:text-blue-400 transition-colors disabled:opacity-50"
-						disabled={refreshingPeers}
-						on:click={refreshPeers}
-					>
-						Refresh Peers
-					</button>
+					<div class="inline-block relative opacity-80">
+						{#if refreshingPeers}
+							<div
+								in:fade={{ duration: 350 }}
+								out:fade={{ duration: 80 }}
+								id="spinner"
+								class="absolute inline-block -translate-x-full transition-all duration-[0.35s] opacity-50"
+								style={`--tw-translate-x: calc(-100% - 4px);`}
+							>
+								<Spinner size={16} />
+							</div>
+						{/if}
+						<button
+							class="inline-block text-sm transition-all disabled:opacity-50"
+							class:hover:text-opacity-90={!refreshingPeers}
+							disabled={refreshingPeers}
+							on:click={refreshPeers}
+						>
+							Refresh Peers
+						</button>
+					</div>
 				</h1>
 				{#if torrents.length > 0}
 					<div class="w-full">
