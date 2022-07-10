@@ -82,6 +82,15 @@ services:
     volumes:
       - pgadmin-data:/var/lib/pgadmin
 
+  tmdb-proxy:
+    build: ./tmdb-proxy
+    env_file:
+      - ./tmdb-proxy/.env
+    volumes:
+      - ./tmdb-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "${TMDB_PROXY_PORT}:80"
+
   client:
     build: ./client
     env_file:
