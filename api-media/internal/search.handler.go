@@ -7,13 +7,13 @@ import (
 	"log"
 	"strings"
 
-	"github.com/trixky/hypertube/api-search/databases"
-	"github.com/trixky/hypertube/api-search/finder"
-	pb "github.com/trixky/hypertube/api-search/proto"
+	"github.com/trixky/hypertube/api-media/databases"
+	"github.com/trixky/hypertube/api-media/finder"
+	pb "github.com/trixky/hypertube/api-media/proto"
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
 
-func (s *SearchServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.SearchResponse, error) {
+func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.SearchResponse, error) {
 	md, ok := grpcMetadata.FromIncomingContext(ctx)
 
 	if !ok {

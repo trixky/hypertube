@@ -16,7 +16,7 @@ packages:
     queries:
       - "sql/scrapper/query.sql"
       - "sql/search/query.sql"
-  - path: "../api-search/sqlc"
+  - path: "../api-media/sqlc"
     name: "sqlc"
     engine: "postgresql"
     schema:

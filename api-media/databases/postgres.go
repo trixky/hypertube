@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	_ "github.com/lib/pq"
-	"github.com/trixky/hypertube/api-search/sqlc"
+	"github.com/trixky/hypertube/api-media/sqlc"
 )
 
 func ErrorIsDuplication(err error) bool {

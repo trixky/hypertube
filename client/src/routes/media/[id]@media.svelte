@@ -41,7 +41,7 @@
 	export const load: Load = async ({ params, fetch }) => {
 		const url = browser
 			? `http://localhost:7072/v1/media/get/${params.id}`
-			: `http://api-search:7072/v1/media/get/${params.id}`;
+			: `http://api-media:7072/v1/media/get/${params.id}`;
 		const response = await fetch(url, {
 			method: 'GET',
 			headers: { accept: 'application/json' }
@@ -578,7 +578,7 @@
 										<div class="loader" transition:fade />
 									{/if}
 									<div
-										class="w-full h-full px-2 py-1 rounded-md relative overflow-hidden bg-black hover:bg-stone-900 transition-all text-blue-400"
+										class="w-full h-full px-2 py-1 mt-2 lg:mt-0 rounded-md relative overflow-hidden bg-black hover:bg-stone-900 transition-all text-blue-400"
 									>
 										<Play />
 										<div class="inline-block text-white">Watch</div>

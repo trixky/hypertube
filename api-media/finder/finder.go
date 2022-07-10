@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/trixky/hypertube/api-search/databases"
-	"github.com/trixky/hypertube/api-search/sqlc"
+	"github.com/trixky/hypertube/api-media/databases"
+	"github.com/trixky/hypertube/api-media/sqlc"
 )
 
 const PerPage int32 = 40

@@ -3,7 +3,7 @@ package databases
 import (
 	"database/sql"
 
-	"github.com/trixky/hypertube/api-search/sqlc"
+	"github.com/trixky/hypertube/api-media/sqlc"
 )
 
 type Databases struct {

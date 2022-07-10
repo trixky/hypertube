@@ -6,11 +6,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/trixky/hypertube/api-search/databases"
-	pb "github.com/trixky/hypertube/api-search/proto"
+	"github.com/trixky/hypertube/api-media/databases"
+	pb "github.com/trixky/hypertube/api-media/proto"
 )
 
-func (s *SearchServer) Genres(ctx context.Context, in *pb.GenresRequest) (*pb.GenresResponse, error) {
+func (s *MediaServer) Genres(ctx context.Context, in *pb.GenresRequest) (*pb.GenresResponse, error) {
 	fmt.Println("List Genres", in)
 
 	genres, err := databases.DBs.SqlcQueries.GetGenres(ctx)
