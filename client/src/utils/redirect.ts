@@ -3,7 +3,7 @@ import { goto } from '$app/navigation';
 
 function disconnect() {
     cookies.del_a_cookie(cookies.labels.token)
-    cookies.del_a_cookie(cookies.labels.me)
+    cookies.del_a_cookie(cookies.labels.user_info)
     goto('/login')
 }
 

@@ -56,7 +56,7 @@ func (s *AuthServer) InternalLogin(ctx context.Context, in *pb.InternalLoginRequ
 		return nil, status.Errorf(codes.Internal, "token generation failed")
 	}
 
-	me, err := utils.HeaderCookieMeGeneration(utils.CookieMe{
+	me, err := utils.HeaderCookieMeGeneration(utils.User{
 		Id:        int(user.ID),
 		Username:  user.Username,
 		Firstname: user.Firstname,
@@ -70,7 +70,7 @@ func (s *AuthServer) InternalLogin(ctx context.Context, in *pb.InternalLoginRequ
 	}
 
 	return &pb.GenericConnectionResponse{
-		Token: token,
-		Me:    base64.StdEncoding.EncodeToString([]byte(me.Value)),
+		Token:    token,
+		UserInfo: base64.StdEncoding.EncodeToString([]byte(me.Value)),
 	}, nil
 }

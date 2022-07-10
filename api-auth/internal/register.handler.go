@@ -67,7 +67,7 @@ func (s *AuthServer) InternalRegister(ctx context.Context, in *pb.InternalRegist
 		return nil, status.Errorf(codes.Internal, "token generation failed")
 	}
 
-	me, err := utils.HeaderCookieMeGeneration(utils.CookieMe{
+	me, err := utils.HeaderCookieMeGeneration(utils.User{
 		Id:        int(new_user.ID),
 		Username:  new_user.Username,
 		Firstname: new_user.Firstname,
@@ -81,7 +81,7 @@ func (s *AuthServer) InternalRegister(ctx context.Context, in *pb.InternalRegist
 	}
 
 	return &pb.GenericConnectionResponse{
-		Token: token,
-		Me:    base64.StdEncoding.EncodeToString([]byte(me.Value)),
+		Token:    token,
+		UserInfo: base64.StdEncoding.EncodeToString([]byte(me.Value)),
 	}, nil
 }

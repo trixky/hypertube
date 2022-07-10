@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type CookieMe struct {
+type User struct {
 	Id        int    `json:"id"`
 	Username  string `json:"username"`
 	Firstname string `json:"firstname"`
@@ -15,15 +15,20 @@ type CookieMe struct {
 	External  string `json:"external"`
 }
 
+const (
+	COOKIE_KEY_user_info = "userInfo"
+	COOKIE_KEY_token     = "token"
+)
+
 func HeaderCookieTokenGeneration(token string) *http.Cookie {
 	return &http.Cookie{
-		Name:  "token",
+		Name:  COOKIE_KEY_token,
 		Value: token,
 	}
 }
 
-func HeaderCookieMeGeneration(cookie_me CookieMe, base_64 bool) (*http.Cookie, error) {
-	json_value, err := json.Marshal(cookie_me)
+func HeaderCookieUserGeneration(cookie_user User, base_64 bool) (*http.Cookie, error) {
+	json_value, err := json.Marshal(cookie_user)
 
 	if err != nil {
 		return nil, err
@@ -36,7 +41,7 @@ func HeaderCookieMeGeneration(cookie_me CookieMe, base_64 bool) (*http.Cookie, e
 	}
 
 	return &http.Cookie{
-		Name:  "me",
+		Name:  COOKIE_KEY_user_info,
 		Value: value,
 	}, nil
 }

@@ -2,51 +2,45 @@ package internal
 
 import (
 	"context"
+	"database/sql"
 	"encoding/base64"
+	"errors"
 
 	"github.com/trixky/hypertube/api-user/databases"
 	pb "github.com/trixky/hypertube/api-user/proto"
-	"github.com/trixky/hypertube/api-user/sanitizer"
 	"github.com/trixky/hypertube/api-user/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func sanitizeGetMe(in *pb.GetMeRequest) error {
-	if err := sanitizer.SanitizeToken(in.GetToken()); err != nil { // email
-		return err
-	}
+func (s *UserServer) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.UserInfoResponse, error) {
+	// -------------------- get token
+	sanitized_token, err := utils.ExtractSanitizedTokenFromGrpcGatewayCookies("", ctx)
 
-	return nil
-}
-
-func (s *UserServer) GetMe(ctx context.Context, in *pb.GetMeRequest) (*pb.UserInfoResponse, error) {
-	// -------------------- sanitize
-	if err := sanitizeGetMe(in); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
 	// -------------------- cache
-	token_info, err := databases.RetrieveToken(in.GetToken())
-
-	if err != nil {
+	if _, err := databases.RetrieveToken(sanitized_token); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "token retrieving failed")
 	}
 
 	// -------------------- db
-	user, err := databases.DBs.SqlcQueries.GetUserById(context.Background(), token_info.Id)
+	user, err := databases.DBs.SqlcQueries.GetUserById(context.Background(), in.GetId())
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, status.Errorf(codes.NotFound, "no user finded with this id")
+		}
 		return nil, status.Errorf(codes.Internal, "user infos retrieving failed")
 	}
 
-	me, err := utils.HeaderCookieUserGeneration(utils.User{
+	_user, err := utils.HeaderCookieUserGeneration(utils.User{
 		Id:        int(user.ID),
 		Username:  user.Username,
 		Firstname: user.Firstname,
 		Lastname:  user.Lastname,
-		Email:     user.Email,
-		External:  token_info.External,
 	}, false)
 
 	if err != nil {
@@ -54,6 +48,6 @@ func (s *UserServer) GetMe(ctx context.Context, in *pb.GetMeRequest) (*pb.UserIn
 	}
 
 	return &pb.UserInfoResponse{
-		UserInfo: base64.StdEncoding.EncodeToString([]byte(me.Value)),
+		UserInfo: base64.StdEncoding.EncodeToString([]byte(_user.Value)),
 	}, nil
 }
