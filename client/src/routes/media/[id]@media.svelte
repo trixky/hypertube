@@ -78,7 +78,7 @@
 
 	/// @ts-expect-error media is given as a prop
 	export let props: MediaProps;
-	const { media, torrents, staffs, actors } = props;
+	let { media, torrents, staffs, actors } = props;
 
 	// Find quality for torrents
 	for (const torrent of torrents) {
@@ -315,6 +315,43 @@
 		}
 	];
 
+	// Refresh Peers
+	let refreshingPeers = false;
+	async function refreshPeers() {
+		refreshingPeers = true;
+		const response = await fetch(`http://localhost:7021/v1/media/refresh/${media.id}`, {
+			method: 'GET',
+			headers: { accept: 'application/json' }
+		});
+		if (response.ok) {
+			const lines = await await response.text();
+			for (const line of lines.trim().split('\n')) {
+				try {
+					const data = JSON.parse(line) as {
+						result: { torrentId: number; seed: number; leech: number };
+					};
+					if (
+						data.result?.torrentId != undefined &&
+						typeof data.result?.seed == 'number' &&
+						typeof data.result?.leech == 'number'
+					) {
+						let torrent = torrents.find((torrent) => torrent.id == data.result.torrentId);
+						if (torrent) {
+							torrent.seed = data.result.seed;
+							torrent.leech = data.result.leech;
+						}
+					}
+				} catch (error) {
+					console.error('Failed to read line in sream response', error);
+				}
+			}
+			// Try to sort again on a simple metric
+			torrents.sort((a, b) => b.seed - a.seed);
+			torrents = torrents;
+		}
+		refreshingPeers = false;
+	}
+
 	let loadingGradient = true;
 	let background: string | undefined;
 	onMount(() => {
@@ -483,7 +520,16 @@
 		</div>
 		<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4 flex-grow relative">
 			<div>
-				<h1 class="text-2xl mb-4">Torrents</h1>
+				<h1 class="flex justify-between items-center text-2xl mb-4">
+					<span>Torrents</span>
+					<button
+						class="text-sm opacity-80 hover:text-blue-400 transition-colors disabled:opacity-50"
+						disabled={refreshingPeers}
+						on:click={refreshPeers}
+					>
+						Refresh Peers
+					</button>
+				</h1>
 				{#if torrents.length > 0}
 					<div class="w-full">
 						{#each torrents as torrent (torrent.id)}
