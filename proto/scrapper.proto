@@ -5,7 +5,6 @@ option go_package = "./proto";
 package scrapper;
 
 import "google/protobuf/timestamp.proto";
-import "google/api/annotations.proto";
 import "media.proto";
 
 message TorrentFile {
@@ -56,11 +55,11 @@ message ScrapeResponse {
 message ScrapeLatestRequest {
 }
 
-message RefreshRequest {
-	uint64 media_id = 1;
+message RefreshTorrentRequest {
+	uint64 torrent_id = 1;
 }
 
-message RefreshResponse {
+message RefreshTorrentResponse {
 	uint32 torrent_id = 1;
 	int32 seed = 2;
 	int32 leech = 3;
@@ -69,9 +68,5 @@ message RefreshResponse {
 service ScrapperService {
 	rpc ScrapeAll(ScrapeRequest) returns (stream ScrapeResponse) {};
 	rpc ScrapeLatest(ScrapeLatestRequest) returns (stream ScrapeResponse) {};
-	rpc Refresh(RefreshRequest) returns (stream RefreshResponse) {
-        option (google.api.http) = {
-            get: "/v1/media/refresh/{media_id}"
-        };
-	}
+	rpc RefreshTorrent(RefreshTorrentRequest) returns (RefreshTorrentResponse) {};
 }

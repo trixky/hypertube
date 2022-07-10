@@ -8,7 +8,6 @@ import (
 
 const (
 	ENV_grpc_port         = "API_SCRAPPER_GRPC_PORT"
-	ENV_grpc_gateway_port = "API_SCRAPPER_GRPC_GATEWAY_PORT"
 	ENV_tmdb_api_key      = "TMDB_API_KEY"
 	ENV_postgres_host     = "POSTGRES_HOST"
 	ENV_postgres_port     = "POSTGRES_PORT"
@@ -19,7 +18,6 @@ const (
 
 type Env struct {
 	GrpcPort         int
-	GrpcGatewayPort  int
 	TmdbApiKey       string
 	HttpPort         int
 	PostgresHost     string

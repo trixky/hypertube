@@ -14,6 +14,13 @@ func (e *Env) GetAll() {
 		e.GrpcPort = grpc_port
 	}
 
+	// --------- get Scrapper GrpcPort
+	if grpc_port, err := read_port(ENV_scrapper_grpc_port); err != nil {
+		log.Fatal(err)
+	} else {
+		e.ScrapperGrpcPort = grpc_port
+	}
+
 	// --------- get GrpcGatewayPort
 	if http_port, err := read_port(ENV_grpc_gateway_port); err != nil {
 		log.Fatal(err)

@@ -93,6 +93,16 @@ message GenresResponse {
 	repeated Genre genres = 1;
 }
 
+message RefreshMediaRequest {
+	uint64 media_id = 1;
+}
+
+message RefreshMediaResponse {
+	uint32 torrent_id = 1;
+	int32 seed = 2;
+	int32 leech = 3;
+}
+
 service MediaService {
     rpc Search(SearchRequest) returns (SearchResponse) {
         option (google.api.http) = {
@@ -106,7 +116,12 @@ service MediaService {
 	};
     rpc Get(GetRequest) returns (GetResponse) {
         option (google.api.http) = {
-            get: "/v1/media/get/{id}"
+            get: "/v1/media/{id}/get"
         };
 	};
+	rpc Refresh(RefreshMediaRequest) returns (stream RefreshMediaResponse) {
+        option (google.api.http) = {
+            get: "/v1/media/{media_id}/refresh"
+        };
+	}
 }

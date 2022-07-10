@@ -7,18 +7,20 @@ import (
 )
 
 const (
-	ENV_grpc_port         = "API_SEARCH_GRPC_PORT"
-	ENV_grpc_gateway_port = "API_SEARCH_GRPC_GATEWAY_PORT"
-	ENV_postgres_host     = "POSTGRES_HOST"
-	ENV_postgres_port     = "POSTGRES_PORT"
-	ENV_postgres_user     = "POSTGRES_USER"
-	ENV_postgres_password = "POSTGRES_PASSWORD"
-	ENV_postgres_db       = "POSTGRES_DB"
+	ENV_grpc_port          = "API_SEARCH_GRPC_PORT"
+	ENV_grpc_gateway_port  = "API_SEARCH_GRPC_GATEWAY_PORT"
+	ENV_scrapper_grpc_port = "API_SCRAPPER_GRPC_PORT"
+	ENV_postgres_host      = "POSTGRES_HOST"
+	ENV_postgres_port      = "POSTGRES_PORT"
+	ENV_postgres_user      = "POSTGRES_USER"
+	ENV_postgres_password  = "POSTGRES_PASSWORD"
+	ENV_postgres_db        = "POSTGRES_DB"
 )
 
 type Env struct {
 	GrpcPort         int
 	GrpcGatewayPort  int
+	ScrapperGrpcPort int
 	HttpPort         int
 	PostgresHost     string
 	PostgresPort     int
