@@ -1,6 +1,7 @@
 <!-- ========================= SCRIPT -->
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
+	import { _, locale } from 'svelte-i18n';
 
 	type MediaProps = {
 		media: {
@@ -104,8 +105,8 @@
 
 	const defaultTitle = media.names.find((name) => name.lang == '__')!;
 	const userFavoriteTitle = (() => {
-		const userLang = 'FR';
-		const favoriteTitle = media.names.find((name) => name.lang == userLang);
+		const userLang = 'fr';
+		const favoriteTitle = media.names.find((name) => name.lang.toLocaleLowerCase() == userLang);
 		if (favoriteTitle) {
 			return favoriteTitle;
 		}
@@ -367,7 +368,9 @@
 		<div
 			class="absolute top-0 left-0 m-2 px-2 py-1 text-stone-200 inline-block hover:text-blue-500 transition-colors"
 		>
-			<a href="/search" on:click={goBack} class="cursor-pointer"><ArrowLeft /> Go Back</a>
+			<a href="/search" on:click={goBack} class="cursor-pointer"
+				><ArrowLeft /> {$_('media.go_back')}</a
+			>
 		</div>
 		<div
 			class="relative flex flex-col md:flex-row justify-center items-center w-11/12 md:w-4/5 lg:w-1/2 mx-auto py-10"
@@ -415,10 +418,10 @@
 				{/if}
 				<div class="text-white mt-4">{media.description}</div>
 				{#if cleanActors.length > 0}
-					<div class="text-lg mt-4 mb-2">Actors</div>
+					<div class="text-lg mt-4 mb-2">{$_('media.actors')}</div>
 					<ol class="flex w-full pb-4 overflow-x-auto overflow-y-hidden">
 						{#each cleanActors as actor (actor.id)}
-							<LazyLoad tag="li" class="mr-6 last:mr-0 w-24 flex-shrink-0 h-full">
+							<LazyLoad tag="li" class="mr-6 last:mr-0 w-24 flex-shrink-0 h-full min-h-[1px]">
 								<div
 									class="h-24 w-24 rounded-full border-4 border-black border-opacity-80 bg-center bg-cover transition-all"
 									style={`background-image: url("${actor.thumbnail}"); ${
@@ -434,10 +437,10 @@
 					</ol>
 				{/if}
 				{#if cleanStaffs.length > 0}
-					<div class="text-lg mt-4 mb-2">Staffs</div>
+					<div class="text-lg mt-4 mb-2">{$_('media.staffs')}</div>
 					<ol class="flex w-full pb-4 overflow-x-auto overflow-y-hidden">
 						{#each cleanStaffs as staff (staff.id)}
-							<LazyLoad tag="li" class="mr-6 last:mr-0 w-24 flex-shrink-0 h-full">
+							<LazyLoad tag="li" class="mr-6 last:mr-0 w-24 flex-shrink-0 h-full min-h-[1px]">
 								<div
 									class="h-24 w-24 rounded-full border-4 border-black border-opacity-80 bg-center bg-cover transition-all"
 									style={`background-image: url("${staff.thumbnail}"); ${
@@ -495,7 +498,7 @@
 							disabled={refreshingPeers}
 							on:click={refreshPeers}
 						>
-							Refresh Peers
+							{$_('media.refresh_peers')}
 						</button>
 					</div>
 				</h1>
@@ -521,7 +524,7 @@
 										<QualityIcon quality={torrent.quality} class="mr-1" />
 									</div>
 									{#if torrent.size}
-										Size: {torrent.size} &#x2022;
+										{$_('media.size')}: {torrent.size} &#x2022;
 									{/if}
 									Seed: <span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> &#x2022;
 									Leech:
@@ -543,19 +546,20 @@
 										class="flex items-center w-full h-full px-2 py-1 rounded-md relative overflow-hidden bg-black hover:bg-stone-900 transition-all text-blue-400"
 									>
 										<Play />
-										<div class="inline-block flex-grow text-white">Watch</div>
+										<div class="inline-block flex-grow text-white">{$_('media.watch')}</div>
 									</div>
 								</button>
 							</div>
 						{/each}
 					</div>
 				{:else}
-					<div>No torrents for this media, yet !</div>
+					<div>{$_('media.no_torrents')}</div>
 				{/if}
 			</div>
 			<div class="my-4">
 				<h1 class="text-2xl mb-4">
-					Comments {#if cleanComments.length > 0}
+					{$_('media.comments')}
+					{#if cleanComments.length > 0}
 						({cleanComments.length})
 					{/if}
 				</h1>
@@ -576,7 +580,7 @@
 						</div>
 					{/each}
 				{:else}
-					<div>No comments on this media, yet, be the first one !</div>
+					<div>{$_('media.no_comments')}</div>
 				{/if}
 			</div>
 		</div>

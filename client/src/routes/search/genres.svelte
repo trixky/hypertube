@@ -1,11 +1,12 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
+	import { onMount, tick } from 'svelte';
 	import { fly } from 'svelte/transition';
+	import { _ } from 'svelte-i18n';
 	import { clickOutside } from '../../../src/directives/clickOutside';
 	import ChevronDown from '../../../src/components/icons/ChevronDown.svelte';
 	import ChevronUp from '../../../src/components/icons/ChevronUp.svelte';
 	import { loaded, loading, genres } from '../../../src/stores/genres';
-	import { onMount, tick } from 'svelte';
 	import { search } from '../../../src/stores/search';
 	import Times from '../../../src/components/icons/Times.svelte';
 
@@ -79,7 +80,7 @@
 >
 	<div class="flex justify-between items-center p-2" use:clickOutside on:clickOutside={close}>
 		<span>
-			Genres
+			{$_('search.form.genres.name')}
 			{#if selected.length > 0}
 				({selected.length})
 			{/if}
@@ -102,7 +103,8 @@
 				class="flex items-center p-2 border-b last:border-b-0 last:rounded-b-md border-slate-400 text-blue-600"
 				on:click={clear}
 			>
-				<Times /> Clear
+				<Times />
+				{$_('search.form.genres.clear')}
 			</div>
 			{#each $genres as genre (genre.id)}
 				<div class="inline-block p-2 border-b last:border-b-0 last:rounded-b-md border-slate-400">
@@ -119,9 +121,9 @@
 				</div>
 			{:else}
 				{#if $loading}
-					Loading...
+					{$_('search.form.genres.loading')}
 				{:else}
-					No genres, yet !
+					{$_('search.form.genres.no_results')}
 				{/if}
 			{/each}
 		</div>

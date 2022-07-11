@@ -1,0 +1,42 @@
+{
+  "search": {
+    "form": {
+      "year": "Annee",
+      "query_placeholder": "Recherche",
+      "rating": "Note",
+      "rating_placeholder": "Note Min.",
+      "sort_by": "Trier par",
+      "genres": {
+        "name": "Categories",
+        "clear": "Tout Enlever",
+        "no_results": "Aucune categorie pour l'instant !",
+        "loading": "Chargement..."
+      },
+      "sort_columns": {
+        "year": "Annee",
+        "name": "Nom",
+        "duration": "Duree",
+        "id": "#"
+      }
+    },
+    "no_results": "Aucun resultats !",
+    "load_more": "Charger Plus"
+  },
+  "asc": {
+    "short": "Asc"
+  },
+  "desc": {
+    "short": "Desc"
+  },
+  "media": {
+    "go_back": "Retour",
+    "actors": "Acteurs",
+    "staffs": "Credits",
+    "refresh_peers": "Rafraichir les pairs",
+    "size": "Taille",
+    "watch": "Regarder",
+    "comments": "Commentaires",
+    "no_torrents": "Pas encore de Torrents pour ce film !",
+    "no_comments": "Pas encore de commentaires pour ce film, soyez le premier !"
+  }
+}

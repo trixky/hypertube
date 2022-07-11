@@ -3,6 +3,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
 	import { fade } from 'svelte/transition';
+	import { _, locale } from 'svelte-i18n';
 	import Spinner from '../../../src/components/animations/spinner.svelte';
 	import { searching, loadingMore, results, totalResults, search } from '../../stores/search';
 	import Genres from './genres.svelte';
@@ -10,12 +11,7 @@
 	import SortDesc from '../../../src/components/icons/SortDesc.svelte';
 	import LazyLoad from '../../../src/components/lazy/LazyLoad.svelte';
 
-	let columns: { value: string; name: string }[] = [
-		{ value: 'year', name: 'Year' },
-		{ value: 'name', name: 'Name' },
-		{ value: 'duration', name: 'Duration' },
-		{ value: 'id', name: 'ID' }
-	];
+	let sortColumns: string[] = ['year', 'name', 'duration', 'id'];
 
 	$: loading = $searching || $loadingMore;
 
@@ -112,19 +108,24 @@
 		class="flex flex-col md:flex-row items-center w-full sticky top-0 p-4 bg-black z-10 border-b-2 border-blue-500"
 	>
 		<div>
+			{#if $locale == 'fr'}
+				<button on:click={() => locale.set('en')} class="text-white">EN</button>
+			{:else}
+				<button on:click={() => locale.set('fr')} class="text-white">FR</button>
+			{/if}
 			<input
 				type="text"
 				class="input block w-full mb-2 lg:inline-block lg:w-auto lg:mb-0"
-				placeholder="Search"
+				placeholder={$_('search.form.query_placeholder')}
 				disabled={loading}
 				bind:value={$search.query}
 				on:input={debounceSearch}
 			/>
-			<label for="year" class="lg:ml-4">Year</label>
+			<label for="year" class="lg:ml-4">{$_('search.form.year')}</label>
 			<input
 				type="number"
 				class="input w-20 mb-2 lg:mb-0"
-				placeholder="Year"
+				placeholder={$_('search.form.year')}
 				name="year"
 				min="0"
 				max="9999"
@@ -133,11 +134,11 @@
 				bind:value={$search.year}
 				on:input={debounceSearch}
 			/>
-			<label for="rating">Rating</label>
+			<label for="rating">{$_('search.form.rating')}</label>
 			<input
 				type="number"
 				class="input w-20"
-				placeholder="Min. Rating"
+				placeholder={$_('search.form.rating_placeholder')}
 				name="rating"
 				min="0"
 				max="10"
@@ -150,7 +151,7 @@
 		</div>
 		<div class="flex-grow" />
 		<div class="mt-2 lg:mt-0">
-			<label for="sort">Sort By</label>
+			<label for="sort">{$_('search.form.sort_by')}</label>
 			<select
 				class="input"
 				name="sort"
@@ -158,8 +159,8 @@
 				bind:value={$search.sortBy}
 				on:input={debounceSearch}
 			>
-				{#each columns as column (column.name)}
-					<option value={column.value}>{column.name}</option>
+				{#each sortColumns as column (column)}
+					<option value={column}>{$_(`search.form.sort_columns.${column}`)}</option>
 				{/each}
 			</select>
 			<div
@@ -168,9 +169,9 @@
 				on:click={toggleSort}
 			>
 				{#if $search.sortOrder == 'ASC'}
-					Asc <SortAsc />
+					{$_('asc.short')} <SortAsc />
 				{:else}
-					Desc <SortDesc />
+					{$_('desc.short')} <SortDesc />
 				{/if}
 			</div>
 		</div>
@@ -181,7 +182,7 @@
 		</div>
 	{:else if $results.length == 0}
 		<div class="w-full flex justify-center mt-8">
-			<div class="text-5xl text-white">No results !</div>
+			<div class="text-5xl text-white">{$_('search.no_results')}</div>
 		</div>
 	{:else}
 		<div class="result-wrapper p-4">
@@ -224,8 +225,8 @@
 					class:opacity-50={loading}
 					on:click={loadMore}
 				>
-					<div class="flex w-full h-full justify-center items-center text-2xl text-white	">
-						Load More
+					<div class="flex w-full h-full justify-center items-center text-2xl text-white">
+						{$_('search.load_more')}
 					</div>
 				</div>
 			{/if}
