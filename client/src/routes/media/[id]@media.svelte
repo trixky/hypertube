@@ -36,6 +36,15 @@
 			thumbnail?: string | null;
 			character?: string | null;
 		}[];
+		comments: {
+			id: number | string;
+			user: {
+				id: number | string;
+				name: string;
+			};
+			date: string;
+			content: string;
+		}[];
 	};
 
 	export const load: Load = async ({ params, fetch }) => {
@@ -76,7 +85,7 @@
 
 	/// @ts-expect-error media is given as a prop
 	export let props: MediaProps;
-	let { media, torrents, staffs, actors } = props;
+	let { media, torrents, staffs, actors, comments } = props;
 
 	// Find quality for torrents
 	for (const torrent of torrents) {
@@ -251,36 +260,15 @@
 		loadingGradient = false;
 	}
 
-	const comments: {
-		id: number;
+	const cleanComments = comments.map((comment) => ({
+		...comment,
+		id: Number(comment.id),
 		user: {
-			id: number;
-			name: string;
-		};
-		date: Date;
-		content: string;
-	}[] = [
-		{
-			id: 1,
-			user: {
-				id: 1,
-				name: 'ncolomer'
-			},
-			date: new Date(),
-			content:
-				'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Provident non debitis enim autem dolor in consequatur odit, nisi nemo nesciunt cumque eligendi obcaecati. Expedita impedit sit animi nam aliquam quasi?'
+			...comment.user,
+			id: Number(comment.user.id)
 		},
-		{
-			id: 2,
-			user: {
-				id: 2,
-				name: 'mcolomer'
-			},
-			date: new Date(),
-			content:
-				'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Provident non debitis enim autem dolor in consequatur odit, nisi nemo nesciunt cumque eligendi obcaecati. Expedita impedit sit animi nam aliquam quasi?'
-		}
-	];
+		date: new Date(comment.date)
+	}));
 
 	// Refresh Peers
 	let refreshingPeers = false;
@@ -357,7 +345,7 @@
 </script>
 
 <!-- ========================= HTML -->
-<div class="flex flex-col w-full h-auto bg-black">
+<div class="flex flex-col w-full h-auto pb-4 bg-black">
 	<div class="header min-h-[30rem] flex-grow-0 border-b-stone-200 border-b">
 		{#if !loadingGradient}
 			{#if background}
@@ -567,22 +555,22 @@
 			</div>
 			<div class="my-4">
 				<h1 class="text-2xl mb-4">
-					Comments {#if comments.length > 0}
-						({comments.length})
+					Comments {#if cleanComments.length > 0}
+						({cleanComments.length})
 					{/if}
 				</h1>
-				{#if comments.length > 0}
-					{#each comments as comment (comment.id)}
+				{#if cleanComments.length > 0}
+					{#each cleanComments as comment (comment.id)}
 						<div class="comment" class:self={comment.user.id == 1}>
 							{#if comment.user.id == 1}
 								<div class="bordered" />
 							{/if}
 							<div class="comment-header">
 								<div>
-									<span class="opacity-60 text-sm">#{comment.id}</span>
+									<span class="opacity-60 text-sm mr-2">#{comment.id}</span>
 									<span class="font-bold">{comment.user.name}</span>
 								</div>
-								<div class="text-sm">{comment.date}</div>
+								<div class="text-sm">{comment.date.toLocaleString()}</div>
 							</div>
 							<div class="comment-content">{comment.content}</div>
 						</div>
