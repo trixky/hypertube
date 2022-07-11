@@ -185,9 +185,9 @@ WHERE id = $1;
 
 -- name: CreateMediaActor :exec
 INSERT INTO media_actors
-	(media_id, name_id, character)
+	(media_id, name_id, character, cast_order)
 VALUES
-	($1, $2, $3)
+	($1, $2, $3, $4)
 ON CONFLICT DO NOTHING;
 
 -- name: DeleteMediaActor :exec

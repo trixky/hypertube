@@ -15,7 +15,7 @@ packages:
       - "sql/torrents/schema.sql"
     queries:
       - "sql/scrapper/query.sql"
-      - "sql/search/query.sql"
+      - "sql/medias/query.sql"
   - path: "../api-media/sqlc"
     name: "sqlc"
     engine: "postgresql"
@@ -24,5 +24,5 @@ packages:
       - "sql/torrents/schema.sql"
       - "sql/comments/schema.sql"
     queries:
-      - "sql/search/query.sql"
+      - "sql/medias/query.sql"
       - "sql/comments/query.sql"

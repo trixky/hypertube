@@ -195,6 +195,7 @@ type MediaActor struct {
 	Name      string
 	Thumbnail *string
 	Character string
+	Order     int32
 }
 
 type MediaName struct {
@@ -513,6 +514,7 @@ func InsertMediaInformations(informations *MediaInformations) (media_id int32, e
 			MediaID:   media_id,
 			NameID:    int32(name.ID),
 			Character: ut.MakeNullString(&actor.Character),
+			CastOrder: actor.Order,
 		})
 		if err != nil {
 			return media_id, err
