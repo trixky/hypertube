@@ -5,6 +5,7 @@ import (
 	"log"
 	"sort"
 
+	"github.com/golang/protobuf/ptypes"
 	"github.com/trixky/hypertube/api-media/databases"
 	pb "github.com/trixky/hypertube/api-media/proto"
 	"github.com/trixky/hypertube/api-media/sqlc"
@@ -76,6 +77,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 		Torrents: make([]*pb.TorrentPublicInformations, 0),
 		Staffs:   make([]*pb.Staff, 0),
 		Actors:   make([]*pb.Actor, 0),
+		Comments: make([]*pb.Comment, 0),
 	}
 
 	// Find relations
@@ -164,6 +166,24 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 			Name:      staff.Name,
 			Thumbnail: staff.Thumbnail.String,
 			Role:      staff.Role.String,
+		})
+	}
+
+	// Load comments
+	comments, err := databases.DBs.SqlcQueries.GetMediaComments(ctx, int32(media.ID))
+	if err != nil {
+		return nil, err
+	}
+	for _, comment := range comments {
+		created_at, _ := ptypes.TimestampProto(comment.CreatedAt.Time)
+		response.Comments = append(response.Comments, &pb.Comment{
+			Id: uint64(comment.ID.Int64),
+			User: &pb.CommentUser{
+				Id:   uint64(comment.UserID.Int32),
+				Name: comment.Username,
+			},
+			Content: comment.Content.String,
+			Date:    created_at,
 		})
 	}
 

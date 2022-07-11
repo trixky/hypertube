@@ -20,6 +20,7 @@ packages:
     name: "sqlc"
     engine: "postgresql"
     schema:
+      - "sql/users/schema.sql"
       - "sql/medias/schema.sql"
       - "sql/torrents/schema.sql"
       - "sql/comments/schema.sql"

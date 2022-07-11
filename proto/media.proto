@@ -4,7 +4,9 @@ option go_package = "./proto";
 
 package media;
 
+import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
+import "comment.proto";
 
 enum MediaCategory {
 	CATEGORY_UNSPECIFIED = 0;
@@ -79,6 +81,7 @@ message GetResponse {
 	repeated TorrentPublicInformations torrents = 2;
 	repeated Staff staffs = 3;
 	repeated Actor actors = 4;
+	repeated comment.Comment comments = 5;
 }
 
 message GenresRequest {
@@ -103,6 +106,25 @@ message RefreshMediaResponse {
 	int32 leech = 3;
 }
 
+message GetCommentsRequest {
+	uint64 media_id = 1;
+}
+
+message GetCommentsResponse {
+	uint32 total_comments = 1;
+	repeated comment.Comment comments = 2;
+}
+
+message PostCommentRequest {
+	uint64 media_id = 1;
+	string content = 2;
+}
+
+message PostCommentResponse {
+	uint64 id = 1;
+	google.protobuf.Timestamp date = 2;
+}
+
 service MediaService {
     rpc Search(SearchRequest) returns (SearchResponse) {
         option (google.api.http) = {
@@ -124,4 +146,15 @@ service MediaService {
             get: "/v1/media/{media_id}/refresh"
         };
 	}
+    rpc GetComments(GetCommentsRequest) returns (GetCommentsResponse) {
+        option (google.api.http) = {
+            get: "/v1/media/{media_id}/comments"
+        };
+	};
+    rpc PostComment(PostCommentRequest) returns (PostCommentResponse) {
+        option (google.api.http) = {
+            post: "/v1/media/{media_id}/comment"
+            body: "*"
+        };
+	};
 }
