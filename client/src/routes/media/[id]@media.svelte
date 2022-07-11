@@ -124,50 +124,19 @@
 		return `${total.minutes}m`;
 	})();
 
-	// Filter and merge actors and staffs once
-	let cleanStaffs: {
-		id: number;
-		name: string;
-		thumbnail: string;
-		roles: string[];
-	}[] = [];
-	for (const staff of staffs.filter((staff) => staff.thumbnail && staff.role)) {
-		let existingStaff = cleanStaffs.find((existingStaff) => existingStaff.id == staff.id);
-		if (existingStaff) {
-			existingStaff.roles.push(staff.role!);
-		} else {
-			existingStaff = {
-				id: staff.id,
-				name: staff.name,
-				thumbnail: `http://localhost:7260${staff.thumbnail}`,
-				roles: [staff.role!]
-			};
-			cleanStaffs.push(existingStaff);
-		}
-	}
-	cleanStaffs = cleanStaffs.slice(0, 5);
-
-	let cleanActors: {
-		id: number;
-		name: string;
-		thumbnail: string;
-		characters: string[];
-	}[] = [];
-	for (const actor of actors.filter((actor) => actor.thumbnail && actor.character)) {
-		let existingActor = cleanActors.find((existingActor) => existingActor.id == actor.id);
-		if (existingActor) {
-			existingActor.characters.push(actor.character!);
-		} else {
-			existingActor = {
-				id: actor.id,
-				name: actor.name,
-				thumbnail: `http://localhost:7260${actor.thumbnail}`,
-				characters: [actor.character!]
-			};
-			cleanActors.push(existingActor);
-		}
-	}
-	cleanActors = cleanActors.slice(0, 5);
+	// Add full thumbnail to staffs and actors
+	const cleanStaffs = staffs.map((staff) => ({
+		id: staff.id,
+		name: staff.name,
+		thumbnail: `http://localhost:7260${staff.thumbnail}`,
+		roles: [staff.role!]
+	}));
+	const cleanActors = actors.map((actor) => ({
+		id: actor.id,
+		name: actor.name,
+		thumbnail: `http://localhost:7260${actor.thumbnail}`,
+		characters: [actor.character!]
+	}));
 
 	// Background animation
 	let palette: string[] = [];

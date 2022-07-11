@@ -3,12 +3,43 @@ package internal
 import (
 	"context"
 	"log"
+	"sort"
 
 	"github.com/trixky/hypertube/api-media/databases"
 	pb "github.com/trixky/hypertube/api-media/proto"
+	"github.com/trixky/hypertube/api-media/sqlc"
 	ut "github.com/trixky/hypertube/api-media/utils"
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
+
+var StaffOrder []string = []string{
+	"Director",
+	"Writer",
+	"Comic Book",
+	"Story",
+	"Original Story",
+	"Author",
+	"Animation",
+	"Original Music Composer",
+	"In Memory Of",
+	"Producer",
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func indexOf(slice []string, value string) int {
+	for p, v := range slice {
+		if v == value {
+			return p
+		}
+	}
+	return 999
+}
 
 func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetResponse, error) {
 	md, ok := grpcMetadata.FromIncomingContext(ctx)
@@ -88,6 +119,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 	if err != nil {
 		return nil, err
 	}
+	// Actors are limited to 15 and are already ordered by the `cast_order` column
 	for _, actor := range actors {
 		response.Actors = append(response.Actors, &pb.Actor{
 			Id:        int32(actor.ID),
@@ -101,7 +133,32 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 	if err != nil {
 		return nil, err
 	}
+	// Sort by "importance" before de-duplicating
+	sort.SliceStable(staffs, func(i, j int) bool {
+		return indexOf(StaffOrder, staffs[i].Role.String) < indexOf(StaffOrder, staffs[j].Role.String)
+	})
+	// Merge duplicate staffs with multiple roles
+	merged_staffs := make([]sqlc.GetMediaStaffsRow, 0)
 	for _, staff := range staffs {
+		added_role := false
+		for index, existing_staff := range merged_staffs {
+			if existing_staff.ID == staff.ID {
+				if existing_staff.Role.String == "" {
+					merged_staffs[index].Role.String = staff.Role.String
+				} else {
+					merged_staffs[index].Role.String = existing_staff.Role.String + ", " + staff.Role.String
+				}
+				added_role = true
+				break
+			}
+		}
+		if !added_role {
+			merged_staffs = append(merged_staffs, staff)
+		}
+	}
+	// If there is more than 15 staffs, trim them to the most "important" only
+	for i := 0; i < min(len(merged_staffs), 15); i++ {
+		staff := merged_staffs[i]
 		response.Staffs = append(response.Staffs, &pb.Staff{
 			Id:        int32(staff.ID),
 			Name:      staff.Name,

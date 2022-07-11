@@ -27,6 +27,8 @@ SELECT names.id, media_actors.id as actor_id, names.name, names.thumbnail, media
 FROM media_actors
 RIGHT JOIN names ON media_actors.name_id = names.id
 WHERE media_actors.media_id = $1
+	AND names.thumbnail IS NOT NULL
+	AND media_actors.character IS NOT NULL
 ORDER BY cast_order
 LIMIT 15;
 
@@ -34,7 +36,9 @@ LIMIT 15;
 SELECT names.id, names.name, names.thumbnail, media_staffs.role
 FROM media_staffs
 RIGHT JOIN names ON media_staffs.name_id = names.id
-WHERE media_staffs.media_id = $1;
+WHERE media_staffs.media_id = $1
+	AND names.thumbnail IS NOT NULL
+	AND media_staffs.role IS NOT NULL;
 
 -- name: GetGenres :many
 SELECT *
