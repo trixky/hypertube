@@ -18,7 +18,7 @@
 	import Header from '../components/layouts/header.svelte';
 	import Footer from '../components/layouts/footer.svelte';
 
-	// not_connected(browser);
+	not_connected(browser);
 </script>
 
 <!-- ========================= HTML -->
