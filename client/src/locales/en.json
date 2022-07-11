@@ -1,0 +1,42 @@
+{
+  "search": {
+    "form": {
+      "year": "Year",
+      "query_placeholder": "Search",
+      "rating": "Rating",
+      "rating_placeholder": "Min. Rating",
+      "sort_by": "Sort By",
+      "genres": {
+        "name": "Genres",
+        "clear": "Clear",
+        "no_results": "No genres, yet !",
+        "loading": "Loading..."
+      },
+      "sort_columns": {
+        "year": "Year",
+        "name": "Name",
+        "duration": "Duration",
+        "id": "#"
+      }
+    },
+    "no_results": "No results !",
+    "load_more": "Load More"
+  },
+  "asc": {
+    "short": "Asc"
+  },
+  "desc": {
+    "short": "Desc"
+  },
+  "media": {
+    "go_back": "Go Back",
+    "actors": "Actors",
+    "staffs": "Staffs",
+    "refresh_peers": "Refresh Peers",
+    "size": "Size",
+    "watch": "Watch",
+    "comments": "Comments",
+    "no_torrents": "No torrents for this media, yet !",
+    "no_comments": "No comments on this media, yet, be the first one !"
+  }
+}
