@@ -3,8 +3,9 @@ SELECT * FROM comments
 WHERE id = $1 LIMIT 1;
 
 -- name: GetMediaComments :many
-SELECT *
+SELECT users.username, comments.id, comments.user_id, comments.content, comments.created_at
 FROM comments
+RIGHT JOIN users ON comments.user_id = users.id
 WHERE media_id = $1;
 
 -- name: GetUserComments :many
