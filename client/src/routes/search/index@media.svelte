@@ -57,7 +57,7 @@
 		clearTimeout(searchTimeout);
 		searchTimeout = setTimeout(async () => {
 			search.execute();
-		}, 200);
+		}, 300);
 	}
 
 	async function loadMore() {
