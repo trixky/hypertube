@@ -68,7 +68,8 @@ CREATE TABLE media_actors (
     id BIGSERIAL PRIMARY KEY,
     media_id INTEGER NOT NULL,
     name_id INTEGER NOT NULL,
-    character VARCHAR (250) NULL
+    character VARCHAR (250) NULL,
+    cast_order INTEGER NOT NULL
 );
 ALTER TABLE ONLY media_actors
 ADD CONSTRAINT media_actors_media_id_foreign FOREIGN KEY (media_id) REFERENCES medias(id) ON DELETE CASCADE NOT DEFERRABLE;

@@ -23,10 +23,12 @@ RIGHT JOIN genres ON media_genres.genre_id = genres.id
 WHERE media_genres.media_id = $1;
 
 -- name: GetMediaActors :many
-SELECT names.id, names.name, names.thumbnail, media_actors.character
+SELECT names.id, media_actors.id as actor_id, names.name, names.thumbnail, media_actors.character
 FROM media_actors
 RIGHT JOIN names ON media_actors.name_id = names.id
-WHERE media_actors.media_id = $1;
+WHERE media_actors.media_id = $1
+ORDER BY cast_order
+LIMIT 15;
 
 -- name: GetMediaStaffs :many
 SELECT names.id, names.name, names.thumbnail, media_staffs.role
