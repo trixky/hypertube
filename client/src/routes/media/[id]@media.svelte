@@ -70,12 +70,9 @@
 	import quantize from 'quantize';
 	import ArrowLeft from '../../../src/components/icons/ArrowLeft.svelte';
 	import Play from '../../../src/components/icons/Play.svelte';
-	import Hd from '../../../src/components/icons/HD.svelte';
-	import Icon4K from '../../../src/components/icons/4K.svelte';
-	import Icon8K from '../../../src/components/icons/8K.svelte';
-	import Sd from '../../../src/components/icons/SD.svelte';
 	import LazyLoad from '../../../src/components/lazy/LazyLoad.svelte';
 	import Spinner from '../../../src/components/animations/spinner.svelte';
+	import QualityIcon from './QualityIcon.svelte';
 
 	/// @ts-expect-error media is given as a prop
 	export let props: MediaProps;
@@ -549,21 +546,11 @@
 					<div class="w-full">
 						{#each torrents as torrent (torrent.id)}
 							<div
-								class="flex flex-col xl:flex-row xl:items-center w-full my-2 bg-black bg-opacity-80"
+								class="flex flex-col xl:flex-row xl:items-center w-full mb-4 last:mb-0 xl:mb-2 my-2 bg-black bg-opacity-80"
 							>
-								{#if torrent.quality}
-									<div class="flex-shrink-0 mr-2">
-										{#if torrent.quality == 'hd'}
-											<Hd />
-										{:else if torrent.quality == '4k'}
-											<Icon4K />
-										{:else if torrent.quality == '8k'}
-											<Icon8K />
-										{:else}
-											<Sd />
-										{/if}
-									</div>
-								{/if}
+								<div class="hidden xl:inline-block">
+									<QualityIcon quality={torrent.quality} class="mr-2" />
+								</div>
 								<div class="flex-grow truncate" title={torrent.name}>
 									{torrent.name}
 								</div>
@@ -573,6 +560,9 @@
 									</div>
 								{/if}
 								<div class="xl:hidden">
+									<div class="inline-block xl:hidden">
+										<QualityIcon quality={torrent.quality} class="mr-1" />
+									</div>
 									{#if torrent.size}
 										Size: {torrent.size} &#x2022;
 									{/if}
@@ -585,7 +575,7 @@
 									<span class="text-red-600">{torrent.leech}</span>
 								</div>
 								<button
-									class="flex flex-shrink-0 items-center p-[2px] rounded-md font-bold border border-stone-400 hover:border-transparent transition-all relative overflow-hidden"
+									class="flex-shrink-0 p-[2px] mt-2 xl:mt-0 rounded-md font-bold border border-stone-400 hover:border-transparent transition-all relative overflow-hidden"
 									on:mouseenter={() => (torrent.hover = true)}
 									on:mouseleave={() => (torrent.hover = false)}
 								>
@@ -593,10 +583,10 @@
 										<div class="loader" transition:fade />
 									{/if}
 									<div
-										class="w-full h-full px-2 py-1 mt-2 lg:mt-0 rounded-md relative overflow-hidden bg-black hover:bg-stone-900 transition-all text-blue-400"
+										class="flex items-center w-full h-full px-2 py-1 rounded-md relative overflow-hidden bg-black hover:bg-stone-900 transition-all text-blue-400"
 									>
 										<Play />
-										<div class="inline-block text-white">Watch</div>
+										<div class="inline-block flex-grow text-white">Watch</div>
 									</div>
 								</button>
 							</div>

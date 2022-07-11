@@ -55,25 +55,25 @@ type SearchStore = {
 	sortOrder: SortOrder;
 };
 
-function buildParams(params: SearchStore): string {
-	const result: string[] = [
-		`page=${params.page}`,
-		`sort_by=${params.sortBy}`,
-		`sort_order=${params.sortOrder}`
-	];
-	if (params.query && params.query != '') {
-		result.push(`query=${encodeURIComponent(params.query)}`);
+function buildParams(store: SearchStore): string {
+	const params = new URLSearchParams([
+		['page', `${store.page}`],
+		['sort_by', `${store.sortBy}`],
+		['sort_order', `${store.sortOrder}`]
+	]);
+	if (store.query && store.query != '') {
+		params.append('query', encodeURIComponent(store.query));
 	}
-	if (params.year) {
-		result.push(`year=${encodeURIComponent(params.year)}`);
+	if (store.year) {
+		params.append('year', encodeURIComponent(store.year));
 	}
-	if (params.rating) {
-		result.push(`rating=${encodeURIComponent(params.rating)}`);
+	if (store.rating) {
+		params.append('rating', encodeURIComponent(store.rating));
 	}
-	for (const genre of params.genres) {
-		result.push(`${encodeURIComponent('genre_ids')}=${encodeURIComponent(genre)}`);
+	for (const genre of store.genres) {
+		params.append('genre_ids', encodeURIComponent(genre));
 	}
-	return result.join('&');
+	return params.toString();
 }
 
 export function searchStore() {
@@ -87,6 +87,12 @@ export function searchStore() {
 		sortOrder: 'DESC'
 	};
 	const { subscribe, set, update } = writable<SearchStore>(store);
+
+	function url(to: string): URL {
+		const url = new URL(to);
+		url.search = buildParams(store);
+		return url;
+	}
 
 	return {
 		subscribe,
@@ -115,8 +121,7 @@ export function searchStore() {
 			results.setResults([]);
 
 			// Send request
-			const params = buildParams(store);
-			const res = await fetch(`http://localhost:7072/v1/media/search?${params}`, {
+			const res = await fetch(url('http://localhost:7072/v1/media/search'), {
 				method: 'GET',
 				headers: { accept: 'application/json' }
 			});
@@ -149,8 +154,7 @@ export function searchStore() {
 			set(store);
 
 			// Send request
-			const params = buildParams(store);
-			const res = await fetch(`http://localhost:7072/v1/media/search?${params}`, {
+			const res = await fetch(url('http://localhost:7072/v1/media/search'), {
 				method: 'GET',
 				headers: { accept: 'application/json' }
 			});
