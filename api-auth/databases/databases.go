@@ -14,8 +14,9 @@ type Databases struct {
 }
 
 const (
-	EXTERNAL_none = "none"
-	EXTERNAL_42   = "42"
+	EXTERNAL_none   = "none"
+	EXTERNAL_42     = "42"
+	EXTERNAL_GOOGLE = "google"
 )
 
 var DBs Databases

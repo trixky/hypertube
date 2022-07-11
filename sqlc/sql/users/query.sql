@@ -7,11 +7,16 @@ SELECT * FROM users
 WHERE email = $1 
 AND password = $2
 AND id_42 IS NULL
+AND id_google IS NULL
 LIMIT 1;
 
 -- name: GetUserBy42Id :one
 SELECT * FROM users
 WHERE id_42 = $1 LIMIT 1;
+
+-- name: GetUserByGoogleId :one
+SELECT * FROM users
+WHERE id_google = $1 LIMIT 1;
 
 -- name: ListUsers :many
 SELECT * FROM users
@@ -27,6 +32,13 @@ INSERT INTO users (
 -- name: Create42ExternalUser :one
 INSERT INTO users (
     username, firstname, lastname, email, password, id_42
+) VALUES (
+    $1, $2, $3, $4, $5, $6
+) RETURNING *;
+
+-- name: CreateGoogleExternalUser :one
+INSERT INTO users (
+    username, firstname, lastname, email, password, id_google
 ) VALUES (
     $1, $2, $3, $4, $5, $6
 ) RETURNING *;

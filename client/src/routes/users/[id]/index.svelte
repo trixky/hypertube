@@ -83,6 +83,8 @@
 			(!new_password.length || !new_password_blur) &&
 			(!confirm_new_password.length || !confirm_new_password_blur));
 
+	$: can_be_empty = Boolean(current_username.length || current_firstname.length || current_lastname.length || current_email.length);
+
 	let show_password = false;
 	$: password_input_type = show_password ? 'text' : 'password';
 
@@ -343,7 +345,12 @@
 		{/if}
 		<form class="pt-1 w-full">
 			<div>
-				<InfoLine centered={!modification_mode} label="username" bind:value={current_username} />
+				<InfoLine
+					centered={!modification_mode}
+					label="username"
+					bind:value={current_username}
+					{can_be_empty}
+				/>
 				{#if modification_mode}
 					<input
 						type="text"
@@ -361,7 +368,12 @@
 				{/if}
 			</div>
 			<div>
-				<InfoLine centered={!modification_mode} label="firstname" bind:value={current_firstname} />
+				<InfoLine
+					centered={!modification_mode}
+					label="firstname"
+					bind:value={current_firstname}
+					{can_be_empty}
+				/>
 				{#if modification_mode}
 					<input
 						type="text"
@@ -379,7 +391,12 @@
 				{/if}
 			</div>
 			<div>
-				<InfoLine centered={!modification_mode} label="lastname" bind:value={current_lastname} />
+				<InfoLine
+					centered={!modification_mode}
+					label="lastname"
+					bind:value={current_lastname}
+					{can_be_empty}
+				/>
 				{#if modification_mode}
 					<input
 						type="text"
@@ -398,10 +415,12 @@
 			</div>
 			{#if its_me}
 				<div>
-					<InfoLine centered={!modification_mode} label="email" bind:value={current_email} />
-
-					<!-- <label class="inline-block" for="email">Email</label> -->
-					<!-- <p class="value">{current_email}</p> -->
+					<InfoLine
+						centered={!modification_mode}
+						label="email"
+						bind:value={current_email}
+						{can_be_empty}
+					/>
 					{#if modification_mode && $me_store?.external === 'none'}
 						<input
 							type="email"
@@ -422,7 +441,6 @@
 			{#if modification_mode && $me_store?.external === 'none'}
 				<div id="passwords">
 					<InfoLine label="password" no_value />
-					<!-- <label class="inline-block" for="password">Password</label> -->
 					<div class="relative">
 						<input
 							type={password_input_type}

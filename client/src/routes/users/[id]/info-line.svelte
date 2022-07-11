@@ -7,6 +7,7 @@
 	export let value = '';
 	export let no_value = false;
 	export let centered = false;
+	export let can_be_empty = false;
 </script>
 
 <!-- ========================= HTML -->
@@ -15,7 +16,7 @@
 		<label class="inline-block" for="username">{uppercase_first_character(label)}</label>
 	</div>
 	<div class="inline-block px-2 align-bottom text-gray-400">
-		{#if value.length || no_value}
+		{#if value.length || no_value || can_be_empty}
 			<p class="truncate">{value}</p>
 		{:else}
 			<Spinner inversed />
