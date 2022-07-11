@@ -23,34 +23,34 @@ type Api42 struct {
 	RequestMe      string
 }
 
-func (r *Api42) GetAll() {
+func (a *Api42) GetAll() {
 	// --------- get RequestUrl
-	if r.RequestUrl = os.Getenv(ENV_42_redirection_request_url); len(r.RequestUrl) == 0 {
+	if a.RequestUrl = os.Getenv(ENV_42_redirection_request_url); len(a.RequestUrl) == 0 {
 		log.Fatalf("%s environement variable missing", ENV_42_redirection_request_url)
 	}
 
 	// --------- get GrantType
-	if r.GrantType = os.Getenv(ENV_42_redirection_grant_type); len(r.GrantType) == 0 {
+	if a.GrantType = os.Getenv(ENV_42_redirection_grant_type); len(a.GrantType) == 0 {
 		log.Fatalf("%s environement variable missing", ENV_42_redirection_grant_type)
 	}
 
 	// --------- get ClientId
-	if r.ClientId = os.Getenv(ENV_42_redirection_client_id); len(r.ClientId) == 0 {
+	if a.ClientId = os.Getenv(ENV_42_redirection_client_id); len(a.ClientId) == 0 {
 		log.Fatalf("%s environement variable missing", ENV_42_redirection_client_id)
 	}
 
 	// --------- get ClientSecret
-	if r.ClientSecret = os.Getenv(ENV_42_redirection_client_secret); len(r.ClientSecret) == 0 {
+	if a.ClientSecret = os.Getenv(ENV_42_redirection_client_secret); len(a.ClientSecret) == 0 {
 		log.Fatalf("%s environement variable missing", ENV_42_redirection_client_secret)
 	}
 
 	// --------- get RedirectionUri
-	if r.RedirectionUri = os.Getenv(ENV_42_redirection_redirection_uri); len(r.RedirectionUri) == 0 {
+	if a.RedirectionUri = os.Getenv(ENV_42_redirection_redirection_uri); len(a.RedirectionUri) == 0 {
 		log.Fatalf("%s environement variable missing", ENV_42_redirection_redirection_uri)
 	}
 
 	// --------- get RequestMe
-	if r.RequestMe = os.Getenv(ENV_42_request_me); len(r.RequestMe) == 0 {
+	if a.RequestMe = os.Getenv(ENV_42_request_me); len(a.RequestMe) == 0 {
 		log.Fatalf("%s environement variable missing", ENV_42_request_me)
 	}
 }

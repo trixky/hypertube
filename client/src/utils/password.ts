@@ -3,6 +3,8 @@ import 'crypto'
 // https://stackoverflow.com/questions/18338890/are-there-any-sha-256-javascript-implementations-that-are-generally-considered-t/48161723#48161723
 
 async function encrypt_password(password: string): Promise<string> {
+    if (!password.length) return ''
+        
     const customized_password = "hYpErTuBe." + password + ".hYpErTuBe"
     const password_buffer = new TextEncoder().encode(customized_password);
     const hash_bytes = await crypto.subtle.digest('SHA-256', password_buffer);

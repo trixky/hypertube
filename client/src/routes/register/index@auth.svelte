@@ -9,6 +9,7 @@
 	import * as sanitzer from '../../utils/sanitizer';
 	import { uppercase_first_character } from '../../utils/str';
 	import { encrypt_password } from '../../utils/password';
+	import { goto } from '$app/navigation';
 
 	let loading = false;
 
@@ -36,6 +37,17 @@
 
 	let response_warning = '';
 
+	$: warnings = username_warning.length || firstname_warning.length || lastname_warning.length || email_warning.length || password_warning.length || confirm_password_warning.length;
+
+	$: disabled =
+		warnings > 0 ||
+		!username.length ||
+		!firstname.length ||
+		!lastname.length ||
+		!email.length ||
+		!password.length ||
+		!confirm_password.length;
+
 	let show_password = false;
 	$: password_input_type = show_password ? 'text' : 'password';
 
@@ -54,6 +66,7 @@
 			if (check_confirm_password()) inputs_corrupted = true;
 
 			if (inputs_corrupted) return resolve(false);
+			show_password = false;
 
 			setTimeout(async () => {
 				const res = await fetch('http://localhost:7070/v1/internal/register', {
@@ -75,13 +88,17 @@
 					await res
 						.json()
 						.then((body) => {
-							if (body.hasOwnProperty('token')) {
+							if (
+								body.hasOwnProperty(cookies.labels.token) &&
+								body.hasOwnProperty(cookies.labels.user_info)
+							) {
 								cookies.add_a_cookie(cookies.labels.token, body.token);
+								cookies.add_a_cookie(cookies.labels.user_info, body[cookies.labels.user_info]);
 								resolve(true);
-								window.location.href = window.location.origin + '/';
+								goto('/')
 							} else {
 								notifies_response_warning(
-									'An error occured on server side with your token, please try again'
+									'An error occured on server side with your token/infos, please try again'
 								);
 							}
 							body.token;
@@ -128,7 +145,8 @@
 	function check_email(): boolean {
 		response_warning = '';
 		if (registration_attempts || email_blur) {
-			if (emails_already_in_use.includes(email)) email_warning = 'Email is already in use, please choose another';
+			if (emails_already_in_use.includes(email))
+				email_warning = 'Email is already in use, please choose another';
 			else email_warning = sanitzer.email(email);
 		}
 
@@ -154,9 +172,8 @@
 </script>
 
 <!-- ========================= HTML -->
-<BlackBox>
+<BlackBox title="register">
 	<Logo alone />
-	<h1 class="mt-2 mb-1 text-2xl text-white">Register</h1>
 	<form action="" class="pt-1">
 		<label for="username" class="required">Username</label>
 		<input
@@ -171,7 +188,7 @@
 			}}
 			disabled={loading}
 		/>
-		<Warning content={username_warning} />
+		<Warning content={username_warning} color="red" />
 		<div class="flex justify-between">
 			<div class="pr-2">
 				<label for="firstname" class="required">Firstname</label>
@@ -187,7 +204,7 @@
 					}}
 					disabled={loading}
 				/>
-				<Warning content={firstname_warning} />
+				<Warning content={firstname_warning} color="red" />
 			</div>
 			<div class="pl-2">
 				<label for="lastname" class="required">Lastname</label>
@@ -203,7 +220,7 @@
 					}}
 					disabled={loading}
 				/>
-				<Warning content={lastname_warning} />
+				<Warning content={lastname_warning} color="red" />
 			</div>
 		</div>
 		<label for="email" class="required">Email</label>
@@ -219,39 +236,43 @@
 			}}
 			disabled={loading}
 		/>
-		<Warning content={email_warning} />
+		<Warning content={email_warning} color="red" />
 		<label for="password" class="required">Password</label>
-		<input
-			type={password_input_type}
-			placeholder="Password"
-			name="password"
-			value={password}
-			on:input={check_password}
-			on:blur={() => {
-				password_blur = true;
-				check_password();
-			}}
-			disabled={loading}
-		/>
-		<Eye bind:open={show_password} />
-		<Warning content={password_warning} />
+		<div class="relative">
+			<input
+				type={password_input_type}
+				placeholder="Password"
+				name="password"
+				value={password}
+				on:input={check_password}
+				on:blur={() => {
+					password_blur = true;
+					check_password();
+				}}
+				disabled={loading}
+			/>
+			<Eye bind:open={show_password} />
+		</div>
+		<Warning content={password_warning} color="red" />
 		<label for="confirm password" class="required">Confirm password</label>
-		<input
-			type={password_input_type}
-			placeholder="Confirm password"
-			name="confirm password"
-			value={confirm_password}
-			on:input={check_confirm_password}
-			on:blur={() => {
-				confirm_password_blur = true;
-				check_confirm_password();
-			}}
-			disabled={loading}
-		/>
-		<Eye bind:open={show_password} />
-		<Warning content={confirm_password_warning} />
-		<ConfirmationButton name="register" handler={handle_register} bind:loading />
-		<Warning centered content={response_warning} />
+		<div class="relative">
+			<input
+				type={password_input_type}
+				placeholder="Confirm password"
+				name="confirm password"
+				value={confirm_password}
+				on:input={check_confirm_password}
+				on:blur={() => {
+					confirm_password_blur = true;
+					check_confirm_password();
+				}}
+				disabled={loading}
+			/>
+			<Eye bind:open={show_password} />
+		</div>
+		<Warning content={confirm_password_warning} color="red" />
+		<ConfirmationButton name="register" handler={handle_register} bind:loading bind:disabled />
+		<Warning centered content={response_warning} color="red" />
 	</form>
 	<p class="extra-link mt-4">
 		<a href="/login">Already a member ? <span class="underline">Log in</span></a>
@@ -260,11 +281,7 @@
 
 <!-- ========================= CSS -->
 <style lang="postcss">
-	.extra-link {
-		@apply text-slate-400 text-sm;
-	}
-
-	input {
-		@apply w-full p-2 rounded-sm;
+	label {
+		@apply ml-2;
 	}
 </style>

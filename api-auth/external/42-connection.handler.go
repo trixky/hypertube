@@ -13,6 +13,7 @@ import (
 	"github.com/trixky/hypertube/api-auth/environment"
 	"github.com/trixky/hypertube/api-auth/sanitizer"
 	"github.com/trixky/hypertube/api-auth/sqlc"
+	"github.com/trixky/hypertube/api-auth/utils"
 )
 
 type code42Response struct {
@@ -163,17 +164,30 @@ func redirect42(w http.ResponseWriter, r *http.Request) {
 	// -------------------- cache
 	token := uuid.New().String() // token generation
 
-	if err := databases.AddToken(user.ID, token, databases.REDIS_EXTERNAL_42); err != nil {
+	if err := databases.AddToken(user.ID, token, databases.EXTERNAL_42); err != nil {
 		http.Error(w, "token generation failed", http.StatusInternalServerError)
 		return
 	}
 
-	cookie := http.Cookie{
-		Name:  "token",
-		Value: token,
+	token_cookie := utils.HeaderCookieTokenGeneration(token)
+
+	http.SetCookie(w, token_cookie)
+
+	me, err := utils.HeaderCookieMeGeneration(utils.User{
+		Id:        int(user.ID),
+		Username:  user.Username,
+		Firstname: user.Firstname,
+		Lastname:  user.Lastname,
+		Email:     user.Email,
+		External:  databases.EXTERNAL_42,
+	}, true)
+
+	if err != nil {
+		http.Error(w, "cookie generation failed", http.StatusInternalServerError)
+		return
 	}
 
-	http.SetCookie(w, &cookie)
+	http.SetCookie(w, me)
 
 	http.Redirect(w, r, "http://localhost:4040/", http.StatusFound)
 }

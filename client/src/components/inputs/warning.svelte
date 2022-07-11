@@ -6,6 +6,7 @@
 
 	export let content = '';
 	export let centered = false;
+	export let color = 'gray'; // gray (default) / green / red / blue
 
 	let height_warning = 0;
 	let progress_warning = tweened(height_warning, {
@@ -22,7 +23,14 @@
 	class="relative overflow-hidden"
 	style="height: {$progress_warning}px;"
 >
-	<p class="text-red-300 text-xs  pt-2 whitespace-pre-line px-2" bind:offsetHeight={height_warning}>
+	<p
+		class:text-gray-300={color == 'gray'}
+		class:text-red-300={color == 'red'}
+		class:text-green-300={color == 'green'}
+		class:text-blue-300={color == 'blue'}
+		class=" text-xs  pt-2 whitespace-pre-line px-2"
+		bind:offsetHeight={height_warning}
+	>
 		{uppercase_first_character(content)}
 	</p>
 </div>
