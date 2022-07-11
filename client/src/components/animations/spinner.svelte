@@ -9,6 +9,10 @@
 <!-- removed svg element attributes: -->
 <!-- xmlns="http://www.w3.org/2000/svg" -->
 <!-- xmlns:xlink="http://www.w3.org/1999/xlink" -->
+<script lang="ts">
+	export let inversed = false
+	$: color = inversed ? "#ffffff" : "#000000"
+</script>
 
 <svg
 	class="inline-block"
@@ -20,7 +24,7 @@
 	<path
 		fill="none"
 		d="M50 30A20 20 0 0 1 50 70A20 20 0 0 1 50 30"
-		stroke="#000000"
+		stroke={color}
 		stroke-width="40"
 	>
 		<animate
@@ -34,7 +38,7 @@
 		/>
 		<animate
 			attributeName="stroke"
-			values="currentColor;currentColor;currentColor;currentColor;currentColor"
+			values={Array(5).fill(color).join(";")}
 			keyTimes="0;0.25;0.5;0.75;1"
 			dur="5s"
 			calcMode="discrete"

@@ -31,6 +31,7 @@ type Env struct {
 	PostgresPassword string
 	PostgresDB       string
 	API42            Api42
+	APIGoogle        ApiGoogle
 }
 
 var E = Env{}

@@ -8,20 +8,28 @@ html {
     @apply scroll-smooth;
 }
 
-.auth input {
+:not(.media-page) main {
+    @apply relative flex content-center justify-center;
+}
+
+:not(.media-page) input {
     @apply w-full p-2 rounded-sm duration-[0.35s] bg-white;
 }
 
-.auth hr {
+:not(.media-page) hr {
     @apply border-white/60 inline-block w-28 -translate-y-1 mx-1;
 }
 
-.auth label {
+:not(.media-page) label {
     @apply block p-2 text-white;
 }
 
-.auth label.required::after {
+:not(.media-page) label.required::after {
     @apply content-['*'] text-blue-300;
+}
+
+.extra-link {
+    @apply text-slate-400 text-sm;
 }
 
 /* https://stackoverflow.com/questions/2781549/removing-input-background-colour-for-chrome-autocomplete */

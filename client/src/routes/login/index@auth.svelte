@@ -4,12 +4,14 @@
 	import Logo from '../../components/layouts/logo.svelte';
 	import External from './external.svelte';
 	import ConfirmationButton from '../../components/buttons/confirmation-button.svelte';
+	import Separator from '../../components/generics/separator.svelte';
 	import Eye from '../../components/inputs/eye.svelte';
 	import Warning from '../../components/inputs/warning.svelte';
 	import * as cookies from '../../utils/cookies';
 	import * as sanitzer from '../../utils/sanitizer';
 	import { uppercase_first_character } from '../../utils/str';
 	import { encrypt_password } from '../../utils/password';
+	import { goto } from '$app/navigation';
 
 	let loading = false;
 
@@ -25,6 +27,10 @@
 
 	let response_warning = '';
 
+	$: warnings = email_warning.length || password_warning.length;
+
+	$: disabled = warnings > 0 || !email.length || !password.length;
+
 	let show_password = false;
 	$: password_input_type = show_password ? 'text' : 'password';
 
@@ -37,6 +43,7 @@
 			if (check_password()) inputs_corrupted = true;
 
 			if (inputs_corrupted) return resolve(false);
+			show_password = false;
 
 			setTimeout(async () => {
 				const res = await fetch('http://localhost:7070/v1/internal/login', {
@@ -57,8 +64,9 @@
 						.then((body) => {
 							if (body.hasOwnProperty('token')) {
 								cookies.add_a_cookie(cookies.labels.token, body.token);
+								cookies.add_a_cookie(cookies.labels.user_info, body[cookies.labels.user_info]);
 								resolve(true);
-								window.location.href = window.location.origin + '/';
+								goto('/');
 							} else {
 								notifies_response_warning(
 									'An error occured on server side with your token, please try again'
@@ -102,15 +110,10 @@
 </script>
 
 <!-- ========================= HTML -->
-<BlackBox>
+<BlackBox title="login">
 	<Logo alone />
-	<h1 class="mt-2 mb-1 text-2xl text-white">Login</h1>
 	<External disabled={loading} />
-	<div>
-		<hr />
-		<p class="text-white inline-block">or</p>
-		<hr />
-	</div>
+	<Separator content="or" />
 	<form action="" class="pt-1">
 		<label for="email" class="required">Email</label>
 		<input
@@ -125,27 +128,29 @@
 			}}
 			disabled={loading}
 		/>
-		<Warning content={email_warning} />
+		<Warning content={email_warning} color="red" />
 		<label for="password" class="required">Password</label>
-		<input
-			type={password_input_type}
-			placeholder="Password"
-			name="password"
-			value={password}
-			on:input={check_password}
-			on:blur={() => {
-				password_blur = true;
-				check_password();
-			}}
-			disabled={loading}
-		/>
-		<Eye bind:open={show_password} />
-		<Warning content={password_warning} />
-		<p class="extra-link mt-2 pl-28 mb-4 float-right">
+		<div class="relative">
+			<input
+				type={password_input_type}
+				placeholder="Password"
+				name="password"
+				value={password}
+				on:input={check_password}
+				on:blur={() => {
+					password_blur = true;
+					check_password();
+				}}
+				disabled={loading}
+			/>
+			<Eye bind:open={show_password} />
+		</div>
+		<Warning content={password_warning} color="red" />
+		<p class="extra-link pl-28 mb-4 float-right">
 			<a href="/register">Forgot your password ?</a>
 		</p>
-		<ConfirmationButton name="login" handler={handle_login} bind:loading />
-		<Warning centered content={response_warning} />
+		<ConfirmationButton name="login" handler={handle_login} bind:loading bind:disabled />
+		<Warning centered content={response_warning} color="red" />
 	</form>
 	<p class="extra-link mt-4">
 		<a href="/register">Not on Hypertube yet ? <span class="underline">Sign up</span></a>
@@ -154,7 +159,7 @@
 
 <!-- ========================= CSS -->
 <style lang="postcss">
-	.extra-link {
-		@apply text-slate-400 text-sm;
+	label {
+		@apply ml-2;
 	}
 </style>

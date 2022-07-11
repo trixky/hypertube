@@ -10,19 +10,6 @@ option go_package = "./proto";
 package auth;
 
 // -------------------------------------- internal
-message InternalMeRequest {
-    string token = 1;
-}
-
-message InternalMeResponse {
-    int64 id = 1;
-    string email = 2;
-    string username = 3;
-    string firstname = 4;
-    string lastname = 5;
-    string external = 6;
-}
-
 message InternalRegisterRequest {
     string email = 1;
     string password = 2;
@@ -55,16 +42,11 @@ message External42ConnectionRequest {
 // -------------------------------------- generic
 message GenericConnectionResponse {
     string token = 1;
+    string user_info = 2;
 }
 
 service AuthService {
     // -------------------------------------- internal
-    rpc InternalMe(InternalMeRequest) returns (InternalMeResponse) {
-        option (google.api.http) = {
-            post: "/v1/internal/me"
-            body: "*"
-        };
-    };
     rpc InternalRegister(InternalRegisterRequest) returns (GenericConnectionResponse) {
         option (google.api.http) = {
             post: "/v1/internal/register"
