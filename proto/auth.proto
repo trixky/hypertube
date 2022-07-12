@@ -28,10 +28,9 @@ message InternalRecoverPasswordRequest {
     string email = 1;
 }
 
-message InternalChangePasswordRequest {
-    string token = 1;
-    string password = 2;
-    string email = 3;
+message InternalApplyRecoverPasswordRequest {
+    string password_token = 1;
+    string new_password = 2;
 }
 
 // -------------------------------------- external
@@ -65,9 +64,9 @@ service AuthService {
             body: "*"
         };
     };
-    rpc InternalChangePassword(InternalChangePasswordRequest) returns (google.protobuf.Empty) {
+    rpc InternalApplyRecoverPassword(InternalApplyRecoverPasswordRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            post: "/v1/internal/change-password"
+            post: "/v1/internal/apply-token-password"
             body: "*"
         };
     };

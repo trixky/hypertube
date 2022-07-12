@@ -32,6 +32,7 @@ type Env struct {
 	PostgresDB       string
 	API42            Api42
 	APIGoogle        ApiGoogle
+	OUTLOOKConfig    OutlookConfig
 }
 
 var E = Env{}

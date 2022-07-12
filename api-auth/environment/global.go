@@ -57,4 +57,5 @@ func (e *Env) GetAll() {
 
 	e.API42.GetAll()
 	e.APIGoogle.GetAll()
+	e.OUTLOOKConfig.GetAll()
 }

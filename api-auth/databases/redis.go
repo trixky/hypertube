@@ -2,16 +2,19 @@ package databases
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-redis/redis"
 )
 
 const (
-	REDIS_EXTERNAL_google   = "google"
-	REDIS_SEPARATOR         = "."
-	REDIS_PATTERN_KEY_token = "token"
+	REDIS_EXTERNAL_google            = "google"
+	REDIS_SEPARATOR                  = "."
+	REDIS_PATTERN_KEY_token          = "token"
+	REDIS_PATTERN_KEY_password_token = "password_token"
 )
 
 type Token_info struct {
@@ -58,6 +61,61 @@ func RetrieveToken(token string) (*Token_info, error) {
 		Id:       int64(id),
 		External: external,
 	}, nil
+}
+
+func AddPasswordToken(user_id int64, token string) error {
+	err := DBs.Redis.Set(REDIS_PATTERN_KEY_password_token+REDIS_SEPARATOR+token+REDIS_SEPARATOR+strconv.Itoa(int(user_id)), "", 10*time.Minute).Err()
+
+	return err
+}
+
+func RetrievePasswordToken(token string, delete bool) (*Token_info, error) {
+	user_id, _, _, err := retrievePattern(REDIS_PATTERN_KEY_password_token, token)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if delete {
+		if err := DBs.Redis.Del(REDIS_PATTERN_KEY_password_token + REDIS_SEPARATOR + token + REDIS_SEPARATOR + strconv.Itoa(user_id)).Err(); err != nil {
+			log.Printf("delete password token for user [%d]failed: %s\n", user_id, err.Error())
+		}
+	}
+
+	return &Token_info{
+		Id:       int64(user_id),
+		External: EXTERNAL_none,
+	}, nil
+}
+
+func retrievePattern(pattern_key string, middle string) (user_id int, key string, value string, err error) {
+	keys, err := DBs.Redis.Keys(pattern_key + REDIS_SEPARATOR + middle + REDIS_SEPARATOR + "*").Result()
+
+	if err != nil {
+		return 0, "", "", err
+	}
+
+	key_nbr := len(keys)
+
+	if key_nbr != 1 {
+		return 0, "", "", fmt.Errorf("expected one session for one token (%d finded)", key_nbr)
+	}
+
+	key = keys[0]
+
+	user_id, err = strconv.Atoi(strings.SplitN(key, ".", 3)[2])
+
+	if err != nil {
+		return 0, key, "", fmt.Errorf("token backup is broken")
+	}
+
+	value, err = DBs.Redis.Get(keys[0]).Result()
+
+	if err != nil {
+		return 0, key, "", fmt.Errorf("token extraction failed")
+	}
+
+	return
 }
 
 func InitRedis() error {
