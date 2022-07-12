@@ -4,25 +4,24 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
 	"strings"
 
 	"github.com/trixky/hypertube/api-media/databases"
 	"github.com/trixky/hypertube/api-media/finder"
 	pb "github.com/trixky/hypertube/api-media/proto"
-	grpcMetadata "google.golang.org/grpc/metadata"
+	"github.com/trixky/hypertube/api-media/utils"
+	// grpcMetadata "google.golang.org/grpc/metadata"
 )
 
 func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.SearchResponse, error) {
-	md, ok := grpcMetadata.FromIncomingContext(ctx)
+	// md, ok := grpcMetadata.FromIncomingContext(ctx)
 
-	if !ok {
-		log.Println("missing args")
-		return nil, nil
-	}
+	// if !ok {
+	// 	log.Println("missing args")
+	// 	return nil, nil
+	// }
 
-	search := md.Get("search")
-	log.Println("search:", search)
+	user_locale := utils.GetLocale(ctx)
 
 	// Check and set arguments for the query
 	params := finder.FindMediasParams{
@@ -98,16 +97,18 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 			Rating:      &rating,
 		}
 
-		// Find some relations
+		// Load relations
 		names, err := databases.DBs.SqlcQueries.GetMediaNames(ctx, int32(media.ID))
 		if err != nil {
 			return nil, err
 		}
 		for _, name := range names {
-			pb_media.Names = append(pb_media.Names, &pb.MediaName{
-				Lang:  name.Lang,
-				Title: name.Name,
-			})
+			if utils.NameMatchLocale(&user_locale, name.Lang) {
+				pb_media.Names = append(pb_media.Names, &pb.MediaName{
+					Lang:  name.Lang,
+					Title: name.Name,
+				})
+			}
 		}
 		genres, err := databases.DBs.SqlcQueries.GetMediaGenres(ctx, int32(media.ID))
 		if err != nil {

@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"log"
 	"sort"
 
 	"github.com/golang/protobuf/ptypes"
@@ -10,7 +9,7 @@ import (
 	pb "github.com/trixky/hypertube/api-media/proto"
 	"github.com/trixky/hypertube/api-media/sqlc"
 	ut "github.com/trixky/hypertube/api-media/utils"
-	grpcMetadata "google.golang.org/grpc/metadata"
+	// grpcMetadata "google.golang.org/grpc/metadata"
 )
 
 var StaffOrder []string = []string{
@@ -43,14 +42,13 @@ func indexOf(slice []string, value string) int {
 }
 
 func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetResponse, error) {
-	md, ok := grpcMetadata.FromIncomingContext(ctx)
-	if !ok {
-		log.Println("missing args")
-		return nil, nil
-	}
+	// md, ok := grpcMetadata.FromIncomingContext(ctx)
+	// if !ok {
+	// 	log.Println("missing args")
+	// 	return nil, nil
+	// }
 
-	get := md.Get("get")
-	log.Println("get:", get)
+	user_locale := ut.GetLocale(ctx)
 
 	// Find the media
 	media, err := databases.DBs.SqlcQueries.GetMediaByID(ctx, int64(in.Id))
@@ -86,10 +84,12 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 		return nil, err
 	}
 	for _, name := range names {
-		response.Media.Names = append(response.Media.Names, &pb.MediaName{
-			Lang:  name.Lang,
-			Title: name.Name,
-		})
+		if ut.NameMatchLocale(&user_locale, name.Lang) {
+			response.Media.Names = append(response.Media.Names, &pb.MediaName{
+				Lang:  name.Lang,
+				Title: name.Name,
+			})
+		}
 	}
 
 	torrents, err := databases.DBs.SqlcQueries.GetMediaTorrents(ctx, ut.MakeNullInt32(&media_id))
