@@ -1,52 +1,7 @@
 <!-- ========================= SCRIPT -->
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
-	import { _, locale } from 'svelte-i18n';
-
-	type MediaProps = {
-		media: {
-			id: number;
-			description: string;
-			duration?: number | null;
-			genres: string[];
-			names: { lang: string; title: string }[];
-			rating?: number | null;
-			thumbnail?: string | null;
-			background?: string | null;
-			type: string;
-			year?: number | null;
-		};
-		torrents: {
-			id: number;
-			name: string;
-			size?: string | null;
-			leech: number;
-			seed: number;
-			quality?: string;
-			hover: boolean;
-		}[];
-		staffs: {
-			id: number;
-			name: string;
-			thumbnail?: string | null;
-			role?: string | null;
-		}[];
-		actors: {
-			id: number;
-			name: string;
-			thumbnail?: string | null;
-			character?: string | null;
-		}[];
-		comments: {
-			id: number | string;
-			user: {
-				id: number | string;
-				name: string;
-			};
-			date: string;
-			content: string;
-		}[];
-	};
+	import type { MediaProps } from '../../../src/types/Media';
 
 	export const load: Load = async ({ params, fetch }) => {
 		const url = browser
@@ -76,8 +31,10 @@
 	import { linear } from 'svelte/easing';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
+	import { _ } from 'svelte-i18n';
 	// @ts-expect-error No types for quantize
 	import quantize from 'quantize';
+	import { addUserTitle } from '../../../src/utils/media';
 	import ArrowLeft from '../../../src/components/icons/ArrowLeft.svelte';
 	import Play from '../../../src/components/icons/Play.svelte';
 	import LazyLoad from '../../../src/components/lazy/LazyLoad.svelte';
@@ -87,6 +44,7 @@
 	/// @ts-expect-error media is given as a prop
 	export let props: MediaProps;
 	let { media, torrents, staffs, actors, comments } = props;
+	addUserTitle(media);
 
 	// Find quality for torrents
 	for (const torrent of torrents) {
@@ -102,16 +60,6 @@
 	}
 
 	const cover = media.thumbnail ? `http://localhost:7260${media.thumbnail}` : '/no_cover.png';
-
-	const defaultTitle = media.names.find((name) => name.lang == '__')!;
-	const userFavoriteTitle = (() => {
-		const userLang = 'fr';
-		const favoriteTitle = media.names.find((name) => name.lang.toLocaleLowerCase() == userLang);
-		if (favoriteTitle) {
-			return favoriteTitle;
-		}
-		return defaultTitle;
-	})();
 
 	const durationStr = (() => {
 		if (!media.duration) {
@@ -377,16 +325,16 @@
 		>
 			<img
 				src={cover}
-				alt={`${userFavoriteTitle} Cover`}
+				alt={`${media.userTitle ? media.userTitle : media.title} Cover`}
 				in:fade={{ duration: 150, delay: 50 }}
 				class="h-[500px] rounded-md flex-grow-0 "
 			/>
 			<div
 				class="md:ml-8 max-w-full md:max-w-[348px] lg:max-w-[612px] xl:max-w-[720px] text-white transition-all"
 			>
-				<div class="text-3xl mt-4 lg:mt-0">{userFavoriteTitle.title}</div>
-				{#if userFavoriteTitle.lang != '__'}
-					<div class="text-xl opacity-80">{defaultTitle.title}</div>
+				<div class="text-3xl mt-4 lg:mt-0">{media.userTitle ? media.userTitle : media.title}</div>
+				{#if media.userTitle}
+					<div class="text-xl opacity-80">{media.title}</div>
 				{/if}
 				<div class="text-white mt-4">
 					{#if media.year}

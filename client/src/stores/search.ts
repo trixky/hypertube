@@ -1,17 +1,6 @@
 import { writable } from 'svelte/store';
-
-type Result = {
-	id: number;
-	type: string;
-	name: string;
-	names: { lang: string; title: string }[];
-	genres: string[];
-	description: string;
-	year: number | null;
-	duration: number | null;
-	thumbnail: string;
-	rating: number | null;
-};
+import type { Result } from '../../src/types/Media';
+import { addUserTitle } from '../../src/utils/media';
 
 export const searching = writable(true);
 export const loadingMore = writable(false);
@@ -123,6 +112,7 @@ export function searchStore() {
 			// Send request
 			const res = await fetch(url('http://localhost:7072/v1/media/search'), {
 				method: 'GET',
+				credentials: 'include',
 				headers: { accept: 'application/json' }
 			});
 			if (res.ok) {
@@ -132,12 +122,7 @@ export function searchStore() {
 					totalResults: number;
 					medias: Result[];
 				};
-				results.setResults(
-					body.medias.map((media) => {
-						media.name = media.names.find((name) => name.lang == '__')!.title;
-						return media;
-					})
-				);
+				results.setResults(body.medias.map(addUserTitle));
 				totalResults.set(body.totalResults);
 				store.hasResults = true;
 				set(store);
@@ -156,6 +141,7 @@ export function searchStore() {
 			// Send request
 			const res = await fetch(url('http://localhost:7072/v1/media/search'), {
 				method: 'GET',
+				credentials: 'include',
 				headers: { accept: 'application/json' }
 			});
 			if (res.ok) {
@@ -165,12 +151,7 @@ export function searchStore() {
 					totalResults: number;
 					medias: Result[];
 				};
-				results.append(
-					body.medias.map((media) => {
-						media.name = media.names.find((name) => name.lang == '__')!.title;
-						return media;
-					})
-				);
+				results.append(body.medias.map(addUserTitle));
 			}
 
 			loadingMore.set(false);
