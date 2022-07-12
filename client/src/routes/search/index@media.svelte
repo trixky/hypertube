@@ -210,8 +210,11 @@
 							</div>
 						{/if}
 					</div>
-					<div class="text-white font-bold truncate" title={result.name}>
-						{result.name}
+					<div
+						class="text-white font-bold truncate"
+						title={result.userTitle ? result.userTitle : result.title}
+					>
+						{result.userTitle ? result.userTitle : result.title}
 					</div>
 					{#if result.year}
 						<div class="text-white text-sm opacity-80">{result.year}</div>
