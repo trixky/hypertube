@@ -27,8 +27,7 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
-	import { linear } from 'svelte/easing';
+	import { fade } from 'svelte/transition';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
 	import { _ } from 'svelte-i18n';
@@ -38,8 +37,9 @@
 	import ArrowLeft from '../../../src/components/icons/ArrowLeft.svelte';
 	import Play from '../../../src/components/icons/Play.svelte';
 	import LazyLoad from '../../../src/components/lazy/LazyLoad.svelte';
-	import Spinner from '../../../src/components/animations/spinner.svelte';
 	import QualityIcon from './QualityIcon.svelte';
+	import Background from '../../../src/components/animations/Background.svelte';
+	import RefreshPeers, { type RefreshResult } from './RefreshPeers.svelte';
 
 	/// @ts-expect-error media is given as a prop
 	export let props: MediaProps;
@@ -97,46 +97,8 @@
 	}));
 
 	// Background animation
+	let backgroundAnimation: Background;
 	let palette: string[] = [];
-	let paletteLength = palette.length;
-
-	function randomNumber(minInc: number, maxExcl: number) {
-		return Math.random() * (maxExcl - minInc) + minInc;
-	}
-
-	const nbLines = 10;
-	let lines: {
-		id: number;
-		visible: boolean;
-		left: number;
-		height: number;
-		color: string;
-		duration: number;
-	}[] = [];
-	function startBackground() {
-		for (let index = 0; index < nbLines; index++) {
-			lines.push({ id: index, visible: false, left: 0, height: 0, color: '', duration: 0 });
-			setTimeout(() => {
-				resetLine(index);
-			}, randomNumber(0, 500));
-		}
-	}
-	function removeLine(index: number) {
-		const line = lines[index];
-		line.visible = false;
-		lines = lines;
-	}
-	function resetLine(index: number) {
-		const line = lines[index];
-		line.left = Math.round(randomNumber(0, window.outerWidth));
-		line.height = Math.round(randomNumber(32, 64));
-		line.color = palette[Math.round(randomNumber(0, paletteLength))];
-		line.duration = Math.round(randomNumber(1500, 3500));
-		setTimeout(function () {
-			line.visible = true;
-			lines = lines;
-		}, randomNumber(100, 500));
-	}
 
 	// Utility
 	function goBack(event: Event) {
@@ -162,7 +124,6 @@
 	// Image average color
 	// @source https://stackoverflow.com/a/49837149
 	let gradientColor: string | undefined;
-	let backgroundHeight: number = 0;
 	function extractPalette(image: HTMLImageElement) {
 		var context = document.createElement('canvas').getContext('2d');
 		if (!context) {
@@ -193,8 +154,9 @@
 		palette = rawPalette.map((color) => {
 			return `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
 		});
-		paletteLength = palette.length;
-		startBackground();
+		if (backgroundAnimation) {
+			backgroundAnimation.start();
+		}
 
 		// Clamp each channels to 150 to avoid bright colors
 		let color = [rawPalette[0][0], rawPalette[0][1], rawPalette[0][2]];
@@ -219,43 +181,20 @@
 		date: new Date(comment.date)
 	}));
 
-	// Refresh Peers
-	let refreshingPeers = false;
-	async function refreshPeers() {
-		refreshingPeers = true;
-		const response = await fetch(`http://localhost:7072/v1/media/${media.id}/refresh`, {
-			method: 'GET',
-			headers: { accept: 'application/json' }
-		});
-		if (response.ok) {
-			const lines = await await response.text();
-			for (const line of lines.trim().split('\n')) {
-				try {
-					const data = JSON.parse(line) as {
-						result: { torrentId: number; seed: number; leech: number };
-					};
-					if (
-						data.result?.torrentId != undefined &&
-						typeof data.result?.seed == 'number' &&
-						typeof data.result?.leech == 'number'
-					) {
-						let torrent = torrents.find((torrent) => torrent.id == data.result.torrentId);
-						if (torrent) {
-							torrent.seed = data.result.seed;
-							torrent.leech = data.result.leech;
-						}
-					}
-				} catch (error) {
-					console.error('Failed to read line in sream response', error);
-				}
+	// Peers refresh
+	function onPeersRefresh(event: CustomEvent<RefreshResult[]>) {
+		for (const result of event.detail) {
+			let torrent = torrents.find((torrent) => torrent.id == result.torrentId);
+			if (torrent) {
+				torrent.seed = result.seed;
+				torrent.leech = result.leech;
 			}
-			// Try to sort again on a simple metric
-			torrents.sort((a, b) => b.seed - a.seed);
-			torrents = torrents;
 		}
-		refreshingPeers = false;
+		torrents.sort((a, b) => b.seed - a.seed);
+		torrents = torrents;
 	}
 
+	// Background gradient
 	let loadingGradient = true;
 	let background: string | undefined;
 	onMount(() => {
@@ -407,47 +346,13 @@
 		</div>
 	</div>
 	<div class="relative flex-grow">
-		<div
-			bind:clientHeight={backgroundHeight}
-			class="absolute top-0 right-0 bottom-0 left-0 overflow-hidden text-white"
-		>
-			{#each lines as line (line.id)}
-				{#if line.visible}
-					<div
-						class="absolute top-0 w-1 rounded-sm"
-						style={`left: ${line.left}px; height: ${line.height}px; background-color: ${line.color}`}
-						in:fade={{ duration: 0 }}
-						out:fly={{ y: backgroundHeight, duration: line.duration, delay: 0, easing: linear }}
-						on:introend={removeLine.bind(null, line.id)}
-						on:outroend={resetLine.bind(null, line.id)}
-					/>
-				{/if}
-			{/each}
-		</div>
+		<Background bind:this={backgroundAnimation} {palette} />
 		<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4 flex-grow relative">
 			<div>
 				<h1 class="flex justify-between items-center text-2xl mb-4">
 					<span>Torrents</span>
 					<div class="inline-block relative opacity-80">
-						{#if refreshingPeers}
-							<div
-								in:fade={{ duration: 350 }}
-								out:fade={{ duration: 80 }}
-								id="spinner"
-								class="absolute inline-block -translate-x-full transition-all duration-[0.35s] opacity-50"
-								style={`--tw-translate-x: calc(-100% - 4px);`}
-							>
-								<Spinner size={16} />
-							</div>
-						{/if}
-						<button
-							class="inline-block text-sm transition-all disabled:opacity-50"
-							class:hover:text-opacity-90={!refreshingPeers}
-							disabled={refreshingPeers}
-							on:click={refreshPeers}
-						>
-							{$_('media.refresh_peers')}
-						</button>
+						<RefreshPeers mediaId={media.id} on:refresh={onPeersRefresh} />
 					</div>
 				</h1>
 				{#if torrents.length > 0}
