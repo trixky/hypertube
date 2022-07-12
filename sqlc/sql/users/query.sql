@@ -10,6 +10,13 @@ AND id_42 IS NULL
 AND id_google IS NULL
 LIMIT 1;
 
+-- name: GetInternalUserByEmail :one
+SELECT * FROM users
+WHERE email = $1
+AND id_42 IS NULL
+AND id_google IS NULL
+LIMIT 1;
+
 -- name: GetUserBy42Id :one
 SELECT * FROM users
 WHERE id_42 = $1 LIMIT 1;
@@ -51,6 +58,13 @@ lastname = $4,
 email = $5,
 password = $6
 WHERE id = $1;
+
+-- name: UpdateUserPassword :exec
+UPDATE users
+set password = $2
+WHERE id = $1
+AND id_42 IS NULL
+AND id_google IS NULL;
 
 -- name: DeleteUser :exec
 DELETE FROM users

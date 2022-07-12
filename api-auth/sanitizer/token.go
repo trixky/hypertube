@@ -19,14 +19,6 @@ func SanitizeToken(token string) error {
 
 	ok, err := regexp.MatchString("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", token)
 
-	if err != nil {
-		return status.Errorf(codes.InvalidArgument, LABEL_token+" corrupted (err):"+err.Error())
-	}
-
-	if !ok {
-		return status.Errorf(codes.InvalidArgument, LABEL_token+" corrupted (ok):"+token)
-	}
-
 	if err != nil || !ok {
 		return status.Errorf(codes.InvalidArgument, LABEL_token+" corrupted")
 	}
