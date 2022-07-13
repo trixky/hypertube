@@ -1,5 +1,7 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
+	import { browser } from '$app/env';
 	import BlackBox from '$components/containers/black-box.svelte';
 	import Warning from '$components/inputs/warning.svelte';
 	import Eye from '$components/inputs/eye.svelte';
@@ -9,7 +11,6 @@
 	import { uppercase_first_character } from '$utils/str';
 	import { encrypt_password } from '$utils/password';
 	import { page } from '$app/stores';
-	import { browser } from '$app/env';
 	import { me_store } from '$stores/me';
 	import InfoLine from './info-line.svelte';
 
@@ -18,7 +19,7 @@
 	$: its_me = $me_store.id.toString() === $page.params.id;
 	let modification_mode = false;
 	$: img_src = modification_mode ? '/return.png' : '/pen.png';
-	$: img_alt = modification_mode ? 'cancel' : 'modify';
+	$: img_alt = modification_mode ? $_('auth.cancel') : $_('auth.modify');
 
 	let loading = false;
 
@@ -145,23 +146,19 @@
 								current_lastname = user.firstname;
 								current_username = user.lastname;
 							} else {
-								notifies_update_response_warning(
-									'An error occured on server side with your infos, please try again'
-								);
+								notifies_update_response_warning($_('auth.server_error'));
 							}
 						})
 						.catch(() => {
-							notifies_update_response_warning(
-								'An error occured in the response from the server side, please try again'
-							);
+							notifies_update_response_warning($_('auth.server_error'));
 						});
 				} else {
 					if (res.status == 403) {
-						current_password_warning = 'invalid password';
+						current_password_warning = $_('auth.invalid_password');
 					} else if (res.status == 400 || res.status == 404) {
 						user_does_not_exist = true;
 					} else {
-						notifies_update_response_warning('An error occured on server side, please try again');
+						notifies_update_response_warning($_('auth.server_error'));
 					}
 				}
 			})();
@@ -213,27 +210,23 @@
 								cookies.add_a_cookie(cookies.labels.user_info, body[cookies.labels.user_info]);
 								me_store.refresh_from_cookies();
 								clear_all_inputs();
-								notifies_response_success('profile updated');
+								notifies_response_success($_('auth.profile_updated'));
 								resolve(true);
 							} else {
-								notifies_update_response_warning(
-									'An error occured on server side with your infos, please try again'
-								);
+								notifies_update_response_warning($_('auth.server_error'));
 							}
 						})
 						.catch(() => {
-							notifies_update_response_warning(
-								'An error occured in the response from the server side, please try again'
-							);
+							notifies_update_response_warning($_('auth.server_error'));
 						});
 				} else {
 					if (res.status == 409) {
 						emails_already_in_use.push(email);
 						check_email();
 					} else if (res.status == 403) {
-						current_password_warning = 'invalid password';
+						current_password_warning = $_('auth.invalid_password');
 					} else {
-						notifies_update_response_warning('An error occured on server side, please try again');
+						notifies_update_response_warning($_('auth.server_error'));
 					}
 				}
 				resolve(false);
@@ -279,8 +272,7 @@
 		const warning = sanitzer.email(email, true);
 		if (!warning.length) email_blur = true;
 		if (patch_attemps || email_blur) {
-			if (emails_already_in_use.includes(email))
-				email_warning = 'Email is already in use, please choose another';
+			if (emails_already_in_use.includes(email)) email_warning = $_('auth.email_already_in_use');
 			else email_warning = warning;
 		}
 
@@ -341,7 +333,7 @@
 <svelte:window on:keydown={handle_keydown} />
 
 <!-- ========================= HTML -->
-<BlackBox title={(its_me ? 'My ' : '') + 'Profile'}>
+<BlackBox title={its_me ? $_('auth.my_profile') : $_('auth.profile')}>
 	{#if !user_does_not_exist}
 		{#if its_me}
 			<button class="absolute right-5 top-4" on:click={handle_pen}>
@@ -352,14 +344,14 @@
 			<div>
 				<InfoLine
 					centered={!modification_mode}
-					label="username"
+					label={$_('auth.username')}
 					bind:value={current_username}
 					{can_be_empty}
 				/>
 				{#if modification_mode}
 					<input
 						type="text"
-						placeholder="Username"
+						placeholder={$_('auth.username')}
 						name="username"
 						bind:value={username}
 						on:input={check_username}
@@ -375,14 +367,14 @@
 			<div>
 				<InfoLine
 					centered={!modification_mode}
-					label="firstname"
+					label={$_('auth.first_name')}
 					bind:value={current_firstname}
 					{can_be_empty}
 				/>
 				{#if modification_mode}
 					<input
 						type="text"
-						placeholder="Firstname"
+						placeholder={$_('auth.first_name')}
 						name="firstname"
 						bind:value={firstname}
 						on:input={check_firstname}
@@ -398,14 +390,14 @@
 			<div>
 				<InfoLine
 					centered={!modification_mode}
-					label="lastname"
+					label={$_('auth.last_name')}
 					bind:value={current_lastname}
 					{can_be_empty}
 				/>
 				{#if modification_mode}
 					<input
 						type="text"
-						placeholder="Lastname"
+						placeholder={$_('auth.last_name')}
 						name="lastname"
 						bind:value={lastname}
 						on:input={check_lastname}
@@ -422,14 +414,14 @@
 				<div>
 					<InfoLine
 						centered={!modification_mode}
-						label="email"
+						label={$_('auth.email')}
 						bind:value={current_email}
 						{can_be_empty}
 					/>
 					{#if modification_mode && $me_store?.external === 'none'}
 						<input
 							type="email"
-							placeholder="Email"
+							placeholder={$_('auth.email')}
 							name="email"
 							bind:value={email}
 							on:input={check_email}
@@ -445,11 +437,11 @@
 			{/if}
 			{#if modification_mode && $me_store?.external === 'none'}
 				<div id="passwords">
-					<InfoLine label="password" no_value />
+					<InfoLine label={$_('auth.password')} no_value />
 					<div class="relative">
 						<input
 							type={password_input_type}
-							placeholder="Current password"
+							placeholder={$_('auth.current_password')}
 							name="current_password"
 							value={current_password}
 							on:input={check_current_password}
@@ -465,7 +457,7 @@
 					<div class="relative mt-3">
 						<input
 							type={password_input_type}
-							placeholder="New password"
+							placeholder={$_('auth.new_password')}
 							name="new_password"
 							value={new_password}
 							on:input={check_new_password}
@@ -481,7 +473,7 @@
 					<div class="relative mt-3">
 						<input
 							type={password_input_type}
-							placeholder="New password"
+							placeholder={$_('auth.new_password')}
 							name="confirm_new_password"
 							value={confirm_new_password}
 							on:input={check_confirm_new_password}
@@ -497,12 +489,17 @@
 				</div>
 			{/if}
 			{#if modification_mode}
-				<ConfirmationButton name="update" handler={handle_update} bind:loading bind:disabled />
+				<ConfirmationButton
+					name={$_('auth.update')}
+					handler={handle_update}
+					bind:loading
+					bind:disabled
+				/>
 				<Warning centered content={response_update_warning} color="red" />
 				<Warning centered content={response_update_success} color="green" />
 			{/if}
 		</form>
 	{:else}
-		<p class="text-white">The user does not exist</p>
+		<p class="text-white">{$_('auth.user_does_not_exists')}</p>
 	{/if}
 </BlackBox>

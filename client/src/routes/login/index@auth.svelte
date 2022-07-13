@@ -14,6 +14,7 @@
 	import { page } from '$app/stores';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
+	import { _ } from 'svelte-i18n';
 
 	let from_url_parameter: string | null;
 
@@ -35,7 +36,7 @@
 	if (browser) {
 		from_url_parameter = $page.url.searchParams.get('from');
 		if (from_url_parameter == 'recover/apply') {
-			response_success = 'Password change successful';
+			response_success = $_('auth.password_updated');
 			setTimeout(() => {
 				response_success = '';
 			}, 5000);
@@ -83,19 +84,15 @@
 								resolve(true);
 								goto('/');
 							} else {
-								notifies_response_warning(
-									'An error occured on server side with your token, please try again'
-								);
+								notifies_response_warning($_('auth.server_error'));
 							}
 						})
 						.catch(() => {
-							notifies_response_warning(
-								'An error occured in the response from the server side, please try again'
-							);
+							notifies_response_warning($_('auth.server_error'));
 						});
 				} else {
-					if (res.status == 403) notifies_response_warning('Incorrect email and/or password');
-					else notifies_response_warning('An error occured on server side, please try again');
+					if (res.status == 403) notifies_response_warning($_('auth.login_failed'));
+					else notifies_response_warning($_('auth.server_error'));
 				}
 				resolve(false);
 			}, 1000);
@@ -124,15 +121,15 @@
 </script>
 
 <!-- ========================= HTML -->
-<BlackBox title="login">
+<BlackBox title={$_('auth.login_header')}>
 	<Logo alone />
 	<External disabled={loading} />
-	<Separator content="or" />
+	<Separator content={$_('auth.omniauth_separator')} />
 	<form action="" class="pt-1">
-		<label for="email" class="required">Email</label>
+		<label for="email" class="required">{$_('auth.email')}</label>
 		<input
 			type="email"
-			placeholder="Email"
+			placeholder={$_('auth.email')}
 			name="email"
 			bind:value={email}
 			on:input={check_email}
@@ -143,11 +140,11 @@
 			disabled={loading}
 		/>
 		<Warning content={email_warning} color="red" />
-		<label for="password" class="required">Password</label>
+		<label for="password" class="required">{$_('auth.password')}</label>
 		<div class="relative">
 			<input
 				type={password_input_type}
-				placeholder="Password"
+				placeholder={$_('auth.password')}
 				name="password"
 				value={password}
 				on:input={check_password}
@@ -161,14 +158,21 @@
 		</div>
 		<Warning content={password_warning} color="red" />
 		<p class="extra-link pl-28 mb-4 float-right">
-			<a href="/recover/ask">Forgot your password ?</a>
+			<a href="/recover/ask">{$_('auth.forgot_password')}</a>
 		</p>
-		<ConfirmationButton name="login" handler={handle_login} bind:loading bind:disabled />
+		<ConfirmationButton
+			name={$_('auth.login_action')}
+			handler={handle_login}
+			bind:loading
+			bind:disabled
+		/>
 		<Warning centered content={response_warning} color="red" />
 		<Warning centered content={response_success} color="green" />
 	</form>
 	<p class="extra-link mt-2">
-		<a href="/register">Not on Hypertube yet ? <span class="underline">Sign up</span></a>
+		<a href="/register"
+			>{$_('auth.join_question')} <span class="underline">{$_('auth.signup')}</span></a
+		>
 	</p>
 </BlackBox>
 

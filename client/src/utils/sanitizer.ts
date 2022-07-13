@@ -1,71 +1,67 @@
 import { uppercase_first_character } from './str';
+import { $t } from './translate';
 
+function name(name: string, can_be_null = false): string {
+	if (!name.length) return can_be_null ? '' : $t('sanitizer.missing');
 
-function name(name: string, can_be_null: boolean = false): string {
-    if (!name.length) return can_be_null ? '' : 'is missing';
+	if (name.length < 3) return $t('sanitizer.too_short', { values: { amount: 3 } });
+	else if (name.length > 20) return $t('sanitizer.too_long', { values: { amount: 20 } });
 
-    if (name.length < 3) return 'is too short, needs at least 3 characters';
-    else if (name.length > 20)
-        return 'is too long, must contain a maximum of 20 characters';
-
-    return '';
+	return '';
 }
 
-function email(email: string, can_be_null: boolean = false): string {
-    // https://stackoverflow.com/questions/46155/how-can-i-validate-an-email-address-in-javascript
-    const regex =
-        /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+function email(email: string, can_be_null = false): string {
+	// https://stackoverflow.com/questions/46155/how-can-i-validate-an-email-address-in-javascript
+	const regex =
+		/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
 
-    if (!email.length) return can_be_null ? '' : 'is missing';
-    if (!regex.test(email)) return 'is bad formatted';
+	if (!email.length) return can_be_null ? '' : $t('sanitizer.missing');
+	if (!regex.test(email)) return $t('sanitizer.badly_formatted');
 
-    return '';
+	return '';
 }
 
-function password(password: string, can_be_null: boolean = false): string {
-    let password_warnings = [];
+function password(password: string, _ /* can_be_null */ = false): string {
+	const password_warnings = [];
 
-    if (!password.length) return 'is missing';
+	if (!password.length) return $t('sanitizer.missing');
 
-    if (password.length < 8)
-        password_warnings.push('is too short, needs at least 8 characters');
-    else if (password.length > 30)
-        password_warnings.push('is too long, must contain a maximum of 20 characters');
-    if (!/[a-z]/.test(password)) {
-        password_warnings.push('must contain at least one lowercase character (a-z)');
-    }
-    if (!/[A-Z]/.test(password)) {
-        password_warnings.push('must contain at least one uppercase character (A-Z)');
-    }
-    if (!/\d/.test(password)) {
-        password_warnings.push('must contain at least one numeric character (0-9)');
-    }
-    if (!/[ !@#$%^&*()-=_+[\]{}\\|'\";:/?.>,<`~]/.test(password)) {
-        password_warnings.push('must contain at least one specific character (!@#...)');
-    }
+	if (password.length < 8)
+		password_warnings.push($t('sanitizer.too_short', { values: { amount: 8 } }));
+	else if (password.length > 30)
+		password_warnings.push($t('sanitizer.too_long', { values: { amount: 20 } }));
+	if (!/[a-z]/.test(password)) {
+		password_warnings.push($t('sanitizer.missing_lowercase'));
+	}
+	if (!/[A-Z]/.test(password)) {
+		password_warnings.push($t('sanitizer.missing_uppercase'));
+	}
+	if (!/\d/.test(password)) {
+		password_warnings.push($t('sanitizer.missing_digit'));
+	}
+	if (!/[ !@#$%^&*()-=_+[\]{}\\|'";:/?.>,<`~]/.test(password)) {
+		password_warnings.push($t('sanitizer.missing_special'));
+	}
 
-    let password_warning = password_warnings
-        .map((str) => uppercase_first_character(str))
-        .join('\n- ');
+	let password_warning = password_warnings
+		.map((str) => uppercase_first_character(str))
+		.join('\n- ');
 
-    if (password_warnings.length > 1)
-        password_warning = '- ' + password_warning;
+	if (password_warnings.length > 1) password_warning = '- ' + password_warning;
 
-    return password_warning
+	return password_warning;
 }
 
-function confirm_password(password: string, confirm_password: string, can_be_null: boolean = false): string {
-    if (!confirm_password.length) return 'is missing';
+function confirm_password(
+	password: string,
+	confirm_password: string,
+	_ /* can_be_null */ = false
+): string {
+	if (!confirm_password.length) return $t('sanitizer.missing');
 
-    if (confirm_password != password)
-        return 'passwords must be the same';
+	if (confirm_password != password) return $t('sanitizer.passwords_dont_match');
 
-    return '';
+	return '';
 }
 
-export {
-    name,
-    email,
-    password,
-    confirm_password,
-}
+export { name, email, password, confirm_password };
