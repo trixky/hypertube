@@ -1,49 +1,43 @@
 // import { browser } from '$app/env';
 import { init, getLocaleFromNavigator, addMessages, locale } from 'svelte-i18n';
-import { add_a_cookie, del_a_cookie, get_a_cookie } from '$utils/cookies';
+import { add_a_cookie, del_a_cookie, extract_cookie } from '$utils/cookies';
 import en from '../locales/en.json';
 import fr from '../locales/fr.json';
+import { browser } from '$app/env';
 
-export async function i18n() {
-	addMessages('en', en);
-	addMessages('fr', fr);
+export function localeFromCookie(cookies: string) {
+	const value = extract_cookie(cookies, 'locale');
+	if (value && value.match(/^(fr|en)(-\w+)?/)) {
+		return value;
+	}
+	return 'en';
+}
 
-	// * localStorage
-	/*if (browser) {
-		// Always save the locale on update
-		let once = false;
-		locale.subscribe((value) => {
-			if (!once) {
-				once = true;
-				return;
-			}
-			if (value) {
-				localStorage.setItem('locale', value);
-			} else {
-				localStorage.removeItem('locale');
-			}
-		});
-
-		// Check if the user already has a locale saved
-		const storageLocale = localStorage.getItem('locale');
-		if (storageLocale && storageLocale.match(/^(fr|en)(-\w+)?/)) {
-			return init({
-				fallbackLocale: 'en',
-				initialLocale: storageLocale
-			});
+export function chooseLocale(params?: Record<string, string>): string {
+	if (browser) {
+		// Saved locale
+		const cookieLocale = localeFromCookie(document.cookie);
+		if (cookieLocale) {
+			return cookieLocale;
 		} else {
-			localStorage.removeItem('locale');
+			del_a_cookie('locale');
 		}
+		// Locale from the browser
+		const locale = getLocaleFromNavigator();
+		if (locale) {
+			return locale;
+		}
+		// Default locale
+		return params?.locale || 'en';
+	}
+	// Locale from params (extracted from cookie in hooks)
+	console.log('param', params, params?.locale);
+	return params?.locale || 'en';
+}
 
-		// -- else try to guess and save the locale
-		await init({
-			fallbackLocale: 'en',
-			initialLocale: getLocaleFromNavigator()
-		});
-	}*/
-
-	// * Cookies
-	// Always save the locale on update
+// * Cookies
+// Always save the locale on update
+if (browser) {
 	let once = false;
 	locale.subscribe((value) => {
 		if (!once) {
@@ -56,21 +50,16 @@ export async function i18n() {
 			del_a_cookie('locale');
 		}
 	});
+}
 
-	// Check if the user already has a locale saved
-	const cookieLocale = get_a_cookie('locale');
-	if (cookieLocale && cookieLocale.match(/^(fr|en)(-\w+)?/)) {
-		return init({
-			fallbackLocale: 'en',
-			initialLocale: cookieLocale
-		});
-	} else {
-		del_a_cookie('locale');
-	}
+export async function i18n(params?: Record<string, string>) {
+	const locale = chooseLocale(params);
 
-	// -- else try to guess and save the locale
-	await init({
+	addMessages('en', en);
+	addMessages('fr', fr);
+
+	return init({
 		fallbackLocale: 'en',
-		initialLocale: getLocaleFromNavigator()
+		initialLocale: locale
 	});
 }
