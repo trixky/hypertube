@@ -11,7 +11,11 @@
 	import * as sanitzer from '../../utils/sanitizer';
 	import { uppercase_first_character } from '../../utils/str';
 	import { encrypt_password } from '../../utils/password';
+	import { page } from '$app/stores';
+	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
+
+	let from_url_parameter: string | null;
 
 	let loading = false;
 
@@ -26,6 +30,17 @@
 	let password_warning = '';
 
 	let response_warning = '';
+	let response_success = '';
+
+	if (browser) {
+		from_url_parameter = $page.url.searchParams.get('from');
+		if (from_url_parameter == 'recover/apply') {
+			response_success = 'Password change successful';
+			setTimeout(() => {
+				response_success = '';
+			}, 5000);
+		}
+	}
 
 	$: warnings = email_warning.length || password_warning.length;
 
@@ -62,7 +77,7 @@
 					await res
 						.json()
 						.then((body) => {
-							if (body.hasOwnProperty('token')) {
+							if (body.hasOwnProperty(cookies.labels.token)) {
 								cookies.add_a_cookie(cookies.labels.token, body.token);
 								cookies.add_a_cookie(cookies.labels.user_info, body[cookies.labels.user_info]);
 								resolve(true);
@@ -72,7 +87,6 @@
 									'An error occured on server side with your token, please try again'
 								);
 							}
-							body.token;
 						})
 						.catch(() => {
 							notifies_response_warning(
@@ -147,12 +161,13 @@
 		</div>
 		<Warning content={password_warning} color="red" />
 		<p class="extra-link pl-28 mb-4 float-right">
-			<a href="/register">Forgot your password ?</a>
+			<a href="/recover/ask">Forgot your password ?</a>
 		</p>
 		<ConfirmationButton name="login" handler={handle_login} bind:loading bind:disabled />
 		<Warning centered content={response_warning} color="red" />
+		<Warning centered content={response_success} color="green" />
 	</form>
-	<p class="extra-link mt-4">
+	<p class="extra-link mt-2">
 		<a href="/register">Not on Hypertube yet ? <span class="underline">Sign up</span></a>
 	</p>
 </BlackBox>

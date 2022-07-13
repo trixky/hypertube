@@ -28,7 +28,7 @@
 		class:text-red-300={color == 'red'}
 		class:text-green-300={color == 'green'}
 		class:text-blue-300={color == 'blue'}
-		class=" text-xs  pt-2 whitespace-pre-line px-2"
+		class=" text-xs  pb-2 whitespace-pre-line px-2"
 		bind:offsetHeight={height_warning}
 	>
 		{uppercase_first_character(content)}
