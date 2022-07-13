@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"log"
 	"net"
 	"net/http"
 
@@ -26,8 +25,6 @@ func NewGrpcServer(grpc_addr string) error {
 	s := grpc.NewServer()
 
 	pb.RegisterAuthServiceServer(s, &AuthServer{})
-
-	log.Printf("start to serve grpc services on %s\n", grpc_addr)
 
 	return s.Serve(listen)
 }
@@ -56,8 +53,6 @@ func NewGrpcGatewayServer(grpc_gateway_addr string, grpc_addr string) error {
 		Addr:    grpc_gateway_addr,
 		Handler: utils.AllowCORS(gwmux),
 	}
-
-	log.Printf("start to serve grpc-gateway services on %s\n", grpc_gateway_addr)
 
 	return gwServer.ListenAndServe()
 }

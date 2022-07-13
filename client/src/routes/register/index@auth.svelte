@@ -101,7 +101,6 @@
 									'An error occured on server side with your token/infos, please try again'
 								);
 							}
-							body.token;
 						})
 						.catch(() => {
 							notifies_response_warning(

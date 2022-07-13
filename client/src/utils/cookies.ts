@@ -10,6 +10,7 @@ interface Me {
 }
 
 const labels = {
+	password_token: 'token',
 	token: 'token',
 	user_info: 'userInfo'
 };

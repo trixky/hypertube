@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
+	"log"
 
 	"github.com/google/uuid"
 	"github.com/trixky/hypertube/api-auth/databases"
+	"github.com/trixky/hypertube/api-auth/email"
 	pb "github.com/trixky/hypertube/api-auth/proto"
 	"github.com/trixky/hypertube/api-auth/sanitizer"
 	"github.com/trixky/hypertube/api-auth/sqlc"
@@ -78,6 +80,11 @@ func (s *AuthServer) InternalRegister(ctx context.Context, in *pb.InternalRegist
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "cookie generation failed")
+	}
+
+	// -------------------- email
+	if err := email.SendRegistrationConfirmation(in.GetEmail()); err != nil {
+		log.Printf("sending registration email to [%s] failed: %s\n", in.GetEmail(), err.Error())
 	}
 
 	return &pb.GenericConnectionResponse{
