@@ -108,11 +108,6 @@
 		class="flex flex-col md:flex-row items-center w-full sticky top-0 p-4 bg-black z-10 border-b-2 border-blue-500"
 	>
 		<div>
-			{#if $locale == 'fr'}
-				<button on:click={() => locale.set('en')} class="text-white">EN</button>
-			{:else}
-				<button on:click={() => locale.set('fr')} class="text-white">FR</button>
-			{/if}
 			<input
 				type="text"
 				class="input block w-full mb-2 lg:inline-block lg:w-auto lg:mb-0"
