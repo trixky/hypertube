@@ -5,31 +5,31 @@
 @tailwind utilities;
 
 html {
-    @apply scroll-smooth;
+	@apply scroll-smooth;
 }
 
 main:not(.media-page) {
-    @apply relative flex content-center justify-center;
+	@apply relative flex content-center justify-center;
 }
 
 main:not(.media-page) input {
-    @apply w-full p-2 rounded-sm duration-[0.35s] bg-white;
+	@apply w-full p-2 rounded-sm duration-[0.35s] bg-white;
 }
 
 main:not(.media-page) hr {
-    @apply border-white/60 inline-block w-28 -translate-y-1 mx-1;
+	@apply border-white/60 inline-block w-28 -translate-y-1 mx-1;
 }
 
 main:not(.media-page) label {
-    @apply block p-2 text-white;
+	@apply block p-2 text-white;
 }
 
 main:not(.media-page) label.required::after {
-    @apply content-['*'] text-blue-300;
+	@apply content-['*'] text-blue-300;
 }
 
 .extra-link {
-    @apply text-slate-400 text-sm;
+	@apply text-slate-400 text-sm;
 }
 
 /* https://stackoverflow.com/questions/2781549/removing-input-background-colour-for-chrome-autocomplete */
@@ -37,41 +37,40 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-    box-shadow: 0 0 0 30px white inset !important;
-    -webkit-box-shadow: 0 0 0 30px white inset !important;
+	box-shadow: 0 0 0 30px white inset !important;
+	-webkit-box-shadow: 0 0 0 30px white inset !important;
 }
 
 input:disabled {
-    opacity: 0.3;
+	opacity: 0.3;
 }
 
 .result {
-    @apply block;
+	@apply block;
 }
 
 .result .rating {
-    @apply opacity-0 transition-all absolute top-0 right-0 bottom-0 left-0 p-2 flex items-end text-white;
-    background: rgb(0, 0, 0);
-    background: linear-gradient(360deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+	@apply opacity-0 transition-all absolute top-0 right-0 bottom-0 left-0 p-2 flex items-end text-white;
+	background: rgb(0, 0, 0);
+	background: linear-gradient(360deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
 }
 
 .result:hover .rating {
-    @apply opacity-100;
+	@apply opacity-100;
 }
 
-
 .rating .stars {
-    @apply inline-block text-sm;
-    --percent: calc(var(--rating) / 10 * 100%);
-    font-family: Times;
+	@apply inline-block text-sm;
+	--percent: calc(var(--rating) / 10 * 100%);
+	font-family: Times;
 }
 
 .rating .stars::before {
-    @apply bg-clip-text;
-    content: '★★★★★';
-    letter-spacing: 3px;
-    background: linear-gradient(90deg, #fc0 var(--percent), #fff var(--percent));
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+	@apply bg-clip-text;
+	content: '★★★★★';
+	letter-spacing: 3px;
+	background: linear-gradient(90deg, #fc0 var(--percent), #fff var(--percent));
+	background-clip: text;
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
 }

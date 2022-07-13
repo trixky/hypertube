@@ -19,6 +19,7 @@ apt-get install -y nodejs
 https://kit.svelte.dev/docs/introduction
 
 svelte init option:
+
 - typescript
 - eslint
 - prettier

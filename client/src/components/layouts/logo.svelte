@@ -1,10 +1,12 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
-	export let alone = false
+	export let alone = false;
 </script>
 
 <!-- ========================= HTML -->
-<h1 class:alone class="text-blue-300 font-bold logo-title font-['Holtwood One SC'] text-5xl">Hypertube</h1>
+<h1 class:alone class="text-blue-300 font-bold logo-title font-['Holtwood One SC'] text-5xl">
+	Hypertube
+</h1>
 
 <!-- ========================= CSS -->
 <style lang="postcss">

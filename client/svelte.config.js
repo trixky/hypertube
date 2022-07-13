@@ -6,7 +6,7 @@ const config = {
 	// Consult https://github.com/sveltejs/svelte-preprocess
 	// for more information about preprocessors
 	preprocess: preprocess({
-		postcss: true,
+		postcss: true
 	}),
 
 	kit: {
@@ -15,7 +15,7 @@ const config = {
 			$components: 'src/components',
 			$directives: 'src/directives',
 			$utils: 'src/utils',
-			$stores: 'src/stores',
+			$stores: 'src/stores'
 		}
 	}
 };
