@@ -31,14 +31,13 @@
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
 	import { _ } from 'svelte-i18n';
-	// @ts-expect-error No types for quantize
 	import quantize from 'quantize';
-	import { addUserTitle } from '../../../src/utils/media';
-	import ArrowLeft from '../../../src/components/icons/ArrowLeft.svelte';
-	import Play from '../../../src/components/icons/Play.svelte';
-	import LazyLoad from '../../../src/components/lazy/LazyLoad.svelte';
+	import { addUserTitle } from '$utils/media';
+	import ArrowLeft from '$components/icons/ArrowLeft.svelte';
+	import Play from '$components/icons/Play.svelte';
+	import LazyLoad from '$components/lazy/LazyLoad.svelte';
 	import QualityIcon from './QualityIcon.svelte';
-	import Background from '../../../src/components/animations/Background.svelte';
+	import Background from '$components/animations/Background.svelte';
 	import RefreshPeers, { type RefreshResult } from './RefreshPeers.svelte';
 
 	/// @ts-expect-error media is given as a prop

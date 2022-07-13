@@ -1,7 +1,7 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
-	import Spinner from '../../../components/animations/spinner.svelte';
-	import { uppercase_first_character } from '../../../utils/str';
+	import Spinner from '$components/animations/spinner.svelte';
+	import { uppercase_first_character } from '$utils/str';
 
 	export let label: string;
 	export let value = '';
@@ -26,22 +26,22 @@
 
 <!-- ========================= CSS -->
 <style lang="postcss">
-    div.centered {
-        @apply flex justify-center align-middle content-center;
-    }
-    
-    div.centered > div {
-        @apply w-1/2;
-    }
+	div.centered {
+		@apply flex justify-center align-middle content-center;
+	}
 
-    div.centered > div:first-child {
-        @apply text-right;
-    }
+	div.centered > div {
+		@apply w-1/2;
+	}
 
-    div:not(.centered) > div:first-child {
-        @apply w-[25%];
-    }
-    div:not(.centered) > div:nth-child(2) {
-        @apply w-[70%];
-    }
+	div.centered > div:first-child {
+		@apply text-right;
+	}
+
+	div:not(.centered) > div:first-child {
+		@apply w-[25%];
+	}
+	div:not(.centered) > div:nth-child(2) {
+		@apply w-[70%];
+	}
 </style>

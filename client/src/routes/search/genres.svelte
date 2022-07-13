@@ -3,12 +3,12 @@
 	import { onMount, tick } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
-	import { clickOutside } from '../../../src/directives/clickOutside';
-	import ChevronDown from '../../../src/components/icons/ChevronDown.svelte';
-	import ChevronUp from '../../../src/components/icons/ChevronUp.svelte';
-	import { loaded, loading, genres } from '../../../src/stores/genres';
-	import { search } from '../../../src/stores/search';
-	import Times from '../../../src/components/icons/Times.svelte';
+	import { clickOutside } from '$directives/clickOutside';
+	import ChevronDown from '$components/icons/ChevronDown.svelte';
+	import ChevronUp from '$components/icons/ChevronUp.svelte';
+	import { loaded, loading, genres } from '$stores/genres';
+	import { search } from '$stores/search';
+	import Times from '$components/icons/Times.svelte';
 
 	// * Popup logic
 	export let disabled = false;

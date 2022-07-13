@@ -1,14 +1,14 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
-	import BlackBox from '../../components/containers/black-box.svelte';
-	import Logo from '../../components/layouts/logo.svelte';
-	import ConfirmationButton from '../../components/buttons/confirmation-button.svelte';
-	import Warning from '../../components/inputs/warning.svelte';
-	import Eye from '../../components/inputs/eye.svelte';
-	import * as cookies from '../../utils/cookies';
-	import * as sanitzer from '../../utils/sanitizer';
-	import { uppercase_first_character } from '../../utils/str';
-	import { encrypt_password } from '../../utils/password';
+	import BlackBox from '$components/containers/black-box.svelte';
+	import Logo from '$components/layouts/logo.svelte';
+	import ConfirmationButton from '$components/buttons/confirmation-button.svelte';
+	import Warning from '$components/inputs/warning.svelte';
+	import Eye from '$components/inputs/eye.svelte';
+	import * as cookies from '$utils/cookies';
+	import * as sanitzer from '$utils/sanitizer';
+	import { uppercase_first_character } from '$utils/str';
+	import { encrypt_password } from '$utils/password';
 	import { goto } from '$app/navigation';
 
 	let loading = false;
@@ -37,7 +37,13 @@
 
 	let response_warning = '';
 
-	$: warnings = username_warning.length || firstname_warning.length || lastname_warning.length || email_warning.length || password_warning.length || confirm_password_warning.length;
+	$: warnings =
+		username_warning.length ||
+		firstname_warning.length ||
+		lastname_warning.length ||
+		email_warning.length ||
+		password_warning.length ||
+		confirm_password_warning.length;
 
 	$: disabled =
 		warnings > 0 ||
@@ -95,7 +101,7 @@
 								cookies.add_a_cookie(cookies.labels.token, body.token);
 								cookies.add_a_cookie(cookies.labels.user_info, body[cookies.labels.user_info]);
 								resolve(true);
-								goto('/')
+								goto('/');
 							} else {
 								notifies_response_warning(
 									'An error occured on server side with your token/infos, please try again'

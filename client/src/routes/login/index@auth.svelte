@@ -1,16 +1,16 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
-	import BlackBox from '../../components/containers/black-box.svelte';
-	import Logo from '../../components/layouts/logo.svelte';
+	import BlackBox from '$components/containers/black-box.svelte';
+	import Logo from '$components/layouts/logo.svelte';
 	import External from './external.svelte';
-	import ConfirmationButton from '../../components/buttons/confirmation-button.svelte';
-	import Separator from '../../components/generics/separator.svelte';
-	import Eye from '../../components/inputs/eye.svelte';
-	import Warning from '../../components/inputs/warning.svelte';
-	import * as cookies from '../../utils/cookies';
-	import * as sanitzer from '../../utils/sanitizer';
-	import { uppercase_first_character } from '../../utils/str';
-	import { encrypt_password } from '../../utils/password';
+	import ConfirmationButton from '$components/buttons/confirmation-button.svelte';
+	import Separator from '$components/generics/separator.svelte';
+	import Eye from '$components/inputs/eye.svelte';
+	import Warning from '$components/inputs/warning.svelte';
+	import * as cookies from '$utils/cookies';
+	import * as sanitzer from '$utils/sanitizer';
+	import { uppercase_first_character } from '$utils/str';
+	import { encrypt_password } from '$utils/password';
 	import { page } from '$app/stores';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';

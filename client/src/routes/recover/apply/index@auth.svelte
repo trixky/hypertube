@@ -1,14 +1,14 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
-	import BlackBox from '../../../components/containers/black-box.svelte';
-	import Logo from '../../../components/layouts/logo.svelte';
-	import ConfirmationButton from '../../../components/buttons/confirmation-button.svelte';
-	import Warning from '../../../components/inputs/warning.svelte';
-	import Eye from '../../../components/inputs/eye.svelte';
-	import * as cookies from '../../../utils/cookies';
-	import * as sanitzer from '../../../utils/sanitizer';
-	import { uppercase_first_character } from '../../../utils/str';
-	import { encrypt_password } from '../../../utils/password';
+	import BlackBox from '$components/containers/black-box.svelte';
+	import Logo from '$components/layouts/logo.svelte';
+	import ConfirmationButton from '$components/buttons/confirmation-button.svelte';
+	import Warning from '$components/inputs/warning.svelte';
+	import Eye from '$components/inputs/eye.svelte';
+	import * as cookies from '$utils/cookies';
+	import * as sanitzer from '$utils/sanitizer';
+	import { uppercase_first_character } from '$utils/str';
+	import { encrypt_password } from '$utils/password';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { browser } from '$app/env';
