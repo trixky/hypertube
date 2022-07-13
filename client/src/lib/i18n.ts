@@ -31,7 +31,6 @@ export function chooseLocale(params?: Record<string, string>): string {
 		return params?.locale || 'en';
 	}
 	// Locale from params (extracted from cookie in hooks)
-	console.log('param', params, params?.locale);
 	return params?.locale || 'en';
 }
 

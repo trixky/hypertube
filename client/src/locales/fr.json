@@ -90,5 +90,9 @@
 		"missing_special": "doit contenir au moins un caractere special (!@#...)",
 		"badly_formatted": "est mal formatte"
 	},
-	"logout": "Deconnexion"
+	"logout": "Deconnexion",
+	"navigation": {
+		"search": "Recherche"
+	},
+	"language": "Langue"
 }
