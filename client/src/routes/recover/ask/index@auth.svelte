@@ -6,6 +6,7 @@
 	import Warning from '$components/inputs/warning.svelte';
 	import * as sanitzer from '$utils/sanitizer';
 	import { uppercase_first_character } from '$utils/str';
+	import { _ } from 'svelte-i18n';
 
 	let loading = false;
 
@@ -46,17 +47,15 @@
 					await res
 						.json()
 						.then(() => {
-							notifies_response_success('An email will be sent');
+							notifies_response_success($_('auth.recover_mail_sent'));
 							resolve(true);
 						})
 						.catch(() => {
-							notifies_response_warning(
-								'An error occured in the response from the server side, please try again'
-							);
+							notifies_response_warning($_('auth.server_error'));
 						});
 				} else {
-					if (res.status == 404) notifies_response_warning('No user finded for this email');
-					else notifies_response_warning('An error occured on server side, please try again');
+					if (res.status == 404) notifies_response_warning($_('auth.no_user_mail'));
+					else notifies_response_warning($_('auth.server_error'));
 				}
 				resolve(false);
 			}, 1000);
@@ -88,13 +87,13 @@
 </script>
 
 <!-- ========================= HTML -->
-<BlackBox title="password recovering">
+<BlackBox title={$_('auth.forgot_password_header')}>
 	<Logo alone />
 	<form action="" class="pt-1">
-		<label for="email" class="required">Email</label>
+		<label for="email" class="required">{$_('auth.email')}</label>
 		<input
 			type="email"
-			placeholder="Email"
+			placeholder={$_('auth.email')}
 			name="email"
 			bind:value={email}
 			on:input={check_email}
@@ -105,12 +104,17 @@
 			disabled={loading}
 		/>
 		<Warning content={email_warning} color="red" />
-		<ConfirmationButton name="recover by email" handler={handle_login} bind:loading bind:disabled />
+		<ConfirmationButton
+			name={$_('auth.recover_by_mail')}
+			handler={handle_login}
+			bind:loading
+			bind:disabled
+		/>
 		<Warning centered content={response_warning} color="red" />
 		<Warning centered content={response_update_success} color="green" />
 	</form>
 	<p class="extra-link mt-4">
-		<a href="/login">Back to <span class="underline">Log in</span></a>
+		<a href="/login">{$_('auth.back_to')} <span class="underline">{$_('auth.to_login')}</span></a>
 	</p>
 </BlackBox>
 

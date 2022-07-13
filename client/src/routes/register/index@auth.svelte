@@ -10,6 +10,7 @@
 	import { uppercase_first_character } from '$utils/str';
 	import { encrypt_password } from '$utils/password';
 	import { goto } from '$app/navigation';
+	import { _ } from 'svelte-i18n';
 
 	let loading = false;
 
@@ -103,21 +104,17 @@
 								resolve(true);
 								goto('/');
 							} else {
-								notifies_response_warning(
-									'An error occured on server side with your token/infos, please try again'
-								);
+								notifies_response_warning($_('auth.server_error'));
 							}
 						})
 						.catch(() => {
-							notifies_response_warning(
-								'An error occured in the response from the server side, please try again'
-							);
+							notifies_response_warning($_('auth.server_error'));
 						});
 				} else {
 					if (res.status == 409) {
 						emails_already_in_use.push(email);
 						check_email();
-					} else notifies_response_warning('An error occured on server side, please try again');
+					} else notifies_response_warning($_('auth.server_error'));
 				}
 				resolve(false);
 			}, 1000);
@@ -150,8 +147,7 @@
 	function check_email(): boolean {
 		response_warning = '';
 		if (registration_attempts || email_blur) {
-			if (emails_already_in_use.includes(email))
-				email_warning = 'Email is already in use, please choose another';
+			if (emails_already_in_use.includes(email)) email_warning = $_('auth.email_already_in_use');
 			else email_warning = sanitzer.email(email);
 		}
 
@@ -177,13 +173,13 @@
 </script>
 
 <!-- ========================= HTML -->
-<BlackBox title="register">
+<BlackBox title={$_('auth.register_header')}>
 	<Logo alone />
 	<form action="" class="pt-1">
-		<label for="username" class="required">Username</label>
+		<label for="username" class="required">{$_('auth.username')}</label>
 		<input
 			type="text"
-			placeholder="Username"
+			placeholder={$_('auth.username')}
 			name="username"
 			bind:value={username}
 			on:input={check_username}
@@ -196,10 +192,10 @@
 		<Warning content={username_warning} color="red" />
 		<div class="flex justify-between">
 			<div class="pr-2">
-				<label for="firstname" class="required">Firstname</label>
+				<label for="firstname" class="required">{$_('auth.first_name')}</label>
 				<input
 					type="text"
-					placeholder="Firstname"
+					placeholder={$_('auth.first_name')}
 					name="firstname"
 					bind:value={firstname}
 					on:input={check_firstname}
@@ -212,10 +208,10 @@
 				<Warning content={firstname_warning} color="red" />
 			</div>
 			<div class="pl-2">
-				<label for="lastname" class="required">Lastname</label>
+				<label for="lastname" class="required">{$_('auth.last_name')}</label>
 				<input
 					type="text"
-					placeholder="Lastname"
+					placeholder={$_('auth.last_name')}
 					name="lastname"
 					bind:value={lastname}
 					on:input={check_lastname}
@@ -228,10 +224,10 @@
 				<Warning content={lastname_warning} color="red" />
 			</div>
 		</div>
-		<label for="email" class="required">Email</label>
+		<label for="email" class="required">{$_('auth.email')}</label>
 		<input
 			type="email"
-			placeholder="Email"
+			placeholder={$_('auth.email')}
 			name="email"
 			bind:value={email}
 			on:input={check_email}
@@ -242,11 +238,11 @@
 			disabled={loading}
 		/>
 		<Warning content={email_warning} color="red" />
-		<label for="password" class="required">Password</label>
+		<label for="password" class="required">{$_('auth.password')}</label>
 		<div class="relative">
 			<input
 				type={password_input_type}
-				placeholder="Password"
+				placeholder={$_('auth.password')}
 				name="password"
 				value={password}
 				on:input={check_password}
@@ -259,11 +255,11 @@
 			<Eye bind:open={show_password} />
 		</div>
 		<Warning content={password_warning} color="red" />
-		<label for="confirm password" class="required">Confirm password</label>
+		<label for="confirm password" class="required">{$_('auth.confirm_password')}</label>
 		<div class="relative">
 			<input
 				type={password_input_type}
-				placeholder="Confirm password"
+				placeholder={$_('auth.confirm_password')}
 				name="confirm password"
 				value={confirm_password}
 				on:input={check_confirm_password}
@@ -276,11 +272,18 @@
 			<Eye bind:open={show_password} />
 		</div>
 		<Warning content={confirm_password_warning} color="red" />
-		<ConfirmationButton name="register" handler={handle_register} bind:loading bind:disabled />
+		<ConfirmationButton
+			name={$_('auth.register_action')}
+			handler={handle_register}
+			bind:loading
+			bind:disabled
+		/>
 		<Warning centered content={response_warning} color="red" />
 	</form>
 	<p class="extra-link mt-4">
-		<a href="/login">Already a member ? <span class="underline">Log in</span></a>
+		<a href="/login"
+			>{$_('auth.member_question')} <span class="underline">{$_('auth.login')}</span></a
+		>
 	</p>
 </BlackBox>
 

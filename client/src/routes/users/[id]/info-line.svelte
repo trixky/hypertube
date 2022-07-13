@@ -1,7 +1,6 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
 	import Spinner from '$components/animations/spinner.svelte';
-	import { uppercase_first_character } from '$utils/str';
 
 	export let label: string;
 	export let value = '';
@@ -13,7 +12,7 @@
 <!-- ========================= HTML -->
 <div class:centered class="my-0">
 	<div class="inline-block px-2 align-bottom">
-		<label class="inline-block" for="username">{uppercase_first_character(label)}</label>
+		<label class="inline-block capitalize" for="username">{label}</label>
 	</div>
 	<div class="inline-block px-2 align-bottom text-gray-400">
 		{#if value.length || no_value || can_be_empty}

@@ -1,8 +1,12 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
 	import Logo from './logo.svelte';
-	import { me_store } from '$stores/me';
 	import { goto } from '$app/navigation';
+	import { browser } from '$app/env';
+	import { me_store } from '$stores/me';
+	import { disconnect } from '$utils/redirect';
+	import * as cookies from '$utils/cookies';
+	import { _ } from 'svelte-i18n';
 
 	me_store.refresh_from_cookies();
 
@@ -10,6 +14,11 @@
 		if ($me_store.username.length > 0) {
 			goto('/users/' + $me_store.id);
 		}
+	}
+
+	let connected = false;
+	if (browser && cookies.get_a_cookie('token')) {
+		connected = true;
 	}
 </script>
 
@@ -28,6 +37,11 @@
 				height="16px"
 				alt="user icone"
 			/>
+		</button>
+	{/if}
+	{#if connected}
+		<button on:click={disconnect}>
+			<p class="text-white">{$_('logout')}</p>
 		</button>
 	{/if}
 </header>

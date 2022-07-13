@@ -2,7 +2,6 @@
 <script lang="ts">
 	import Spinner from '../animations/spinner.svelte';
 	import { fade } from 'svelte/transition';
-	import { uppercase_first_character } from '$utils/str';
 
 	export let name: string = '...';
 	export let handler: Function;
@@ -37,7 +36,7 @@
 			<Spinner />
 		</div>
 	{/if}
-	<p class="inline-block">{uppercase_first_character(name)}</p>
+	<p class="inline-block capitalize">{name}</p>
 </button>
 
 <!-- ========================= CSS -->

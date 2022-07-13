@@ -5,13 +5,13 @@
 	import ConfirmationButton from '$components/buttons/confirmation-button.svelte';
 	import Warning from '$components/inputs/warning.svelte';
 	import Eye from '$components/inputs/eye.svelte';
-	import * as cookies from '$utils/cookies';
 	import * as sanitzer from '$utils/sanitizer';
 	import { uppercase_first_character } from '$utils/str';
 	import { encrypt_password } from '$utils/password';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { browser } from '$app/env';
+	import { _ } from 'svelte-i18n';
 
 	let loading = false;
 
@@ -77,12 +77,10 @@
 							goto('/login' + '?from=' + 'recover/apply');
 						})
 						.catch(() => {
-							notifies_response_warning(
-								'An error occured in the response from the server side, please try again'
-							);
+							notifies_response_warning($_('auth.server_error'));
 						});
 				} else {
-					notifies_response_warning('An error occured on server side, please try again');
+					notifies_response_warning($_('auth.server_error'));
 				}
 				resolve(false);
 			}, 1000);
@@ -117,14 +115,14 @@
 </script>
 
 <!-- ========================= HTML -->
-<BlackBox title="recover password">
+<BlackBox title={$_('auth.forgot_password_header')}>
 	<Logo alone />
 	<form action="" class="pt-1 w-full">
-		<label for="password" class="required">Password</label>
+		<label for="password" class="required">{$_('auth.password')}</label>
 		<div class="relative">
 			<input
 				type={new_password_input_type}
-				placeholder="Password"
+				placeholder={$_('auth.password')}
 				name="password"
 				value={new_password}
 				on:input={check_new_password}
@@ -137,11 +135,11 @@
 			<Eye bind:open={show_password} />
 		</div>
 		<Warning content={new_password_warning} color="red" />
-		<label for="confirm password" class="required">Confirm password</label>
+		<label for="confirm password" class="required">{$_('auth.confirm_password')}</label>
 		<div class="relative">
 			<input
 				type={new_password_input_type}
-				placeholder="Confirm password"
+				placeholder={$_('auth.confirm_password')}
 				name="confirm password"
 				value={confirm_new_password}
 				on:input={check_confirm_new_password}
@@ -155,7 +153,7 @@
 		</div>
 		<Warning content={confirm_new_password_warning} color="red" />
 		<ConfirmationButton
-			name="change password"
+			name={$_('auth.change_password')}
 			handler={handle_register}
 			bind:loading
 			bind:disabled
@@ -163,7 +161,7 @@
 		<Warning centered content={response_warning} color="red" />
 	</form>
 	<p class="extra-link mt-4">
-		<a href="/login">Back to <span class="underline">Log in</span></a>
+		<a href="/login">{$_('auth.back_to')} <span class="underline">{$_('auth.to_login')}</span></a>
 	</p>
 </BlackBox>
 
