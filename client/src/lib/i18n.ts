@@ -1,8 +1,8 @@
 // import { browser } from '$app/env';
 import { init, getLocaleFromNavigator, addMessages, locale } from 'svelte-i18n';
-import { add_a_cookie, del_a_cookie, get_a_cookie } from './utils/cookies';
-import en from './locales/en.json';
-import fr from './locales/fr.json';
+import { add_a_cookie, del_a_cookie, get_a_cookie } from '$utils/cookies';
+import en from '../locales/en.json';
+import fr from '../locales/fr.json';
 
 export async function i18n() {
 	addMessages('en', en);

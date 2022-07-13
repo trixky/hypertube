@@ -1,11 +1,11 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
-	import BlackBox from '../../../components/containers/black-box.svelte';
-	import Logo from '../../../components/layouts/logo.svelte';
-	import ConfirmationButton from '../../../components/buttons/confirmation-button.svelte';
-	import Warning from '../../../components/inputs/warning.svelte';
-	import * as sanitzer from '../../../utils/sanitizer';
-	import { uppercase_first_character } from '../../../utils/str';
+	import BlackBox from '$components/containers/black-box.svelte';
+	import Logo from '$components/layouts/logo.svelte';
+	import ConfirmationButton from '$components/buttons/confirmation-button.svelte';
+	import Warning from '$components/inputs/warning.svelte';
+	import * as sanitzer from '$utils/sanitizer';
+	import { uppercase_first_character } from '$utils/str';
 
 	let loading = false;
 

@@ -2,7 +2,7 @@
 <script lang="ts">
 	import Spinner from '../animations/spinner.svelte';
 	import { fade } from 'svelte/transition';
-	import { uppercase_first_character } from '../../utils/str';
+	import { uppercase_first_character } from '$utils/str';
 
 	export let name: string = '...';
 	export let handler: Function;

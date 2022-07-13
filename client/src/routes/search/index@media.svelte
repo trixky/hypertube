@@ -4,12 +4,12 @@
 	import { browser } from '$app/env';
 	import { fade } from 'svelte/transition';
 	import { _, locale } from 'svelte-i18n';
-	import Spinner from '../../../src/components/animations/spinner.svelte';
-	import { searching, loadingMore, results, totalResults, search } from '../../stores/search';
+	import Spinner from '$components/animations/spinner.svelte';
+	import { searching, loadingMore, results, totalResults, search } from '$stores/search';
 	import Genres from './genres.svelte';
-	import SortAsc from '../../../src/components/icons/SortAsc.svelte';
-	import SortDesc from '../../../src/components/icons/SortDesc.svelte';
-	import LazyLoad from '../../../src/components/lazy/LazyLoad.svelte';
+	import SortAsc from '$components/icons/SortAsc.svelte';
+	import SortDesc from '$components/icons/SortDesc.svelte';
+	import LazyLoad from '$components/lazy/LazyLoad.svelte';
 
 	let sortColumns: string[] = ['year', 'name', 'duration', 'id'];
 

@@ -1,8 +1,8 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
 	import { browser } from '$app/env';
-	import * as cookies from '../../utils/cookies';
-	import { disconnect } from '../../utils/redirect';
+	import * as cookies from '$utils/cookies';
+	import { disconnect } from '$utils/redirect';
 
 	let connected = false;
 

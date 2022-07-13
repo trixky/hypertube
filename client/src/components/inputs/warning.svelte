@@ -2,7 +2,7 @@
 <script lang="ts">
 	import { tweened } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
-	import { uppercase_first_character } from '../../utils/str';
+	import { uppercase_first_character } from '$utils/str';
 
 	export let content = '';
 	export let centered = false;

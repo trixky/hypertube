@@ -1,16 +1,16 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
-	import BlackBox from '../../../components/containers/black-box.svelte';
-	import Warning from '../../../components/inputs/warning.svelte';
-	import Eye from '../../../components/inputs/eye.svelte';
-	import * as sanitzer from '../../../utils/sanitizer';
-	import ConfirmationButton from '../../../components/buttons/confirmation-button.svelte';
-	import * as cookies from '../../../utils/cookies';
-	import { uppercase_first_character } from '../../../utils/str';
-	import { encrypt_password } from '../../../utils/password';
+	import BlackBox from '$components/containers/black-box.svelte';
+	import Warning from '$components/inputs/warning.svelte';
+	import Eye from '$components/inputs/eye.svelte';
+	import * as sanitzer from '$utils/sanitizer';
+	import ConfirmationButton from '$components/buttons/confirmation-button.svelte';
+	import * as cookies from '$utils/cookies';
+	import { uppercase_first_character } from '$utils/str';
+	import { encrypt_password } from '$utils/password';
 	import { page } from '$app/stores';
 	import { browser } from '$app/env';
-	import { me_store } from '../../../stores/me';
+	import { me_store } from '$stores/me';
 	import InfoLine from './info-line.svelte';
 
 	if (browser) me_store.refresh_from_cookies();
@@ -83,7 +83,12 @@
 			(!new_password.length || !new_password_blur) &&
 			(!confirm_new_password.length || !confirm_new_password_blur));
 
-	$: can_be_empty = Boolean(current_username.length || current_firstname.length || current_lastname.length || current_email.length);
+	$: can_be_empty = Boolean(
+		current_username.length ||
+			current_firstname.length ||
+			current_lastname.length ||
+			current_email.length
+	);
 
 	let show_password = false;
 	$: password_input_type = show_password ? 'text' : 'password';

@@ -7,7 +7,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
-	import Spinner from '../../../src/components/animations/spinner.svelte';
+	import Spinner from '$components/animations/spinner.svelte';
 
 	export let mediaId: number;
 	let loading = false;

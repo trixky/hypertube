@@ -2,7 +2,7 @@
 <script lang="ts" context="module">
 	import type { Load } from '@sveltejs/kit';
 	import { waitLocale } from 'svelte-i18n';
-	import { i18n } from '../../src/i18n';
+	import { i18n } from '$lib/i18n';
 
 	export const load: Load = async () => {
 		await i18n();
@@ -14,9 +14,9 @@
 <script lang="ts">
 	import '../app.css';
 	import { browser } from '$app/env';
-	import { not_connected } from '../utils/redirect';
-	import Header from '../components/layouts/header.svelte';
-	import Footer from '../components/layouts/footer.svelte';
+	import { not_connected } from '$utils/redirect';
+	import Header from '$components/layouts/header.svelte';
+	import Footer from '$components/layouts/footer.svelte';
 
 	not_connected(browser);
 </script>

@@ -1,14 +1,14 @@
 <!-- ========================= SCRIPT -->
-<script lang='ts'>
+<script lang="ts">
 	import Logo from './logo.svelte';
-	import { me_store } from '../../stores/me';
+	import { me_store } from '$stores/me';
 	import { goto } from '$app/navigation';
 
 	me_store.refresh_from_cookies();
 
 	function handle_click_on_me() {
 		if ($me_store.username.length > 0) {
-			goto('/users/' + $me_store.id)
+			goto('/users/' + $me_store.id);
 		}
 	}
 </script>
