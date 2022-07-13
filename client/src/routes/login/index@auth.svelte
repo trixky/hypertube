@@ -125,7 +125,7 @@
 	<Logo alone />
 	<External disabled={loading} />
 	<Separator content={$_('auth.omniauth_separator')} />
-	<form action="" class="pt-1">
+	<form action="" class="pt-1 w-full">
 		<label for="email" class="required">{$_('auth.email')}</label>
 		<input
 			type="email"
@@ -170,9 +170,9 @@
 		<Warning centered content={response_success} color="green" />
 	</form>
 	<p class="extra-link mt-2">
-		<a href="/register"
-			>{$_('auth.join_question')} <span class="underline">{$_('auth.signup')}</span></a
-		>
+		<a href="/register">
+			{$_('auth.join_question')} <span class="underline">{$_('auth.signup')}</span>
+		</a>
 	</p>
 </BlackBox>
 

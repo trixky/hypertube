@@ -175,7 +175,7 @@
 <!-- ========================= HTML -->
 <BlackBox title={$_('auth.register_header')}>
 	<Logo alone />
-	<form action="" class="pt-1">
+	<form action="" class="pt-1 w-full">
 		<label for="username" class="required">{$_('auth.username')}</label>
 		<input
 			type="text"
