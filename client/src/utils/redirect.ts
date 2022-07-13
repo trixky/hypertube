@@ -1,34 +1,30 @@
-import * as cookies from './cookies'
+import * as cookies from './cookies';
 import { goto } from '$app/navigation';
 
 function disconnect() {
-    cookies.del_a_cookie(cookies.labels.token)
-    cookies.del_a_cookie(cookies.labels.user_info)
-    goto('/login')
+	cookies.del_a_cookie(cookies.labels.token);
+	cookies.del_a_cookie(cookies.labels.user_info);
+	goto('/login');
 }
 
 function already_connected(browser: boolean): boolean {
-    if (browser && cookies.get_token()) {
-        goto('/')
+	if (browser && cookies.get_token()) {
+		goto('/');
 
-        return true
-    }
+		return true;
+	}
 
-    return false
+	return false;
 }
 
 function not_connected(browser: boolean): boolean {
-    if (browser && !cookies.get_token()) {
-        goto('/login')
+	if (browser && !cookies.get_token()) {
+		goto('/login');
 
-        return true
-    }
+		return true;
+	}
 
-    return false
+	return false;
 }
 
-export {
-    disconnect,
-    already_connected,
-    not_connected
-}
+export { disconnect, already_connected, not_connected };
