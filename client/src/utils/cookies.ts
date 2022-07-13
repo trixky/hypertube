@@ -31,12 +31,15 @@ function del_a_cookie(name: string) {
 	if (browser) document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/';
 }
 
-function get_a_cookie(name: string): string | undefined {
-	// https://stackoverflow.com/questions/5639346/what-is-the-shortest-function-for-reading-a-cookie-by-name-in-javascript
+// @source https://stackoverflow.com/questions/5639346/what-is-the-shortest-function-for-reading-a-cookie-by-name-in-javascript
+function extract_cookie(cookies: string, name: string): string | undefined {
+	const cookie_value = cookies.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop();
+	return cookie_value;
+}
 
+function get_a_cookie(name: string): string | undefined {
 	if (browser) {
-		const cookie_value = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop();
-		return cookie_value;
+		return extract_cookie(document.cookie, name);
 	}
 }
 
@@ -66,4 +69,12 @@ function get_me_from_cookie(): Me | undefined {
 	return undefined;
 }
 
-export { labels, add_a_cookie, del_a_cookie, get_a_cookie, get_token, get_me_from_cookie };
+export {
+	labels,
+	add_a_cookie,
+	del_a_cookie,
+	extract_cookie,
+	get_a_cookie,
+	get_token,
+	get_me_from_cookie
+};

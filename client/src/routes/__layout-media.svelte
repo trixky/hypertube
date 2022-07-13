@@ -2,10 +2,10 @@
 <script lang="ts" context="module">
 	import type { Load } from '@sveltejs/kit';
 	import { waitLocale } from 'svelte-i18n';
-	import { i18n } from '$lib/i18n';
+	import { chooseLocale, i18n } from '$lib/i18n';
 
-	export const load: Load = async () => {
-		await i18n();
+	export const load: Load = async ({ params }) => {
+		await i18n(params);
 		await waitLocale();
 		return {};
 	};
