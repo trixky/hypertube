@@ -26,7 +26,7 @@
 <!-- ========================= CSS -->
 <style lang="postcss">
 	div.centered {
-		@apply flex justify-center align-middle content-center;
+		@apply flex justify-center align-middle content-center items-center;
 	}
 
 	div.centered > div {

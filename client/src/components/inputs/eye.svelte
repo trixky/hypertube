@@ -12,7 +12,7 @@
 <!-- https://www.flaticon.com/search?author_id=361&style_id=&type=standard&word=eye -->
 <!-- ========================= HTML -->
 <button
-	class="absolute right-2 p-1 translate-y-[12px]"
+	class="absolute right-2 top-1/2 -translate-y-1/2"
 	on:click|preventDefault={handle_click}
 	tabindex="-1"
 >
