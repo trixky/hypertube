@@ -171,7 +171,9 @@ func scrapeSingle(torrent *pb.UnprocessedTorrent) error {
 		}
 
 		torrent_url := e.ChildAttr(".dropdown-menu > li > a", "href")
-		torrent.TorrentUrl = &torrent_url
+		if !strings.HasPrefix(torrent_url, "/download/Download ") {
+			torrent.TorrentUrl = &torrent_url
+		}
 
 		// test: https://go.dev/play/p/4QLPAxQkcuM
 		re := regexp.MustCompile("(.+)\\s+\\((.+)\\)\\s*$")
