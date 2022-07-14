@@ -3,7 +3,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
 	import { fade } from 'svelte/transition';
-	import { _, locale } from 'svelte-i18n';
+	import { _ } from 'svelte-i18n';
 	import Spinner from '$components/animations/spinner.svelte';
 	import { searching, loadingMore, results, totalResults, search } from '$stores/search';
 	import Genres from './genres.svelte';

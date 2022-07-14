@@ -21,8 +21,9 @@
 </script>
 
 <!-- ========================= HTML -->
-
-<Header />
-<main class="media-page min-h-[90%] flex flex-row content-start justify-start relative">
-	<slot />
-</main>
+<div class="flex flex-col min-h-screen">
+	<Header />
+	<main class="media-page flex-grow flex flex-row content-start justify-start relative">
+		<slot />
+	</main>
+</div>

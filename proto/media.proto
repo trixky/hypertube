@@ -122,7 +122,9 @@ message PostCommentRequest {
 
 message PostCommentResponse {
 	uint64 id = 1;
-	google.protobuf.Timestamp date = 2;
+	comment.CommentUser user = 2;
+	google.protobuf.Timestamp date = 3;
+	string content = 4;
 }
 
 service MediaService {

@@ -6,7 +6,8 @@ WHERE id = $1 LIMIT 1;
 SELECT users.username, comments.id, comments.user_id, comments.content, comments.created_at
 FROM comments
 RIGHT JOIN users ON comments.user_id = users.id
-WHERE media_id = $1;
+WHERE media_id = $1
+ORDER BY id DESC;
 
 -- name: GetUserComments :many
 SELECT *

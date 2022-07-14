@@ -16,15 +16,15 @@
 	import { browser } from '$app/env';
 	import { not_connected } from '$utils/redirect';
 	import Header from '$components/layouts/header.svelte';
-	import Footer from '$components/layouts/footer.svelte';
 
 	not_connected(browser);
 </script>
 
 <!-- ========================= HTML -->
 
-<Header />
-<main class="min-h-[80%] flex flex-row content-start justify-start relative">
-	<slot />
-</main>
-<Footer />
+<div class="flex flex-col min-h-screen">
+	<Header />
+	<main class="flex-grow flex flex-row content-start justify-start relative">
+		<slot />
+	</main>
+</div>

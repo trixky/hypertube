@@ -1,7 +1,7 @@
 <!-- ========================= SCRIPT -->
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
-	import type { MediaProps } from '../../../src/types/Media';
+	import type { MediaComment, MediaProps } from '../../../src/types/Media';
 
 	export const load: Load = async ({ params, fetch }) => {
 		const url = browser
@@ -9,7 +9,11 @@
 			: `http://api-media:7072/v1/media/${params.id}/get`;
 		const response = await fetch(url, {
 			method: 'GET',
-			headers: { accept: 'application/json' }
+			credentials: 'include',
+			headers: {
+				accept: 'application/json',
+				cookie: !browser ? `token=${params.token}; locale=${params.locale}` : ''
+			}
 		});
 
 		let props: MediaProps | false = false;
@@ -17,9 +21,18 @@
 			props = (await response.json()) as MediaProps;
 		}
 
+		const notFound = response.status == 404;
+		const forbidden = response.status >= 400 && response.status < 500 && !notFound;
+
+		if (forbidden) {
+			return {
+				status: 300,
+				redirect: '/login'
+			};
+		}
 		return {
 			status: response.status,
-			redirect: !response.ok ? '/search' : undefined,
+			redirect: notFound || !response.ok ? '/search' : undefined,
 			props: { props }
 		};
 	};
@@ -27,18 +40,20 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
 	import { _ } from 'svelte-i18n';
 	import quantize from 'quantize';
 	import { addUserTitle } from '$utils/media';
+	import { me_store } from '$stores/me';
 	import ArrowLeft from '$components/icons/ArrowLeft.svelte';
 	import Play from '$components/icons/Play.svelte';
 	import LazyLoad from '$components/lazy/LazyLoad.svelte';
 	import QualityIcon from './QualityIcon.svelte';
 	import Background from '$components/animations/Background.svelte';
 	import RefreshPeers, { type RefreshResult } from './RefreshPeers.svelte';
+	import Warning from '$components/inputs/warning.svelte';
 
 	/// @ts-expect-error media is given as a prop
 	export let props: MediaProps;
@@ -170,7 +185,7 @@
 		loadingGradient = false;
 	}
 
-	const cleanComments = comments.map((comment) => ({
+	let cleanComments = comments.map((comment) => ({
 		...comment,
 		id: Number(comment.id),
 		user: {
@@ -191,6 +206,46 @@
 		}
 		torrents.sort((a, b) => b.seed - a.seed);
 		torrents = torrents;
+	}
+
+	// Comment
+	let loadingComment: boolean = false;
+	let commentError: string | undefined;
+	let commentContent: string | null | undefined;
+	async function postComment() {
+		if (!commentContent) {
+			commentError = $_('sanitizer.missing');
+			return;
+		}
+		if (commentContent.length < 2) {
+			commentError = $_('sanitizer.too_short', { values: { amount: 2 } });
+			return;
+		}
+		if (commentContent.length >= 65535) {
+			commentError = $_('sanitizer.too_long', { values: { amount: 65535 } });
+			return;
+		}
+		commentError = undefined;
+		loadingComment = true;
+		const res = await fetch(`http://localhost:7072/v1/media/${media.id}/comment`, {
+			method: 'POST',
+			credentials: 'include',
+			headers: { accept: 'application/json', 'content-type': 'application/json' },
+			body: JSON.stringify({ content: commentContent })
+		});
+		if (res.ok) {
+			const body = (await res.json()) as MediaComment;
+			const cleanComment = {
+				...body,
+				date: new Date(body.date)
+			};
+			commentContent = undefined;
+			cleanComments.unshift(cleanComment);
+			cleanComments = cleanComments;
+		} else {
+			commentError = $_('media.comment_fail');
+		}
+		loadingComment = false;
 	}
 
 	// Background gradient
@@ -415,25 +470,46 @@
 						({cleanComments.length})
 					{/if}
 				</h1>
-				{#if cleanComments.length > 0}
-					{#each cleanComments as comment (comment.id)}
-						<div class="comment" class:self={comment.user.id == 1}>
-							{#if comment.user.id == 1}
-								<div class="bordered" />
-							{/if}
-							<div class="comment-header">
-								<div>
-									<span class="opacity-60 text-sm mr-2">#{comment.id}</span>
-									<span class="font-bold">{comment.user.name}</span>
-								</div>
-								<div class="text-sm">{comment.date.toLocaleString()}</div>
-							</div>
-							<div class="comment-content">{comment.content}</div>
-						</div>
-					{/each}
-				{:else}
+				{#if cleanComments.length == 0}
 					<div>{$_('media.no_comments')}</div>
 				{/if}
+				<form class="mt-4 mb-6" on:submit|preventDefault={postComment}>
+					<textarea
+						class="border border-white rounded-md w-full bg-transparent text-white p-4 disabled:opacity-50 transition-all"
+						name="comment"
+						id="comment"
+						rows="4"
+						disabled={loadingComment}
+						bind:value={commentContent}
+						placeholder={$_('media.comment_placeholder')}
+					/>
+					{#if commentError}
+						<Warning content={commentError} color="red" />
+					{/if}
+					<div class="text-right">
+						<button
+							class="py-2 px-4 bg-blue-300 text-black mt-1 rounded-sm hover:bg-blue-400 duration-[0.35s] disabled:opacity-50 transition-all"
+							disabled={loadingComment}
+						>
+							{$_('media.post_comment')}
+						</button>
+					</div>
+				</form>
+				{#each cleanComments as comment (comment.id)}
+					<div class="comment" class:self={comment.user.id == $me_store.id} in:fly>
+						{#if comment.user.id == $me_store.id}
+							<div class="bordered" />
+						{/if}
+						<div class="comment-header">
+							<div>
+								<span class="opacity-60 text-sm mr-2">#{comment.id}</span>
+								<span class="font-bold">{comment.user.name}</span>
+							</div>
+							<div class="text-sm">{comment.date.toLocaleString()}</div>
+						</div>
+						<div class="comment-content">{comment.content}</div>
+					</div>
+				{/each}
 			</div>
 		</div>
 	</div>

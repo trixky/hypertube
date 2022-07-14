@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import type { Result } from '../../src/types/Media';
 import { addUserTitle } from '$utils/media';
+import { browser } from '$app/env';
 
 export const searching = writable(true);
 export const loadingMore = writable(false);
@@ -77,7 +78,7 @@ export function searchStore() {
 	};
 	const { subscribe, set, update } = writable<SearchStore>(store);
 
-	function url(to: string): URL {
+	function buildURL(to: string): URL {
 		const url = new URL(to);
 		url.search = buildParams(store);
 		return url;
@@ -99,7 +100,9 @@ export function searchStore() {
 			}
 			return set(store);
 		},
-		async execute() {
+		async execute(
+			sender: (info: RequestInfo, init?: RequestInit | undefined) => Promise<Response> = fetch
+		) {
 			searching.set(true);
 			loadingMore.set(false);
 
@@ -110,7 +113,10 @@ export function searchStore() {
 			results.setResults([]);
 
 			// Send request
-			const res = await fetch(url('http://localhost:7072/v1/media/search'), {
+			const url = browser
+				? `http://localhost:7072/v1/media/search`
+				: `http://api-media:7072/v1/media/search`;
+			const res = await sender(buildURL(url).toString(), {
 				method: 'GET',
 				credentials: 'include',
 				headers: { accept: 'application/json' }
@@ -139,7 +145,7 @@ export function searchStore() {
 			set(store);
 
 			// Send request
-			const res = await fetch(url('http://localhost:7072/v1/media/search'), {
+			const res = await fetch(buildURL('http://localhost:7072/v1/media/search'), {
 				method: 'GET',
 				credentials: 'include',
 				headers: { accept: 'application/json' }
