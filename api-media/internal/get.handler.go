@@ -42,7 +42,7 @@ func indexOf(slice []string, value string) int {
 }
 
 func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetResponse, error) {
-	if err := utils.RequireLogin(ctx); err != nil {
+	if _, err := utils.RequireLogin(ctx); err != nil {
 		return nil, err
 	}
 

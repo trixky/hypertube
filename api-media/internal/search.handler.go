@@ -13,7 +13,7 @@ import (
 )
 
 func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.SearchResponse, error) {
-	if err := utils.RequireLogin(ctx); err != nil {
+	if _, err := utils.RequireLogin(ctx); err != nil {
 		return nil, err
 	}
 

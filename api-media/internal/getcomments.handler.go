@@ -14,7 +14,7 @@ import (
 )
 
 func (s *MediaServer) GetComments(ctx context.Context, in *pb.GetCommentsRequest) (*pb.GetCommentsResponse, error) {
-	if err := utils.RequireLogin(ctx); err != nil {
+	if _, err := utils.RequireLogin(ctx); err != nil {
 		return nil, err
 	}
 

@@ -12,7 +12,7 @@ import (
 )
 
 func (s *MediaServer) Genres(ctx context.Context, in *pb.GenresRequest) (*pb.GenresResponse, error) {
-	if err := utils.RequireLogin(ctx); err != nil {
+	if _, err := utils.RequireLogin(ctx); err != nil {
 		return nil, err
 	}
 
