@@ -1,17 +1,8 @@
 import { writable } from 'svelte/store';
 import { get_me_from_cookie } from '$utils/cookies';
 
-interface Me {
-	id: number;
-	username: string;
-	firstname: string;
-	lastname: string;
-	email: string;
-	external: string;
-}
-
 function create_me() {
-	const { subscribe, set, update } = writable(<Me>{
+	const { subscribe, set, update } = writable(<User>{
 		id: 0,
 		username: '',
 		firstname: '',
@@ -23,9 +14,9 @@ function create_me() {
 	return {
 		subscribe,
 		refresh_from_cookies: () => {
-			let me_from_cookie = get_me_from_cookie();
+			const me_from_cookie = get_me_from_cookie();
 			if (me_from_cookie != undefined) {
-				set(<Me>{
+				set(<User>{
 					id: me_from_cookie.id,
 					username: me_from_cookie.username,
 					firstname: me_from_cookie.firstname,
@@ -35,7 +26,7 @@ function create_me() {
 				});
 			}
 		},
-		reset: () => set(<Me>{})
+		reset: () => set(<User>{})
 	};
 }
 

@@ -4,7 +4,7 @@
 	import Logo from '$components/layouts/logo.svelte';
 	import ConfirmationButton from '$components/buttons/confirmation-button.svelte';
 	import Warning from '$components/inputs/warning.svelte';
-	import * as sanitzer from '$utils/sanitizer';
+	import * as sanitizer from '$utils/sanitizer';
 	import { uppercase_first_character } from '$utils/str';
 	import { _ } from 'svelte-i18n';
 
@@ -77,10 +77,10 @@
 	function check_email(): boolean {
 		response_warning = '';
 
-		let warning = sanitzer.email(email);
+		let warning = sanitizer.email(email);
 
 		if (email.length && !warning.length) email_blur = true;
-		if (login_attempts || email_blur) email_warning = sanitzer.email(email);
+		if (login_attempts || email_blur) email_warning = sanitizer.email(email);
 
 		return email_warning.length > 0;
 	}

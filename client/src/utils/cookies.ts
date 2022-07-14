@@ -1,21 +1,12 @@
 import { browser } from '$app/env';
 
-interface Me {
-	id: number;
-	username: string;
-	firstname: string;
-	lastname: string;
-	email: string;
-	external: string;
-}
-
-const labels = {
+export const labels = {
 	password_token: 'token',
 	token: 'token',
 	user_info: 'userInfo'
 };
 
-function add_a_cookie(name: string, value: string, days?: number) {
+export function add_a_cookie(name: string, value: string, days?: number) {
 	if (browser) {
 		let expires = '';
 		if (days) {
@@ -27,54 +18,48 @@ function add_a_cookie(name: string, value: string, days?: number) {
 	}
 }
 
-function del_a_cookie(name: string) {
+export function del_a_cookie(name: string) {
 	if (browser) document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/';
 }
 
 // @source https://stackoverflow.com/questions/5639346/what-is-the-shortest-function-for-reading-a-cookie-by-name-in-javascript
-function extract_cookie(cookies: string, name: string): string | undefined {
+export function extract_cookie(cookies: string, name: string): string | undefined {
 	const cookie_value = cookies.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop();
 	return cookie_value;
 }
 
-function get_a_cookie(name: string): string | undefined {
+export function get_a_cookie(name: string): string | undefined {
 	if (browser) {
 		return extract_cookie(document.cookie, name);
 	}
 }
 
-function get_token(): string | undefined {
+export function get_token(): string | undefined {
 	return get_a_cookie(labels.token);
 }
 
-function get_me_from_cookie(): Me | undefined {
-	if (browser) {
-		const me_64 = get_a_cookie(labels.user_info);
-
-		if (me_64 != undefined) {
-			const me_json = atob(me_64);
-			const me = JSON.parse(me_json);
-			if (me) {
-				return <Me>{
-					id: me.id,
-					username: me.username,
-					firstname: me.firstname,
-					lastname: me.lastname,
-					email: me.email,
-					external: me.external
-				};
-			}
+export function get_user(cookies: string) {
+	const encodedUser = extract_cookie(cookies, labels.user_info);
+	if (encodedUser != undefined) {
+		const user = atob(encodedUser);
+		const me = JSON.parse(user);
+		if (me) {
+			return <User>{
+				id: me.id,
+				username: me.username,
+				firstname: me.firstname,
+				lastname: me.lastname,
+				email: me.email,
+				external: me.external
+			};
 		}
 	}
 	return undefined;
 }
 
-export {
-	labels,
-	add_a_cookie,
-	del_a_cookie,
-	extract_cookie,
-	get_a_cookie,
-	get_token,
-	get_me_from_cookie
-};
+export function get_me_from_cookie(): User | undefined {
+	if (browser) {
+		return get_user(document.cookie);
+	}
+	return undefined;
+}

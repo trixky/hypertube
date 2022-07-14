@@ -6,7 +6,7 @@
 	import Warning from '$components/inputs/warning.svelte';
 	import Eye from '$components/inputs/eye.svelte';
 	import * as cookies from '$utils/cookies';
-	import * as sanitzer from '$utils/sanitizer';
+	import * as sanitizer from '$utils/sanitizer';
 	import { uppercase_first_character } from '$utils/str';
 	import { encrypt_password } from '$utils/password';
 	import { goto } from '$app/navigation';
@@ -128,19 +128,19 @@
 	// ----------------------------------------------------------------- sanitizing
 	function check_username(): boolean {
 		response_warning = '';
-		if (registration_attempts || username_blur) username_warning = sanitzer.name(username);
+		if (registration_attempts || username_blur) username_warning = sanitizer.name(username);
 
 		return username_warning.length > 0;
 	}
 	function check_firstname(): boolean {
 		response_warning = '';
-		if (registration_attempts || firstname_blur) firstname_warning = sanitzer.name(firstname);
+		if (registration_attempts || firstname_blur) firstname_warning = sanitizer.name(firstname);
 
 		return firstname_warning.length > 0;
 	}
 	function check_lastname(): boolean {
 		response_warning = '';
-		if (registration_attempts || lastname_blur) lastname_warning = sanitzer.name(lastname);
+		if (registration_attempts || lastname_blur) lastname_warning = sanitizer.name(lastname);
 
 		return lastname_warning.length > 0;
 	}
@@ -148,7 +148,7 @@
 		response_warning = '';
 		if (registration_attempts || email_blur) {
 			if (emails_already_in_use.includes(email)) email_warning = $_('auth.email_already_in_use');
-			else email_warning = sanitzer.email(email);
+			else email_warning = sanitizer.email(email);
 		}
 
 		return email_warning.length > 0;
@@ -157,7 +157,7 @@
 		response_warning = '';
 		if (event) password = event.target.value;
 
-		if (registration_attempts || password_blur) password_warning = sanitzer.password(password);
+		if (registration_attempts || password_blur) password_warning = sanitizer.password(password);
 
 		return password_warning.length > 0;
 	}
@@ -166,7 +166,7 @@
 		if (event) confirm_password = event.target.value;
 
 		if (registration_attempts || confirm_password_blur)
-			confirm_password_warning = sanitzer.confirm_password(password, confirm_password);
+			confirm_password_warning = sanitizer.confirm_password(password, confirm_password);
 
 		return confirm_password_warning.length > 0;
 	}
