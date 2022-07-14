@@ -15,7 +15,7 @@ import (
 )
 
 func (s *MediaServer) Refresh(in *pb.RefreshMediaRequest, out pb.MediaService_RefreshServer) error {
-	if err := utils.RequireLogin(out.Context()); err != nil {
+	if _, err := utils.RequireLogin(out.Context()); err != nil {
 		return err
 	}
 
