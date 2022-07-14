@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	REDIS_SEPARATOR         = "."
-	REDIS_PATTERN_KEY_token = "token"
+	REDIS_SEPARATOR          = "."
+	REDIS_PATTERN_KEY_token  = "token"
+	REDIS_PATTERN_KEY_search = "search"
 )
 
 type Token_info struct {
@@ -47,6 +48,28 @@ func RetrieveToken(token string) (*Token_info, error) {
 		Id:       int64(id),
 		External: external,
 	}, nil
+}
+
+func AddSearch(path *string, results *string) error {
+	// Save in redis
+	err := DBs.Redis.Append(REDIS_PATTERN_KEY_search+*path, *results).Err()
+	return err
+}
+
+func RetrieveSearch(path *string) (string, error) {
+	// Check if the search exists on redis
+	results, err := DBs.Redis.Get(REDIS_PATTERN_KEY_search + *path).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return "", nil
+		} else {
+			return "", fmt.Errorf("search extraction failed")
+		}
+	}
+
+	// Return the results if they exists
+	// -- Convert in the caller, to avoid clutter here
+	return results, nil
 }
 
 func InitRedis() error {

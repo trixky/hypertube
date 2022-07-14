@@ -249,3 +249,32 @@ func FindMedias(ctx context.Context, arg FindMediasParams) ([]sqlc.Media, error)
 
 	return items, nil
 }
+
+func (params *FindMediasParams) ToString(locale string, separator string) string {
+	// Convert values to avoid empty strings
+	genres_str := []string{}
+	for _, genre := range params.Genres {
+		genres_str = append(genres_str, fmt.Sprint(genre))
+	}
+	genres := "no_genres"
+	if len(genres) == 0 {
+		genres = strings.Join(genres_str, ",")
+	}
+	query := "no_query"
+	if params.Query != "" {
+		query = params.Query
+	}
+
+	// Join each path args
+	args := []string{
+		locale,
+		fmt.Sprint(params.Offset),
+		query,
+		genres,
+		fmt.Sprint(params.Rating),
+		fmt.Sprint(params.Year),
+		params.SortColumn,
+		params.SortOrder,
+	}
+	return strings.Join(args, separator)
+}
