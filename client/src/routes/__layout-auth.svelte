@@ -4,7 +4,14 @@
 	import { waitLocale } from 'svelte-i18n';
 	import { i18n } from '$lib/i18n';
 
-	export const load: Load = async ({ params }) => {
+	export const load: Load = async ({ params, session }) => {
+		// Auth pages require to be logged out
+		if (session.user) {
+			return {
+				status: 302,
+				redirect: '/search'
+			};
+		}
 		await i18n(params);
 		await waitLocale();
 		return {};
@@ -13,10 +20,6 @@
 
 <script lang="ts">
 	import '../app.css';
-	import { browser } from '$app/env';
-	import { already_connected } from '$utils/redirect';
-
-	already_connected(browser);
 </script>
 
 <!-- ========================= HTML -->

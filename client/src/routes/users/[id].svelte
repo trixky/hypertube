@@ -5,7 +5,7 @@
 	import BlackBox from '$components/containers/black-box.svelte';
 	import Warning from '$components/inputs/warning.svelte';
 	import Eye from '$components/inputs/eye.svelte';
-	import * as sanitzer from '$utils/sanitizer';
+	import * as sanitizer from '$utils/sanitizer';
 	import ConfirmationButton from '$components/buttons/confirmation-button.svelte';
 	import * as cookies from '$utils/cookies';
 	import { uppercase_first_character } from '$utils/str';
@@ -248,28 +248,28 @@
 	// ----------------------------------------------------------------- sanitizing
 	function check_username(): boolean {
 		response_update_warning = '';
-		const warning = sanitzer.name(username, true);
+		const warning = sanitizer.name(username, true);
 		if (!warning.length) username_blur = true;
 		if (patch_attemps || username_blur) username_warning = warning;
 		return username_warning.length > 0;
 	}
 	function check_firstname(): boolean {
 		response_update_warning = '';
-		const warning = sanitzer.name(firstname, true);
+		const warning = sanitizer.name(firstname, true);
 		if (!warning.length) firstname_blur = true;
 		if (patch_attemps || firstname_blur) firstname_warning = warning;
 		return firstname_warning.length > 0;
 	}
 	function check_lastname(): boolean {
 		response_update_warning = '';
-		const warning = sanitzer.name(lastname, true);
+		const warning = sanitizer.name(lastname, true);
 		if (!warning.length) lastname_blur = true;
 		if (patch_attemps || lastname_blur) lastname_warning = warning;
 		return lastname_warning.length > 0;
 	}
 	function check_email(): boolean {
 		response_update_warning = '';
-		const warning = sanitzer.email(email, true);
+		const warning = sanitizer.email(email, true);
 		if (!warning.length) email_blur = true;
 		if (patch_attemps || email_blur) {
 			if (emails_already_in_use.includes(email)) email_warning = $_('auth.email_already_in_use');
@@ -290,37 +290,37 @@
 
 	function check_current_password(event: any = null): boolean {
 		response_update_warning = '';
-		const warning = sanitzer.password(current_password, true);
+		const warning = sanitizer.password(current_password, true);
 		if (!warning.length) current_password_blur = true;
 		if (event) current_password = event.target.value;
 		if (check_if_all_password_are_empty()) return false;
 
 		if (patch_attemps || current_password_blur)
-			current_password_warning = sanitzer.password(current_password, false);
+			current_password_warning = sanitizer.password(current_password, false);
 
 		return current_password_warning.length > 0;
 	}
 	function check_new_password(event: any = null): boolean {
 		response_update_warning = '';
-		const warning = sanitzer.password(new_password, true);
+		const warning = sanitizer.password(new_password, true);
 		if (!warning.length) new_password_blur = true;
 		if (event) new_password = event.target.value;
 		if (check_if_all_password_are_empty()) return false;
 
 		if (patch_attemps || new_password_blur)
-			new_password_warning = sanitzer.password(new_password, false);
+			new_password_warning = sanitizer.password(new_password, false);
 
 		return new_password_warning.length > 0;
 	}
 	function check_confirm_new_password(event: any = null): boolean {
 		response_update_warning = '';
-		const warning = sanitzer.confirm_password(new_password, confirm_new_password, true);
+		const warning = sanitizer.confirm_password(new_password, confirm_new_password, true);
 		if (!warning.length) confirm_new_password_blur = true;
 		if (event) confirm_new_password = event.target.value;
 		if (check_if_all_password_are_empty()) return false;
 
 		if (patch_attemps || confirm_new_password_blur)
-			confirm_new_password_warning = sanitzer.confirm_password(new_password, confirm_new_password);
+			confirm_new_password_warning = sanitizer.confirm_password(new_password, confirm_new_password);
 
 		return confirm_new_password_warning.length > 0;
 	}

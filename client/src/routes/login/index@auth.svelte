@@ -8,7 +8,7 @@
 	import Eye from '$components/inputs/eye.svelte';
 	import Warning from '$components/inputs/warning.svelte';
 	import * as cookies from '$utils/cookies';
-	import * as sanitzer from '$utils/sanitizer';
+	import * as sanitizer from '$utils/sanitizer';
 	import { uppercase_first_character } from '$utils/str';
 	import { encrypt_password } from '$utils/password';
 	import { page } from '$app/stores';
@@ -106,7 +106,7 @@
 	// ----------------------------------------------------------------- sanitizing
 	function check_email(): boolean {
 		response_warning = '';
-		if (login_attempts || email_blur) email_warning = sanitzer.email(email);
+		if (login_attempts || email_blur) email_warning = sanitizer.email(email);
 
 		return email_warning.length > 0;
 	}
@@ -114,7 +114,7 @@
 		response_warning = '';
 		if (event) password = event.target.value;
 
-		if (login_attempts || password_blur) password_warning = sanitzer.password(password);
+		if (login_attempts || password_blur) password_warning = sanitizer.password(password);
 
 		return password_warning.length > 0;
 	}

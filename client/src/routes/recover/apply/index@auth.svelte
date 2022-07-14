@@ -5,7 +5,7 @@
 	import ConfirmationButton from '$components/buttons/confirmation-button.svelte';
 	import Warning from '$components/inputs/warning.svelte';
 	import Eye from '$components/inputs/eye.svelte';
-	import * as sanitzer from '$utils/sanitizer';
+	import * as sanitizer from '$utils/sanitizer';
 	import { uppercase_first_character } from '$utils/str';
 	import { encrypt_password } from '$utils/password';
 	import { goto } from '$app/navigation';
@@ -97,7 +97,7 @@
 		if (event) new_password = event.target.value;
 
 		if (registration_attempts || new_password_blur)
-			new_password_warning = sanitzer.password(new_password);
+			new_password_warning = sanitizer.password(new_password);
 
 		return new_password_warning.length > 0;
 	}
@@ -105,7 +105,7 @@
 		response_warning = '';
 		if (event) confirm_new_password = event.target.value;
 
-		let warning = sanitzer.confirm_password(new_password, confirm_new_password);
+		let warning = sanitizer.confirm_password(new_password, confirm_new_password);
 		if (confirm_new_password.length > 0 && !warning.length) confirm_new_password_blur = true;
 
 		if (registration_attempts || confirm_new_password_blur) confirm_new_password_warning = warning;
