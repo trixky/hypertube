@@ -138,7 +138,7 @@ func UpdateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 		scrapped := false
 
 		// Update some informations if the torrent was not fully fetched originally
-		if !db_torrent.TorrentUrl.Valid {
+		if !db_torrent.TorrentUrl.Valid && !db_torrent.Magnet.Valid {
 			scrapper.ScrapeSingle(torrent)
 
 			databases.DBs.SqlcQueries.SetTorrentInformations(ctx, sqlc.SetTorrentInformationsParams{

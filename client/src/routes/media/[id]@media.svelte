@@ -41,6 +41,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
+	import { session } from '$app/stores';
 	import { _ } from 'svelte-i18n';
 	import quantize from 'quantize';
 	import { addUserTitle } from '$utils/media';
@@ -495,8 +496,8 @@
 					</div>
 				</form>
 				{#each cleanComments as comment (comment.id)}
-					<div class="comment" class:self={comment.user.id == $me_store.id} in:fly>
-						{#if comment.user.id == $me_store.id}
+					<div class="comment" class:self={comment.user.id == $session.user.id} in:fly>
+						{#if comment.user.id == $session.user.id}
 							<div class="bordered" />
 						{/if}
 						<div class="comment-header">
