@@ -1,3 +1,4 @@
+import { browser } from '$app/env';
 import { writable } from 'svelte/store';
 
 export type Genre = {
@@ -14,12 +15,18 @@ function genresStore() {
 		set,
 		subscribe,
 		update,
-		async load() {
+		async load(
+			sender: (info: RequestInfo, init?: RequestInit | undefined) => Promise<Response> = fetch
+		) {
 			loading.set(true);
-
 			set([]);
-			const res = await fetch(`http://localhost:7072/v1/media/genres`, {
+
+			const url = browser
+				? `http://localhost:7072/v1/media/genres`
+				: `http://api-media:7072/v1/media/genres`;
+			const res = await sender(url, {
 				method: 'GET',
+				credentials: 'include',
 				headers: { accept: 'application/json' }
 			});
 			if (res.ok) {

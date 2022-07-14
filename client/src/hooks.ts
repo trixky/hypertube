@@ -1,12 +1,15 @@
-import { localeFromCookie } from '$lib/i18n';
 import type { Handle } from '@sveltejs/kit';
+import { localeFromCookie } from '$lib/i18n';
+import { extract_cookie, labels } from '$utils/cookies';
 
 export const handle: Handle = ({ event, resolve }) => {
-	const cookieHeader = event.request.headers.get('cookie');
-	if (cookieHeader) {
-		event.params.locale = localeFromCookie(cookieHeader!);
+	const cookies = event.request.headers.get('cookie');
+	if (cookies) {
+		event.params.locale = localeFromCookie(cookies!);
+		event.params.token = extract_cookie(cookies, labels.token) ?? '';
 	} else {
 		event.params.locale = 'en';
+		event.params.token = '';
 	}
 
 	return resolve(event);

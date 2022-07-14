@@ -37,7 +37,10 @@
 		"watch": "Regarder",
 		"comments": "Commentaires",
 		"no_torrents": "Pas encore de Torrents pour ce film !",
-		"no_comments": "Pas encore de commentaires pour ce film, soyez le premier !"
+		"no_comments": "Pas encore de commentaires pour ce film, soyez le premier !",
+		"comment_placeholder": "Poster un nouveau commentaire...",
+		"post_comment": "Poster",
+		"comment_fail": "Echec de la creation du commentaire, reesayez plus tard"
 	},
 	"auth": {
 		"email": "Email",

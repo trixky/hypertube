@@ -17,6 +17,7 @@
 		loading = true;
 		const response = await fetch(`http://localhost:7072/v1/media/${mediaId}/refresh`, {
 			method: 'GET',
+			credentials: 'include',
 			headers: { accept: 'application/json' }
 		});
 		if (response.ok) {

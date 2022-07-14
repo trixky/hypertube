@@ -13,36 +13,44 @@ export type Result = {
 	rating: number | null;
 };
 
+export type MediaTorrent = {
+	id: number;
+	name: string;
+	size?: string | null;
+	leech: number;
+	seed: number;
+	quality?: string;
+	hover: boolean;
+};
+
+export type MediaStaff = {
+	id: number;
+	name: string;
+	thumbnail?: string | null;
+	role?: string | null;
+};
+
+export type MediaActor = {
+	id: number;
+	name: string;
+	thumbnail?: string | null;
+	character?: string | null;
+};
+
+export type MediaComment = {
+	id: number;
+	user: {
+		id: number;
+		name: string;
+	};
+	date: string;
+	content: string;
+};
+
 export type MediaProps = {
 	media: Result;
-	torrents: {
-		id: number;
-		name: string;
-		size?: string | null;
-		leech: number;
-		seed: number;
-		quality?: string;
-		hover: boolean;
-	}[];
-	staffs: {
-		id: number;
-		name: string;
-		thumbnail?: string | null;
-		role?: string | null;
-	}[];
-	actors: {
-		id: number;
-		name: string;
-		thumbnail?: string | null;
-		character?: string | null;
-	}[];
-	comments: {
-		id: number | string;
-		user: {
-			id: number | string;
-			name: string;
-		};
-		date: string;
-		content: string;
-	}[];
+	torrents: MediaTorrent[];
+	staffs: MediaStaff[];
+	actors: MediaActor[];
+	comments: MediaComment[];
 };
