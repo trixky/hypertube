@@ -13,6 +13,7 @@
 
 	let sortColumns: string[] = ['year', 'name', 'duration', 'id'];
 
+	let loadMoreError = false;
 	$: loading = $searching || $loadingMore;
 
 	// * Infinite loader
@@ -52,27 +53,39 @@
 
 		clearTimeout(searchTimeout);
 		searchTimeout = setTimeout(async () => {
+			loadMoreError = false;
 			search.execute();
 		}, 300);
 	}
 
 	async function loadMore() {
-		if (loading) {
+		if (loading || loadMoreError) {
 			return;
 		}
 
-		await search.loadMore();
-		onScroll();
+		try {
+			await search.loadMore();
+			onScroll();
+		} catch (error) {
+			console.log('loadMore', error);
+			loadMoreError = true;
+		}
 	}
 
 	function toggleSort() {
+		loadMoreError = false;
 		search.toggleSort();
 		search.execute();
 	}
 
 	function onScroll() {
 		if (browser) {
-			if ($loadingMore || $results.length == 0 || $totalResults == $results.length) {
+			if (
+				$loadingMore ||
+				$results.length == 0 ||
+				$totalResults == $results.length ||
+				loadMoreError
+			) {
 				return;
 			}
 			const element = document.documentElement;
