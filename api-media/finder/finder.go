@@ -9,7 +9,7 @@ import (
 	"github.com/trixky/hypertube/api-media/sqlc"
 )
 
-const PerPage int32 = 40
+const PerPage int32 = 50
 
 // ? The query result handle code is the same as the sqlc generated code
 // ? Only the queries are different and are updated dynamically to handle different ORDER BY and genres IN condition

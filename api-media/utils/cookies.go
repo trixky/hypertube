@@ -38,7 +38,6 @@ func GetLocale(ctx context.Context) Locale {
 	if len(cookie_headers) == 0 {
 		return Locale{Lang: "en"}
 	}
-	log.Println(cookies)
 
 	for _, raw_cookie := range cookies {
 		cookie := strings.TrimSpace(raw_cookie)
