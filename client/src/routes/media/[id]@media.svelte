@@ -4,9 +4,7 @@
 	import type { MediaComment, MediaProps } from '../../../src/types/Media';
 
 	export const load: Load = async ({ params, fetch, session }) => {
-		const url = browser
-			? `http://localhost:7072/v1/media/${params.id}/get`
-			: `http://api-media:7072/v1/media/${params.id}/get`;
+		const url = `http://localhost:7072/v1/media/${params.id}/get`;
 		const response = await fetch(url, {
 			method: 'GET',
 			credentials: 'include',
@@ -54,6 +52,7 @@
 	import Background from '$components/animations/Background.svelte';
 	import RefreshPeers, { type RefreshResult } from './RefreshPeers.svelte';
 	import Warning from '$components/inputs/warning.svelte';
+	import { imageUrl } from '$utils/image';
 
 	/// @ts-expect-error media is given as a prop
 	export let props: MediaProps;
@@ -73,7 +72,7 @@
 		}
 	}
 
-	const cover = media.thumbnail ? `http://localhost:7260${media.thumbnail}` : '/no_cover.png';
+	const cover = media.thumbnail ? imageUrl(media.thumbnail) : '/no_cover.png';
 
 	const durationStr = (() => {
 		if (!media.duration) {
@@ -100,13 +99,13 @@
 	const cleanStaffs = staffs.map((staff) => ({
 		id: staff.id,
 		name: staff.name,
-		thumbnail: `http://localhost:7260${staff.thumbnail}`,
+		thumbnail: imageUrl(staff.thumbnail!),
 		roles: [staff.role!]
 	}));
 	const cleanActors = actors.map((actor) => ({
 		id: actor.id,
 		name: actor.name,
-		thumbnail: `http://localhost:7260${actor.thumbnail}`,
+		thumbnail: imageUrl(actor.thumbnail!),
 		characters: [actor.character!]
 	}));
 
@@ -260,7 +259,7 @@
 				? media.thumbnail
 				: undefined;
 			if (useBackground) {
-				useBackground = `http://localhost:7260${useBackground}`;
+				useBackground = imageUrl(useBackground);
 				const image = new Image();
 				image.setAttribute('crossOrigin', 'anonymous');
 				image.src = useBackground;
@@ -272,7 +271,7 @@
 			// Load the image used for the gradient
 			let useImage = media.thumbnail ? media.thumbnail : undefined;
 			if (useImage && useImage != '') {
-				useImage = `http://localhost:7260${useImage}`;
+				useImage = imageUrl(useImage);
 				const image = new Image();
 				image.setAttribute('crossOrigin', 'anonymous');
 				image.src = useImage;

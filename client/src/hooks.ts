@@ -1,4 +1,4 @@
-import type { GetSession, Handle } from '@sveltejs/kit';
+import type { ExternalFetch, GetSession, Handle } from '@sveltejs/kit';
 import { localeFromCookie } from '$lib/i18n';
 import { extract_cookie, get_user, labels } from '$utils/cookies';
 
@@ -26,4 +26,17 @@ export const getSession: GetSession = (event) => {
 		session.user = event.locals.user;
 	}
 	return session;
+};
+
+export const externalFetch: ExternalFetch = (request) => {
+	// TODO replace by env value
+	// Replace SSR requests to the Media API with the "local" URL
+	if (request.url.startsWith('http://localhost:7072/')) {
+		request = new Request(
+			request.url.replace('http://localhost:7072/', 'http://api-media:7072/'),
+			request
+		);
+	}
+
+	return fetch(request);
 };

@@ -113,9 +113,7 @@ export function searchStore() {
 			results.setResults([]);
 
 			// Send request
-			const url = browser
-				? `http://localhost:7072/v1/media/search`
-				: `http://api-media:7072/v1/media/search`;
+			const url = `http://localhost:7072/v1/media/search`;
 			const res = await sender(buildURL(url).toString(), {
 				method: 'GET',
 				credentials: 'include',

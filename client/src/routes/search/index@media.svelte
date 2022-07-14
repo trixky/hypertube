@@ -10,6 +10,7 @@
 	import SortAsc from '$components/icons/SortAsc.svelte';
 	import SortDesc from '$components/icons/SortDesc.svelte';
 	import LazyLoad from '$components/lazy/LazyLoad.svelte';
+	import { imageUrl } from '$utils/image';
 
 	let sortColumns: string[] = ['year', 'name', 'duration', 'id'];
 
@@ -195,9 +196,7 @@
 	{:else}
 		<div class="result-wrapper p-4">
 			{#each $results as result, index (result.id)}
-				{@const cover = result.thumbnail
-					? `http://localhost:7260${result.thumbnail}`
-					: '/no_cover.png'}
+				{@const cover = result.thumbnail ? imageUrl(result.thumbnail) : '/no_cover.png'}
 				<LazyLoad
 					tag="a"
 					href={`/media/${result.id}`}
