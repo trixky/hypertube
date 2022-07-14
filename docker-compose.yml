@@ -63,9 +63,11 @@ services:
     depends_on:
       - postgres
       - api-scrapper
+      - redis
     links:
       - postgres
       - api-scrapper
+      - redis
     ports:
       - "${API_SEARCH_GRPC_PORT}:${API_SEARCH_GRPC_PORT}"
       - "${API_SEARCH_GRPC_GATEWAY_PORT}:${API_SEARCH_GRPC_GATEWAY_PORT}"

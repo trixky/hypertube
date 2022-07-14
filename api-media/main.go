@@ -31,6 +31,12 @@ func main() {
 		log.Fatalf("failed to connect to postgres: %v", err)
 	}
 
+	// ------------- redis
+	log.Println("start connection to redis on default address")
+	if err := databases.InitRedis(); err != nil {
+		log.Fatalf("failed to connect to redis: %v", err)
+	}
+
 	// ------------- grpc
 	grpc_addr := host + ":" + strconv.Itoa(environment.E.GrpcPort)
 

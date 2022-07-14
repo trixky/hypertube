@@ -8,8 +8,8 @@ import (
 	"github.com/trixky/hypertube/api-media/databases"
 	pb "github.com/trixky/hypertube/api-media/proto"
 	"github.com/trixky/hypertube/api-media/sqlc"
+	"github.com/trixky/hypertube/api-media/utils"
 	ut "github.com/trixky/hypertube/api-media/utils"
-	// grpcMetadata "google.golang.org/grpc/metadata"
 )
 
 var StaffOrder []string = []string{
@@ -42,11 +42,9 @@ func indexOf(slice []string, value string) int {
 }
 
 func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetResponse, error) {
-	// md, ok := grpcMetadata.FromIncomingContext(ctx)
-	// if !ok {
-	// 	log.Println("missing args")
-	// 	return nil, nil
-	// }
+	if err := utils.RequireLogin(ctx); err != nil {
+		return nil, err
+	}
 
 	user_locale := ut.GetLocale(ctx)
 

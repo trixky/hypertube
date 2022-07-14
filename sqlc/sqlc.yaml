@@ -34,3 +34,4 @@ packages:
     queries:
       - "sql/medias/query.sql"
       - "sql/comments/query.sql"
+      - "sql/users/query.sql"

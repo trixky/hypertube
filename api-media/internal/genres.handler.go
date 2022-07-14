@@ -8,9 +8,14 @@ import (
 
 	"github.com/trixky/hypertube/api-media/databases"
 	pb "github.com/trixky/hypertube/api-media/proto"
+	"github.com/trixky/hypertube/api-media/utils"
 )
 
 func (s *MediaServer) Genres(ctx context.Context, in *pb.GenresRequest) (*pb.GenresResponse, error) {
+	if err := utils.RequireLogin(ctx); err != nil {
+		return nil, err
+	}
+
 	fmt.Println("List Genres", in)
 
 	genres, err := databases.DBs.SqlcQueries.GetGenres(ctx)
