@@ -4,12 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"strings"
 
 	"github.com/trixky/hypertube/api-media/databases"
 	"github.com/trixky/hypertube/api-media/finder"
 	pb "github.com/trixky/hypertube/api-media/proto"
 	"github.com/trixky/hypertube/api-media/utils"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.SearchResponse, error) {
@@ -55,6 +57,21 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 		order := strings.ToUpper(*in.SortOrder)
 		if order == "ASC" || order == "DESC" {
 			params.SortOrder = order
+		}
+	}
+
+	// Check cache
+	path := params.ToString(user_locale.Lang, databases.REDIS_SEPARATOR)
+	cache_results, err := databases.RetrieveSearch(&path)
+	if err != nil {
+		log.Println("error in redis cache", err)
+	} else if cache_results != "" {
+		response := pb.SearchResponse{}
+		err = protojson.Unmarshal([]byte(cache_results), &response)
+		if err != nil {
+			log.Println("error in redis cache unmarshal", err)
+		} else {
+			return &response, nil
 		}
 	}
 
@@ -118,10 +135,19 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 		pb_medias = append(pb_medias, &pb_media)
 	}
 
-	return &pb.SearchResponse{
+	response := pb.SearchResponse{
 		Page:         uint32(page),
 		Results:      uint32(len(pb_medias)),
 		TotalResults: uint32(medias_count),
 		Medias:       pb_medias,
-	}, nil
+	}
+
+	// Save in redis
+	search := protojson.Format(response.ProtoReflect().Interface())
+	err = databases.AddSearch(&path, &search)
+	if err != nil {
+		log.Println("failed to save to redis cache", err)
+	}
+
+	return &response, nil
 }
