@@ -4,7 +4,7 @@
 	import { waitLocale } from 'svelte-i18n';
 	import { i18n } from '$lib/i18n';
 
-	export const load: Load = async ({ params, session }) => {
+	export const load: Load = async ({ session }) => {
 		// All other pages require to be logged in
 		if (!session.user) {
 			return {
@@ -12,7 +12,7 @@
 				redirect: '/login'
 			};
 		}
-		await i18n(params);
+		await i18n(session);
 		await waitLocale();
 		return {};
 	};
