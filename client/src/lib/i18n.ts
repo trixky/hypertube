@@ -1,9 +1,10 @@
 // import { browser } from '$app/env';
+import { get } from 'svelte/store';
+import { browser } from '$app/env';
 import { init, getLocaleFromNavigator, addMessages, locale } from 'svelte-i18n';
 import { add_a_cookie, del_a_cookie, extract_cookie } from '$utils/cookies';
 import en from '../locales/en.json';
 import fr from '../locales/fr.json';
-import { browser } from '$app/env';
 
 export function localeFromCookie(cookies: string) {
 	const value = extract_cookie(cookies, 'locale');
@@ -13,7 +14,7 @@ export function localeFromCookie(cookies: string) {
 	return 'en';
 }
 
-export function chooseLocale(params?: Record<string, string>): string {
+export function chooseLocale(session: App.Session): string {
 	if (browser) {
 		// Saved locale
 		const cookieLocale = localeFromCookie(document.cookie);
@@ -28,10 +29,10 @@ export function chooseLocale(params?: Record<string, string>): string {
 			return locale;
 		}
 		// Default locale
-		return params?.locale || 'en';
+		return session?.locale || 'en';
 	}
-	// Locale from params (extracted from cookie in hooks)
-	return params?.locale || 'en';
+	// Locale from session (extracted from cookie in hooks)
+	return session?.locale || 'en';
 }
 
 // * Cookies
@@ -51,8 +52,8 @@ if (browser) {
 	});
 }
 
-export async function i18n(params?: Record<string, string>) {
-	const locale = chooseLocale(params);
+export async function i18n(session: App.Session) {
+	const locale = chooseLocale(session);
 
 	addMessages('en', en);
 	addMessages('fr', fr);

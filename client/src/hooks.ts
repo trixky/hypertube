@@ -5,11 +5,11 @@ import { extract_cookie, get_user, labels } from '$utils/cookies';
 export const handle: Handle = ({ event, resolve }) => {
 	const cookies = event.request.headers.get('cookie');
 	if (cookies) {
-		event.params.locale = localeFromCookie(cookies!);
+		event.locals.locale = localeFromCookie(cookies!);
 		event.locals.token = extract_cookie(cookies, labels.token);
 		event.locals.user = get_user(cookies);
 	} else {
-		event.params.locale = 'en';
+		event.locals.locale = 'en';
 		event.locals.token = undefined;
 		event.locals.user = undefined;
 	}
@@ -20,6 +20,7 @@ export const handle: Handle = ({ event, resolve }) => {
 export const getSession: GetSession = (event) => {
 	return event.locals.user
 		? {
+				locale: event.locals.locale,
 				token: event.locals.token,
 				user: event.locals.user
 		  }

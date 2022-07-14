@@ -13,11 +13,13 @@ interface User {
 // for information about these interfaces
 declare namespace App {
 	interface Locals {
+		locale: string;
 		token?: string;
 		user?: User;
 	}
 	// interface Platform {}
 	interface Session {
+		locale?: string;
 		token?: string;
 		user?: User;
 	}

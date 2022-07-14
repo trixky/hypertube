@@ -3,7 +3,7 @@
 	import type { Load } from '@sveltejs/kit';
 	import type { MediaComment, MediaProps } from '../../../src/types/Media';
 
-	export const load: Load = async ({ params, fetch }) => {
+	export const load: Load = async ({ params, fetch, session }) => {
 		const url = browser
 			? `http://localhost:7072/v1/media/${params.id}/get`
 			: `http://api-media:7072/v1/media/${params.id}/get`;
@@ -12,7 +12,7 @@
 			credentials: 'include',
 			headers: {
 				accept: 'application/json',
-				cookie: !browser ? `token=${params.token}; locale=${params.locale}` : ''
+				cookie: !browser ? `token=${session.token}; locale=${session.locale}` : ''
 			}
 		});
 
@@ -26,7 +26,7 @@
 
 		if (forbidden) {
 			return {
-				status: 300,
+				status: 302,
 				redirect: '/login'
 			};
 		}
