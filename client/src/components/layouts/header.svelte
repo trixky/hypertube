@@ -1,22 +1,24 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
 	import Logo from './logo.svelte';
-	import { goto } from '$app/navigation';
 	import { browser } from '$app/env';
 	import { me_store } from '$stores/me';
-	import { disconnect } from '$utils/redirect';
 	import * as cookies from '$utils/cookies';
 	import { locale, _ } from 'svelte-i18n';
 	import Logout from '$components/icons/Logout.svelte';
-	import { page } from '$app/stores';
+	import { page, session } from '$app/stores';
 	import { scale } from 'svelte/transition';
+	import { goto } from '$app/navigation';
 
-	me_store.refresh_from_cookies();
+	$: user = $session.user!;
 
-	let connected = false;
-	if (browser && cookies.get_a_cookie('token')) {
-		connected = true;
-	}
+	const logout = () => {
+		$session.token = undefined;
+		$session.user = undefined;
+		cookies.del_a_cookie(cookies.labels.token);
+		cookies.del_a_cookie(cookies.labels.user_info);
+		goto('/login');
+	};
 </script>
 
 <!-- ========================= HTML -->
@@ -49,23 +51,21 @@
 			</div>
 
 			<div>
-				{#if $me_store.username.length > 0}
-					<a href={`/users/${$me_store.id}`}>
-						<p class="text-white inline">{$me_store.username}</p>
-						<img
-							class="invert inline-block -translate-y-[1px] translate-x-1"
-							src="/user.png"
-							width="16px"
-							height="16px"
-							alt={$_('auth.my_profile')}
-						/>
-					</a>
-				{/if}
+				<a href={`/users/${user.id}`}>
+					<p class="text-white inline">{user.username}</p>
+					<img
+						class="invert inline-block -translate-y-[1px] translate-x-1"
+						src="/user.png"
+						width="16px"
+						height="16px"
+						alt={$_('auth.my_profile')}
+					/>
+				</a>
 			</div>
 
 			<button
 				class="flex items-center text-red-500 border border-red-100 py-1 px-2 mt-2 rounded-md hover:bg-red-700 transition-all hover:shadow-md shadow-red-900 hover:text-white"
-				on:click={disconnect}
+				on:click|preventDefault={logout}
 			>
 				<Logout /> <span class="hover:text-white transition-all">{$_('logout')}</span>
 			</button>

@@ -18,11 +18,12 @@ export const handle: Handle = ({ event, resolve }) => {
 };
 
 export const getSession: GetSession = (event) => {
-	return event.locals.user
-		? {
-				locale: event.locals.locale,
-				token: event.locals.token,
-				user: event.locals.user
-		  }
-		: {};
+	const session: App.Session = {
+		locale: event.locals.locale
+	};
+	if (event.locals.user) {
+		session.token = event.locals.token;
+		session.user = event.locals.user;
+	}
+	return session;
 };
