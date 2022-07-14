@@ -81,14 +81,26 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 		return nil, err
 	}
 	if medias_count == 0 {
-		return &pb.SearchResponse{}, nil
+		response := pb.SearchResponse{}
+		search := protojson.Format(response.ProtoReflect().Interface())
+		err = databases.AddSearch(&path, &search)
+		if err != nil {
+			log.Println("failed to save to redis cache", err)
+		}
+		return &response, nil
 	}
 
 	// Find all Medias
 	medias, err := finder.FindMedias(ctx, params)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return &pb.SearchResponse{}, nil
+			response := pb.SearchResponse{}
+			search := protojson.Format(response.ProtoReflect().Interface())
+			err = databases.AddSearch(&path, &search)
+			if err != nil {
+				log.Println("failed to save to redis cache", err)
+			}
+			return &response, nil
 		}
 		return nil, err
 	}
@@ -99,15 +111,12 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 		rating := float32(media.Rating.Float64)
 		thumbnail := media.Thumbnail.String
 		pb_media := pb.Media{
-			Id:          uint32(media.ID),
-			Type:        pb.MediaCategory_CATEGORY_MOVIE,
-			Description: media.Description.String,
-			Year:        uint32(media.Year.Int32),
-			Duration:    &media.Duration.Int32,
-			Names:       make([]*pb.MediaName, 0),
-			Genres:      make([]string, 0),
-			Thumbnail:   &thumbnail,
-			Rating:      &rating,
+			Id:        uint32(media.ID),
+			Type:      pb.MediaCategory_CATEGORY_MOVIE,
+			Year:      uint32(media.Year.Int32),
+			Names:     make([]*pb.MediaName, 0),
+			Thumbnail: &thumbnail,
+			Rating:    &rating,
 		}
 
 		// Load relations
@@ -122,13 +131,6 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 					Title: name.Name,
 				})
 			}
-		}
-		genres, err := databases.DBs.SqlcQueries.GetMediaGenres(ctx, int32(media.ID))
-		if err != nil {
-			return nil, err
-		}
-		for _, genre := range genres {
-			pb_media.Genres = append(pb_media.Genres, genre.Name)
 		}
 
 		// Add everything to the response
