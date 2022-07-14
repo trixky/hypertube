@@ -10,16 +10,12 @@ import (
 	"github.com/trixky/hypertube/api-media/finder"
 	pb "github.com/trixky/hypertube/api-media/proto"
 	"github.com/trixky/hypertube/api-media/utils"
-	// grpcMetadata "google.golang.org/grpc/metadata"
 )
 
 func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.SearchResponse, error) {
-	// md, ok := grpcMetadata.FromIncomingContext(ctx)
-
-	// if !ok {
-	// 	log.Println("missing args")
-	// 	return nil, nil
-	// }
+	if err := utils.RequireLogin(ctx); err != nil {
+		return nil, err
+	}
 
 	user_locale := utils.GetLocale(ctx)
 

@@ -9,11 +9,16 @@ import (
 	"github.com/trixky/hypertube/api-media/databases"
 	"github.com/trixky/hypertube/api-media/external"
 	pb "github.com/trixky/hypertube/api-media/proto"
+	"github.com/trixky/hypertube/api-media/utils"
 	ut "github.com/trixky/hypertube/api-media/utils"
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
 
 func (s *MediaServer) Refresh(in *pb.RefreshMediaRequest, out pb.MediaService_RefreshServer) error {
+	if err := utils.RequireLogin(out.Context()); err != nil {
+		return err
+	}
+
 	ctx := out.Context()
 	md, ok := grpcMetadata.FromIncomingContext(ctx)
 	if !ok {

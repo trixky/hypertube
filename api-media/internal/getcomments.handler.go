@@ -9,10 +9,15 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/trixky/hypertube/api-media/databases"
 	pb "github.com/trixky/hypertube/api-media/proto"
+	"github.com/trixky/hypertube/api-media/utils"
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
 
 func (s *MediaServer) GetComments(ctx context.Context, in *pb.GetCommentsRequest) (*pb.GetCommentsResponse, error) {
+	if err := utils.RequireLogin(ctx); err != nil {
+		return nil, err
+	}
+
 	md, ok := grpcMetadata.FromIncomingContext(ctx)
 	if !ok {
 		log.Println("missing args")

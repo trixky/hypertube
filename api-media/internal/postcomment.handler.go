@@ -7,9 +7,14 @@ import (
 	"github.com/trixky/hypertube/api-media/databases"
 	pb "github.com/trixky/hypertube/api-media/proto"
 	"github.com/trixky/hypertube/api-media/sqlc"
+	"github.com/trixky/hypertube/api-media/utils"
 )
 
 func (s *MediaServer) PostComment(ctx context.Context, in *pb.PostCommentRequest) (*pb.PostCommentResponse, error) {
+	if err := utils.RequireLogin(ctx); err != nil {
+		return nil, err
+	}
+
 	// Check if media exists
 	media, err := databases.DBs.SqlcQueries.GetMediaByID(ctx, int64(in.MediaId))
 	if err != nil {
