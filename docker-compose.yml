@@ -90,19 +90,17 @@ services:
     # access to the redis CLI:
     # $> docker exec -it <container> /bin/sh -c 'redis-cli -h redis'
 
-  pgadmin:
-    image: dpage/pgadmin4
-    env_file:
-      - ./pg-admin/.env
+  adminer:
+    image: adminer:4.8.1-standalone
+    # env_file:
+    #   - ./pg-admin/.env
     depends_on:
       - postgres
     ports:
-      - "5050:80"
+      - 5050:8080
     restart: unless-stopped
     links:
       - postgres
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin
 
   tmdb-proxy:
     image: nginx:1.23-alpine
