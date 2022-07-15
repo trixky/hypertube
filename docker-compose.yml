@@ -105,20 +105,6 @@ services:
     # access to the redis CLI:
     # $> docker exec -it <container> /bin/sh -c 'redis-cli -h redis'
 
-    # pgadmin:
-    #   image: dpage/pgadmin4
-    #   env_file:
-    #     - ./pg-admin/.env
-    #   depends_on:
-    #     - postgres
-    #   ports:
-    #     - "5050:80"
-    #   restart: unless-stopped
-    #   links:
-    #     - postgres
-    #   volumes:
-    #     - pgadmin-data:/var/lib/pgadmin
-
   adminer:
     image: adminer:4.8.1-standalone
     depends_on:
@@ -160,8 +146,6 @@ volumes:
   postgres-data:
     driver: local
   redis-data:
-    driver: local
-  pgadmin-data:
     driver: local
   nginx-proxy-data:
     driver: local
