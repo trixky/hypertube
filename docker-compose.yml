@@ -41,6 +41,19 @@ services:
 
     # access to the server:
     # $> docker-compose exec server sh
+
+  api-streaming:
+    build: ./api-streaming
+    env_file:
+      - ./api-streaming/.env
+    volumes:
+      - ./api-streaming:/usr/src/app
+    # depends_on:
+      # - ...
+    links:
+      - client
+    ports:
+      - "${API_STREAMING_PORT}:${API_STREAMING_PORT}"
   
   postgres:
     image: postgres
@@ -64,19 +77,29 @@ services:
     # access to the redis CLI:
     # $> docker exec -it <container> /bin/sh -c 'redis-cli -h redis'
 
-  pgadmin:
-    image: dpage/pgadmin4
-    env_file:
-      - ./pg-admin/.env
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   env_file:
+  #     - ./pg-admin/.env
+  #   depends_on:
+  #     - postgres
+  #   ports:
+  #     - "5050:80"
+  #   restart: unless-stopped
+  #   links:
+  #     - postgres
+  #   volumes:
+  #     - pgadmin-data:/var/lib/pgadmin
+
+  adminer:
+    image: adminer
     depends_on:
       - postgres
     ports:
-      - "5050:80"
+      - 5050:8080
     restart: unless-stopped
     links:
       - postgres
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin
   
   client:
     build: ./client
