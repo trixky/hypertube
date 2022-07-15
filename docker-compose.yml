@@ -72,6 +72,19 @@ services:
       - "${API_SEARCH_GRPC_PORT}:${API_SEARCH_GRPC_PORT}"
       - "${API_SEARCH_GRPC_GATEWAY_PORT}:${API_SEARCH_GRPC_GATEWAY_PORT}"
 
+  api-streaming:
+    build: ./api-streaming
+    env_file:
+      - ./api-streaming/.env
+    volumes:
+      - ./api-streaming:/usr/src/app
+      # depends_on:
+      # - ...
+    links:
+      - client
+    ports:
+      - "${API_STREAMING_PORT}:${API_STREAMING_PORT}"
+
   postgres:
     image: postgres
     restart: always
@@ -92,10 +105,22 @@ services:
     # access to the redis CLI:
     # $> docker exec -it <container> /bin/sh -c 'redis-cli -h redis'
 
+    # pgadmin:
+    #   image: dpage/pgadmin4
+    #   env_file:
+    #     - ./pg-admin/.env
+    #   depends_on:
+    #     - postgres
+    #   ports:
+    #     - "5050:80"
+    #   restart: unless-stopped
+    #   links:
+    #     - postgres
+    #   volumes:
+    #     - pgadmin-data:/var/lib/pgadmin
+
   adminer:
     image: adminer:4.8.1-standalone
-    # env_file:
-    #   - ./pg-admin/.env
     depends_on:
       - postgres
     ports:
