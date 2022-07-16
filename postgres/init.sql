@@ -104,7 +104,7 @@ CREATE TABLE torrents (
     id BIGSERIAL PRIMARY KEY,
     full_url TEXT NOT NULL,
     media_id INTEGER NULL,
-    name VARCHAR (250) NOT NULL,
+    name VARCHAR (500) NOT NULL,
     type VARCHAR (50) NOT NULL,
     seed INTEGER NULL,
     leech INTEGER NULL,
@@ -113,7 +113,9 @@ CREATE TABLE torrents (
     description_html TEXT NULL,
     torrent_url TEXT NULL,
     magnet TEXT NULL,
-    last_update TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    last_update TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    file_path VARCHAR (500) NULL,
+    downloaded BOOLEAN DEFAULT false
 );
 CREATE UNIQUE INDEX unique_torrent_url ON torrents(full_url);
 ALTER TABLE ONLY torrents
