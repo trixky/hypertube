@@ -8,6 +8,7 @@ import { sleep } from "../utils/time";
 const cache_path = "./.cache";
 const cache_path_movies = cache_path + "/movies/";
 const extension_mp4 = ".mp4";
+const extension_webm = ".webm";
 const extension_mkv = ".mkv";
 
 interface DBTorrent {
@@ -48,7 +49,7 @@ function is_mkv(path: string): boolean {
 }
 
 function generate_full_path(file_path: string, block_extention_adding: boolean): string {
-	return cache_path_movies + file_path + (is_mkv(file_path) && !block_extention_adding ? extension_mp4 : "");
+	return cache_path_movies + file_path + (is_mkv(file_path) && !block_extention_adding ? extension_webm : "");
 }
 
 function sanitize_torrent_id(torrent_id: string): number {
@@ -106,17 +107,28 @@ function start_download_mp4(selected_file: SelectedFile) {
 
 function start_download_mkv(torrent_id: number, selected_file: SelectedFile) {
 	let local_file_path = generate_full_path(selected_file.path, true);
-	let local_file_path_mp4 = local_file_path + extension_mp4;
+	let local_file_path_mp4 = local_file_path + extension_webm;
 
 	const stream = selected_file.createReadStream();
 
 	ffmpeg()
 		.input(stream)
 		.inputFormat("matroska")
-		.audioCodec("aac")
-		.videoCodec("libx264")
+		// * mp4
+		// .audioCodec("aac")
+		// .videoCodec("libx264")
+		// .outputOptions("-movflags frag_keyframe+empty_moov")
+		// .outputFormat("mp4")
+		// * webm
+		.audioCodec("libvorbis")
+		.videoCodec("libvpx-vp9")
+		.videoBitrate(20)
+		.outputOptions("-vf scale=-1:101")
+		.outputOptions("-preset veryfast")
+		.outputOptions("-crf 50")
 		.outputOptions("-movflags frag_keyframe+empty_moov")
-		.outputFormat("mp4")
+		.outputFormat("webm")
+		// *
 		.on("ffmpeg: start", () => {
 			console.log("start");
 		})
@@ -174,7 +186,7 @@ export async function download(torrent_id: string): Promise<string | null> {
 				return null;
 			}
 
-			resolve(await wait_file_path(sanitized_torrent_id));
+			resolve(generate_full_path(await wait_file_path(sanitized_torrent_id), false));
 			return;
 		}
 		local_torrents.set(sanitized_torrent_id, <LocalTorrent>{
@@ -238,6 +250,7 @@ export async function download(torrent_id: string): Promise<string | null> {
 		let movie_file: SelectedFile;
 		try {
 			movie_file = await get_movie_file_from_engine(engine);
+			resolve(generate_full_path(movie_file.path, false));
 		} catch {
 			engine.destroy(() => {});
 			reject(new Error("no movie finded in the torrent"));
