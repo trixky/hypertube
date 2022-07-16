@@ -1,8 +1,7 @@
 import TailFile from "@logdna/tail-file";
 import express from "express";
-import { PassThrough } from "stream";
-import { download } from "./movie/downloader";
 import fs from "fs";
+import { download } from "./movie/downloader";
 import { connect } from "./postgres/db";
 
 const app = express();
@@ -45,33 +44,28 @@ async function main() {
 		}
 
 		let file_path: string | null = null;
+		try {
+			console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 0.1");
+			file_path = await download(`${torrent_id}`);
+			console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 0.2");
+		} catch {
+			res.status(500).send();
+			return;
+		}
 
-		let wasTutu = false;
-		if (tutu === false) {
-			tutu = true;
-			wasTutu = true;
-			try {
-				file_path = await download(torrent_id);
-			} catch {
-				res.status(500).send();
-				return;
-			}
+		setTimeout(() => {
 			if (file_path == null) {
 				res.status(500).send();
 				return;
 			}
-		}
 
-		setTimeout(() => {
 			// const full_file_path = generate_full_paths(file_path)[1]
-			// const full_file_path = "./cache/movies/Green.Ghost.and.the.Masters.of.the.Stone.2022.720p.WEBRip.800MB.x264-GalaxyRG[TGx]/Green.Ghost.and.the.Masters.of.the.Stone.2022.720p.WEBRip.800MB.x264-GalaxyRG.mkv.mp4";
-			const full_file_path =
-				"./cache/movies/Green.Ghost.and.the.Masters.of.the.Stone.2022.720p.WEBRip.800MB.x264-GalaxyRG[TGx]/Green.Ghost.and.the.Masters.of.the.Stone.2022.720p.WEBRip.800MB.x264-GalaxyRG.mkv.webm";
-			// const full_file_path = "./cache/movies/cat.mp4"
+			// const full_file_path = "./.cache/movies/Green.Ghost.and.the.Masters.of.the.Stone.2022.720p.WEBRip.800MB.x264-GalaxyRG[TGx]/Green.Ghost.and.the.Masters.of.the.Stone.2022.720p.WEBRip.800MB.x264-GalaxyRG.mkv.mp4";
+			// const full_file_path = "./.cache/movies/Green.Ghost.and.the.Masters.of.the.Stone.2022.720p.WEBRip.800MB.x264-GalaxyRG[TGx]/Green.Ghost.and.the.Masters.of.the.Stone.2022.720p.WEBRip.800MB.x264-GalaxyRG.mkv.webm";
 
-			console.log("on s'en sort aveeeec full_file_path: " + full_file_path);
+			console.log("on s'en sort aveeeec full_file_path: " + file_path);
 
-			const stat = fs.statSync(full_file_path);
+			const stat = fs.statSync(file_path);
 			const partialTotal = stat.size;
 
 			console.log("on s'en sort aveeeec total: " + partialTotal);
@@ -81,7 +75,7 @@ async function main() {
 			// * Assume transcode here
 			if (true /* wasTutu */) {
 				console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1.1");
-				const file = new TailFile(full_file_path, {
+				const file = new TailFile(file_path, {
 					startPos: 0,
 				})
 					.on("tail_error", (err) => {
@@ -159,10 +153,10 @@ async function main() {
 					"Accept-Ranges": "bytes",
 					"Content-Type": "video/mp4",
 				});
-				const file = fs.createReadStream(full_file_path, { start, end });
+				const file = fs.createReadStream(file_path!, { start, end });
 				file.pipe(res);
 			}
-		}, 5000);
+		}, 10000);
 	});
 
 	app.listen(3030);
