@@ -6,23 +6,26 @@ export async function get_one(id: number): Promise<{
     file_path: string | null,
     downloaded: boolean | null,
 }> {
+    console.log("get_one 1")
     let res = await client.query("SELECT torrent_url, magnet, file_path, downloaded \
     FROM torrents \
     WHERE id = $1;", [id])
-
-    console.log("ouiiii la response est :::")
-    console.log(res)
-
+    console.log("get_one 2")
+    
+    console.log("get_one 3")
+    
     if (res.rows.length == 1) {
+        console.log("get_one 4")
         return res.rows[0]
     } else {
+        console.log("get_one ERROR")
         throw ('no torrent finded with this id')
     }
 }
 
-export async function update_one(id: number, file_path: string | null, downloaded: string | null): Promise<boolean> {
+export async function update_one(id: number, file_path: string | null, downloaded: boolean | null): Promise<boolean> {
     const update_strings = []
-    const update_values: Array<string | number> = [id]
+    const update_values: Array<string | number | boolean> = [id]
 
     let arg_nbr = 2
 
