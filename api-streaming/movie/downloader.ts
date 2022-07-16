@@ -1,202 +1,222 @@
-const torrentStream = require('torrent-stream'); // https://github.com/mafintosh/torrent-stream#readme
-const ffmpeg = require('fluent-ffmpeg')
-const fs = require('fs');
-const { get_one, update_one } = require('../postgres/movies');
-const parseTorrent = require('parse-torrent')
+import torrentStream from "torrent-stream"; // https://github.com/mafintosh/torrent-stream#readme
+import ffmpeg from "fluent-ffmpeg";
+import fs from "fs";
+import { get_one, update_one } from "../postgres/movies";
+import parseTorrent from "parse-torrent";
+import TailFile from "@logdna/tail-file";
 
-const cache_path = './cache'
-const cache_path_movies = './cache/movies'
+const cache_path = "./cache";
+const cache_path_movies = "./cache/movies";
 
-const downloaded_torrent_movies = new Map<number, { file_path: string | null, downloaded: boolean }>(); // movie_id // false: in progress, true: finished
+const downloaded_torrent_movies = new Map<number, { file_path: string | null; downloaded: boolean }>(); // movie_id // false: in progress, true: finished
 
 export function generate_full_paths(file_path: string): [string, string] {
-    const basic_path = cache_path_movies + '/' + file_path
-    return [basic_path, basic_path + '.mp4']
+	const basic_path = cache_path_movies + "/" + file_path;
+	return [basic_path, basic_path + ".mp4"];
 }
 
 function torrent_to_magnet(torrent_url: string): Promise<string> {
-    return new Promise((resolve) => {
-        parseTorrent.remote(torrent_url, { timeout: 60 * 1000 }, (err: Error, parsedTorrent: any) => {
-            if (err) throw err
-            resolve(parseTorrent.toMagnetURI(parsedTorrent))
-        })
-    })
+	return new Promise((resolve) => {
+		parseTorrent.remote(torrent_url, (err, parsedTorrent) => {
+			if (err) throw err;
+			if (!parsedTorrent) throw new Error("no parsed torrent");
+			resolve(parseTorrent.toMagnetURI(parsedTorrent));
+		});
+	});
 }
 
 export function download(id: number): Promise<string | null> {
-    return new Promise(async resolve => {
-        // check if torrent is not already downloaded from local map
-        if (downloaded_torrent_movies.has(id) && downloaded_torrent_movies.get(id)?.downloaded == true) return downloaded_torrent_movies.get(id)?.file_path || null
+	return new Promise(async (resolve) => {
+		// check if torrent is not already downloaded from local map
+		if (downloaded_torrent_movies.has(id) && downloaded_torrent_movies.get(id)?.downloaded == true)
+			return downloaded_torrent_movies.get(id)?.file_path || null;
 
-        console.log("_______________________ 0")
+		console.log("_______________________ 0");
 
-        // get torrent infos from postgres
-        let res: {
-            torrent_url: string | null,
-            magnet: string | null,
-            file_path: string | null,
-            downloaded: boolean | null,
-        } = await get_one(id)
+		// get torrent infos from postgres
+		let res: {
+			torrent_url: string | null;
+			magnet: string | null;
+			file_path: string | null;
+			downloaded: boolean | null;
+		} = await get_one(id);
 
-        let file_path = res.file_path
+		let file_path = res.file_path;
 
-        console.log("_______________________ 1")
+		console.log("_______________________ 1");
 
-        // check if torrent is not already downloaded from postgres
-        if (res.downloaded === true) {
-            downloaded_torrent_movies.set(id, {
-                file_path: file_path,
-                downloaded: true,
-            })
-            resolve(file_path)
-        }
+		// check if torrent is not already downloaded from postgres
+		if (res.downloaded === true) {
+			downloaded_torrent_movies.set(id, {
+				file_path: file_path,
+				downloaded: true,
+			});
+			resolve(file_path);
+		}
 
-        console.log("_______________________ 2")
+		console.log("_______________________ 2");
 
-        console.log("----------------- va ton delete ?")
-        // check if torrent not start to be downloaded from postgres and is unknown from local map
-        if (!downloaded_torrent_movies.has(id) && res.downloaded === false && file_path != null) {
-            // delete the started downloaded movie
+		// console.log("----------------- va ton delete ?");
+		// // check if torrent not start to be downloaded from postgres and is unknown from local map
+		// if (!downloaded_torrent_movies.has(id) && res.downloaded === false && file_path != null) {
+		// 	// delete the started downloaded movie
 
-            const full_paths = generate_full_paths(file_path)
-            fs.unlink(full_paths[0], () => { })
-            fs.unlink(full_paths[1], () => { })
-        }
+		// 	const full_paths = generate_full_paths(file_path);
+		// 	fs.unlink(full_paths[0], () => {});
+		// 	fs.unlink(full_paths[1], () => {});
+		// }
 
-        console.log("_______________________ 3")
+		console.log("_______________________ 3");
 
-        let magnet = res.magnet
+		let magnet = res.magnet;
 
-        // extract or generate the magnet
-        if (res.magnet != null) {
-            console.log("_______________________ 3.1 magnet")
-            magnet = res.magnet
-        } else if (res.torrent_url != null) {
-            console.log("_______________________ 3.2 torrent_url [" + res.torrent_url + "]")
-            magnet = await torrent_to_magnet(res.torrent_url)
-        } else {
-            console.log("_______________________ 3.3 rien ...")
-            throw new Error('no magnet or torrent url available for this torrent')
-        }
+		// extract or generate the magnet
+		if (res.magnet != null) {
+			console.log("_______________________ 3.1 magnet");
+			magnet = res.magnet;
+		} else if (res.torrent_url != null) {
+			console.log("_______________________ 3.2 torrent_url [" + res.torrent_url + "]");
+			magnet = await torrent_to_magnet(res.torrent_url);
+		} else {
+			console.log("_______________________ 3.3 rien ...");
+			throw new Error("no magnet or torrent url available for this torrent");
+		}
 
-        console.log("_______________________ 4")
+		console.log("_______________________ 4");
 
-        // save torrent status in local map
-        downloaded_torrent_movies.set(id, {
-            file_path: file_path,
-            downloaded: false,
-        })
+		// save torrent status in local map
+		downloaded_torrent_movies.set(id, {
+			file_path: file_path,
+			downloaded: false,
+		});
 
-        console.log("_______________________ 5")
+		console.log("_______________________ 5");
 
-        // start to download the torrent movie
-        var engine = torrentStream(magnet, {
-            connections: 100,
-            uploads: 10, // 0 ?
-            tmp: cache_path,
-            path: cache_path_movies,
-            verify: true,
-            tracker: true, // false ?
-        })
+		// start to download the torrent movie
+		var engine = torrentStream(magnet, {
+			connections: 100,
+			uploads: 10, // 0 ?
+			tmp: cache_path,
+			path: cache_path_movies,
+			verify: true,
+			tracker: true, // false ?
+		});
 
-        console.log("_______________________ 6")
+		console.log("_______________________ 6");
 
-        let selected_file: { name: string; path: string, length: number } | null = null;
+		let selected_file: { name: string; path: string; length: number } | null = null;
 
-        console.log("_______________________ 7")
+		console.log("_______________________ 7");
 
-        engine.on('ready', async function () {
-            console.log("_______________________ 8")
+		engine.on("ready", async function () {
+			console.log("_______________________ 8");
 
-            // select the good file in the torrent (using extensions)
-            engine.files.every(function (file: { name: string; path: string, length: number, createReadStream: Function }) {
-                console.log("_______________________ 9: ", file.name)
-                const file_name_length = file.name.length
+			// select the good file in the torrent (using extensions)
+			engine.files.every(function (file) {
+				console.log("_______________________ 9: ", file.name);
+				const file_name_length = file.name.length;
 
-                // if file have a correct extension length
+				// if file have a correct extension length
 
-                if (file_name_length > 4) {
-                    console.log("_______________________ 10")
-                    const extension = file.name.slice(file_name_length - 4, file_name_length)
-                    // if file is a mp4
-                    if (extension === ".mp4") {
-                        console.log("_______________________ 11 mp4")
-                        selected_file = file
-                        file.createReadStream();
-                        return false
-                    } else if (extension === ".mkv") {
-                        console.log("_______________________ 11.1 mkv")
-                        // if file is a mkv
-                        selected_file = file
+				if (file_name_length > 4) {
+					console.log("_______________________ 10");
+					const extension = file.name.slice(file_name_length - 4, file_name_length);
+					// if file is a mp4
+					if (extension === ".mp4") {
+						console.log("_______________________ 11 mp4");
+						selected_file = file;
+						console.log("file length", file.length);
+						file.createReadStream();
+						return false;
+					} else if (extension === ".mkv") {
+						console.log("_______________________ 11.1 mkv");
+						// if file is a mkv
+						selected_file = file;
+						console.log("file length", file.length);
 
-                        // create a stream for transcode mkv to mp4
-                        let local_file_path = cache_path_movies + '/' + file.path
-                        let writeStream = fs.createWriteStream(local_file_path + '.mp4');
+						// create a stream for transcode mkv to mp4
+						let local_file_path = cache_path_movies + "/" + file.path;
+						let writeStream = fs.createWriteStream(local_file_path + ".webm");
 
-                        console.log("_______________________ 11.2 mkv")
+						console.log("_______________________ 11.2 mkv");
 
-                        const stream = file.createReadStream();
-                        ffmpeg()
-                            .input(stream)
-                            .inputFormat('matroska')
-                            .audioCodec('aac')
-                            .videoCodec('libx264')
-                            .outputOptions('-movflags frag_keyframe+empty_moov')
-                            .outputFormat('mp4')
-                            .on('start', () => {
-                                console.log('start')
-                            })
-                            .on('progress', (progress: { timemark: string }) => {
-                                console.log(`progress: ${progress.timemark}`)
-                            })
-                            .on('end', () => {
-                                console.log('Finished processing')
-                                downloaded_torrent_movies.set(id, {
-                                    file_path: file_path,
-                                    downloaded: true,
-                                })
-                                fs.unlink(file_path, () => { })
-                            })
-                            .on('error', (err: Error) => {
-                                console.log(`ERROR: ${err.message}`)
-                                downloaded_torrent_movies.delete(id)
-                                fs.unlink(file_path, () => { })
-                            })
-                            .pipe(writeStream)
-                        return false
-                    } else {
-                        file.createReadStream();
-                    }
-                    console.log("-------------- rien")
-                    return true
-                }
-            })
+						file.createReadStream();
 
-            if (selected_file == null) {
-                console.log("************** BOOOOOOOM NANNN")
-                engine.destroy()
-                throw "no .mp4 or .mkv finded"
-            }
+						const stream = file.createReadStream();
+						ffmpeg()
+							.input(stream)
+							.inputFormat("matroska")
+							// .audioCodec("aac")
+							// .videoCodec("libx264")
+							.audioCodec("libvorbis")
+							.videoCodec("libvpx-vp9")
+							.videoBitrate(20)
+							.outputOptions("-vf scale=-1:101")
+							.outputOptions("-preset veryfast")
+							.outputOptions("-crf 50")
+							.outputOptions("-movflags frag_keyframe+empty_moov")
+							// .outputOptions("-f ismv")
+							.outputFormat("webm")
+							.on("start", () => {
+								console.log("start", arguments);
+							})
+							.on("progress", (progress: any) => {
+								console.log(`progress: ${progress.timemark}`);
+							})
+							.on("codecData", function (data) {
+								console.log("Input is " + data.audio + " audio " + "with " + data.video + " video");
+							})
+							.on("end", () => {
+								console.log("Finished processing");
+								downloaded_torrent_movies.set(id, {
+									file_path: file_path,
+									downloaded: true,
+								});
+								fs.unlink(file_path!, () => {});
+							})
+							.on("error", (err: Error) => {
+								console.log(`ERROR: ${err.message}`);
+								downloaded_torrent_movies.delete(id);
+								fs.unlink(file_path!, () => {});
+							})
+							// .on("stderr", function (stderrLine) {
+							// 	console.log("Stderr output: " + stderrLine);
+							// })
+							.pipe(writeStream);
+						return false;
+					} else {
+						file.createReadStream();
+					}
+					console.log("-------------- rien");
+					return true;
+				}
+			});
 
-            console.log("_______________________ 12")
-            await update_one(id, selected_file.path, false)
+			if (selected_file == null) {
+				console.log("************** BOOOOOOOM NANNN");
+				engine.destroy(() => {});
+				throw "no .mp4 or .mkv found";
+			}
 
-            console.log("_______________________ 13")
-            engine.on("download", (index: string) => {
-                console.log(`state for: ${index}`);
-                resolve(selected_file?.path || null)
-            });
+			console.log("_______________________ 12");
+			await update_one(id, selected_file.path, "false");
 
-            console.log("_______________________ 14")
-            engine.on("idle", async () => {
-                console.log('downloaded');
-                if (selected_file != null) await update_one(id, selected_file.path, true)
-                resolve(selected_file?.path || null)
-            });
+			console.log("_______________________ 13");
+			engine.on("download", (index: string) => {
+				console.log(`state for: ${index}`);
+				resolve(selected_file?.path || null);
+			});
 
-            engine.once("destroyed", () => engine.removeAllListeners());
-        })
+			console.log("_______________________ 14");
+			engine.on("idle", async () => {
+				console.log("downloaded");
+				if (selected_file != null) await update_one(id, selected_file.path, "true");
+				resolve(selected_file?.path || null);
+			});
 
-        return file_path
-    })
+			// engine.on("destroyed", () => engine.removeAllListeners());
+		});
+
+		return file_path;
+	});
 }

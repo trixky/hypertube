@@ -78,10 +78,12 @@ services:
       - ./api-streaming/.env
     volumes:
       - ./api-streaming:/usr/src/app
-      # depends_on:
-      # - ...
+      # - streaming-node-modules:/app/node_modules
+    depends_on:
+      - postgres
     links:
       - client
+      - postgres
     ports:
       - "${API_STREAMING_PORT}:${API_STREAMING_PORT}"
 
@@ -132,6 +134,7 @@ services:
       - ./api-auth/.env
     volumes:
       - ./client:/app
+      - client-node-modules:/app/node_modules
     depends_on:
       - api-auth
       - api-media
@@ -148,4 +151,8 @@ volumes:
   redis-data:
     driver: local
   nginx-proxy-data:
+    driver: local
+  # streaming-node-modules:
+  #   driver: local
+  client-node-modules:
     driver: local

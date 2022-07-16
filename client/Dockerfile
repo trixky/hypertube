@@ -6,8 +6,5 @@ FROM node:16-alpine3.15
 WORKDIR /app
 COPY ./ /app
 
-# install api dependencies
-RUN npm install
-
 # install CompileDaemon (hot reload)
-ENTRYPOINT npx svelte-kit dev --host --port ${CLIENT_PORT}
+ENTRYPOINT npm install && npx svelte-kit dev --host --port ${CLIENT_PORT}

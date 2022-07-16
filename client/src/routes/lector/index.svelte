@@ -4,9 +4,8 @@
 
 <!-- ========================= HTML -->
 <div width="500" height="300">
-	<video controls preload="auto">
+	<video bind:this={video} src="http://localhost:3030/899" controls muted style="width: 100rem">
 		<track kind="captions" />
-		<source src="http://localhost:3030/899" type="video/mp4" />
 		Sorry, your browser doesn't support embedded videos.
 	</video>
 </div>
