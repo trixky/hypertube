@@ -165,7 +165,7 @@ async function wait_file_path(torrent_id: number): Promise<string> {
 	return file_path;
 }
 
-export async function download(torrent_id: string): Promise<string | null> {
+export async function download(torrent_id: string, want_mkv: boolean): Promise<string | null> {
 	return new Promise(async (resolve, reject) => {
 		// sanitize the torrent id
 		let sanitized_torrent_id: number;
@@ -186,7 +186,7 @@ export async function download(torrent_id: string): Promise<string | null> {
 				return null;
 			}
 
-			resolve(generate_full_path(await wait_file_path(sanitized_torrent_id), false));
+			resolve(generate_full_path(await wait_file_path(sanitized_torrent_id), want_mkv));
 			return;
 		}
 		local_torrents.set(sanitized_torrent_id, <LocalTorrent>{
@@ -216,7 +216,7 @@ export async function download(torrent_id: string): Promise<string | null> {
 				reject(new Error("no path for the downloaded movie from db"));
 				return;
 			}
-			resolve(generate_full_path(db_torrent_infos.file_path, false));
+			resolve(generate_full_path(db_torrent_infos.file_path, want_mkv));
 			return;
 		}
 
@@ -250,7 +250,7 @@ export async function download(torrent_id: string): Promise<string | null> {
 		let movie_file: SelectedFile;
 		try {
 			movie_file = await get_movie_file_from_engine(engine);
-			resolve(generate_full_path(movie_file.path, false));
+			resolve(generate_full_path(movie_file.path, want_mkv));
 		} catch {
 			engine.destroy(() => {});
 			reject(new Error("no movie finded in the torrent"));
@@ -277,7 +277,6 @@ export async function download(torrent_id: string): Promise<string | null> {
 		});
 
 		engine.on("idle", async () => {
-			if (movie_file.is_mkv) fs.unlink(generate_full_path(movie_file.path, true), () => {});
 			engine.destroy(() => {}); // ?
 		});
 	});
