@@ -13,7 +13,9 @@ CREATE TABLE torrents (
     description_html TEXT NULL,
     torrent_url TEXT NULL,
     magnet TEXT NULL,
-    last_update TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    last_update TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    file_path VARCHAR (500) NULL,
+    downloaded BOOLEAN DEFAULT false
 );
 CREATE UNIQUE INDEX unique_torrent_url ON torrents(full_url);
 ALTER TABLE ONLY torrents
