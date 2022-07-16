@@ -4,7 +4,8 @@ FROM node:16-alpine3.15
 
 # copy api files
 WORKDIR /app
-COPY ./ /app
+COPY ./package.json .
 
 # install CompileDaemon (hot reload)
-ENTRYPOINT npm install && npx svelte-kit dev --host --port ${CLIENT_PORT}
+RUN yarn install
+ENTRYPOINT yarn run dev --host --port ${CLIENT_PORT}
