@@ -14,6 +14,7 @@
     "@types/fluent-ffmpeg": "^2.1.20",
     "@types/node": "^18.0.3",
     "@types/pg": "^8.6.5",
+    "@types/pump": "^1.1.1",
     "@types/torrent-stream": "^0.0.6",
     "nodemon": "^2.0.19",
     "ts-node": "^10.8.2",
@@ -27,6 +28,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "parse-torrent": "^9.1.5",
     "pg": "^8.7.3",
+    "pump": "^3.0.0",
     "torrent-stream": "^1.2.1"
   }
 }
