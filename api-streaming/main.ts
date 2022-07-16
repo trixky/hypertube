@@ -3,6 +3,7 @@ import express from "express";
 import fs from "fs";
 import { download } from "./movie/downloader";
 import { connect } from "./postgres/db";
+import pump from "pump";
 
 const app = express();
 
@@ -43,10 +44,13 @@ async function main() {
 			res.status(400).send();
 		}
 
+		const acceptHeader = req.headers.accept;
+		const acceptMkv = (acceptHeader && acceptHeader.indexOf("video/mkv") >= 0) == true;
+
 		let file_path: string | null = null;
 		try {
 			console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 0.1");
-			file_path = await download(`${torrent_id}`, false);
+			file_path = await download(`${torrent_id}`, acceptMkv);
 			console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 0.2");
 		} catch {
 			res.status(500).send();
@@ -55,13 +59,8 @@ async function main() {
 
 		setTimeout(() => {
 			if (file_path == null) {
-				res.status(500).send();
-				return;
+				return res.status(500).send();
 			}
-
-			// const full_file_path = generate_full_paths(file_path)[1]
-			// const full_file_path = "./.cache/movies/Green.Ghost.and.the.Masters.of.the.Stone.2022.720p.WEBRip.800MB.x264-GalaxyRG[TGx]/Green.Ghost.and.the.Masters.of.the.Stone.2022.720p.WEBRip.800MB.x264-GalaxyRG.mkv.mp4";
-			// const full_file_path = "./.cache/movies/Green.Ghost.and.the.Masters.of.the.Stone.2022.720p.WEBRip.800MB.x264-GalaxyRG[TGx]/Green.Ghost.and.the.Masters.of.the.Stone.2022.720p.WEBRip.800MB.x264-GalaxyRG.mkv.webm";
 
 			console.log("on s'en sort aveeeec full_file_path: " + file_path);
 
@@ -72,89 +71,104 @@ async function main() {
 			console.log("req.headers['range'] ======= ???: " + req.headers["range"]);
 
 			// * Downloading
-			// * Assume transcode here
-			if (true /* wasTutu */) {
-				console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1.1");
-				const file = new TailFile(file_path, {
+			// * This can either be the original file if the torrent has an accepted file for the client
+			// * -- or a transcode result in webm format
+			// * The result is an used file path in either way, which is tailed
+			if (true /* downloading */) {
+				let sendNative = true;
+				const file = new TailFile(file_path!, {
 					startPos: 0,
 				})
-					.on("tail_error", (err) => {
+					.on("tail_error", (err: any) => {
 						console.error("TailFile had an error!", err);
 					})
-					.on("error", (err) => {
+					.on("error", (err: any) => {
 						console.error("A TailFile stream error was likely encountered", err);
 					});
-				console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1.2");
 				file.start();
-				// const file = fs.createReadStream(full_file_path, { start: 0 });
-				// let length = 0;
-				// const streamReader = new PassThrough();
-				// streamReader.on("data", (chunk) => {
-				// 	if ("length" in chunk) {
-				// 		length += chunk;
-				// 		console.log("============> PassTrough saw", chunk.length);
-				// 	}
-				// });
 				console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1.3");
-				res.writeHead(206, {
-					// "Content-Length": partialTotal,
-					"Content-Range": `bytes 0-`,
-					"Accept-Ranges": "bytes",
-					"Content-Type": "video/webm",
-				});
-				console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1.4", {
-					// "Content-Length": partialTotal,
-					"Content-Range": `bytes 0-`,
-					"Accept-Ranges": "bytes",
-					"Content-Type": "video/webm",
-				});
-				// file.pipe(streamReader);
+
+				// When sending the file that existed in the torrent we already have all of the size informations ...
+				if (sendNative) {
+					const realSize = 123456789;
+					const nativeExtension = "mp4";
+					res.writeHead(200, {
+						"Content-Length": realSize,
+						// "Content-Range": `bytes 0-${realSize - 1}/${realSize}`,
+						// "Accept-Ranges": "bytes",
+						"Content-Type": `video/${nativeExtension}`,
+					});
+				}
+				// ... else the file comes from a transcode and we don't know the final file size
+				// TODO check Transfer-Encoding: chunked for chrome, maybe this works ?
+				else {
+					res.writeHead(206, {
+						"Content-Range": `bytes 0-`,
+						"Accept-Ranges": "bytes",
+						"Content-Type": "video/webm",
+					});
+				}
+
+				// Send the file read to the response
 				console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1.5");
-				// streamReader.pipe(res);
-				console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1.6");
-				file.pipe(res);
+				pump(file, res);
 			}
 			// * File is completed already
 			// * Accept ranges on the file
 			else {
-				// TODO No support for ranges ? Send 200 with the whole file
+				const usedFileExtension = "mp4";
+
+				// Check and support ranges if the client supports them
 				const range = req.headers["range"];
 				let start = 0;
 				let end = partialTotal - 1;
+				// Handle invalid ranges with a 416
+				console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.0");
 				if (range) {
 					var parts = range!.slice(6).split("-");
-					if (parts.length >= 1) {
+					if (parts.length >= 1 && parts.length < 3) {
 						var partialStart = parseInt(parts[0]);
 						var partialEnd = parseInt(parts[1]);
-						if (isNaN(partialStart) && partialStart >= 0 && partialStart < partialTotal) {
+						if (!isNaN(partialStart) && partialStart >= 0 && partialStart < partialTotal) {
 							start = partialStart;
 						} else {
-							// ! Invalid Range
+							console.error("Invalid range start", start, partialTotal);
+							return res.status(416).header("Content-Range", `*/${partialTotal}`).send();
 						}
 						if (!isNaN(partialEnd)) {
 							if (partialEnd > start && partialEnd <= partialTotal) {
 								end = partialEnd;
 							} else {
-								// ! Invalid Range
+								console.error("Invalid range end");
+								return res.status(416).header("Content-Range", `*/${partialTotal}`).send();
 							}
 						}
+					} else {
+						console.error("Invalid ranges format");
+						return res.status(416).header("Content-Range", `*/${partialTotal}`).send();
 					}
 				}
+
+				// If the browser has no support for range we just returns a 200 with no ranges
 				console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.1");
-				res.writeHead(206, {
+				let returnCode = 200;
+				let headers: Record<string, any> = {
 					"Content-Length": partialTotal,
-					"Content-Range": `bytes ${start}-${end - 1}/${partialTotal}`,
-					"Accept-Ranges": "bytes",
-					"Content-Type": "video/mp4",
-				});
-				console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.2", {
-					"Content-Length": partialTotal,
-					"Content-Range": `bytes ${start}-${end - 1}/${partialTotal}`,
-					"Accept-Ranges": "bytes",
-					"Content-Type": "video/mp4",
-				});
+					"Content-Type": `video/${usedFileExtension}`,
+				};
+				if (range) {
+					returnCode = 206;
+					headers["Content-Range"] = `bytes ${start}-${end - 1}/${partialTotal}`;
+					headers["Accept-Ranges"] = "bytes";
+				}
+				res.writeHead(returnCode, headers);
+
+				// Send the file read to the response
+				console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.2");
 				const file = fs.createReadStream(file_path!, { start, end });
-				file.pipe(res);
+				pump(file, res);
+
+				console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.3");
 			}
 		}, 10000);
 	});
