@@ -46,7 +46,7 @@ async function main() {
 		let file_path: string | null = null;
 		try {
 			console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 0.1");
-			file_path = await download(`${torrent_id}`);
+			file_path = await download(`${torrent_id}`, false);
 			console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 0.2");
 		} catch {
 			res.status(500).send();

@@ -4,7 +4,7 @@
 
 <!-- ========================= HTML -->
 <div width="500" height="300">
-	<video bind:this={video} src="http://localhost:3030/899" controls muted style="width: 100rem">
+	<video src="http://localhost:3030/899" controls muted style="width: 100rem">
 		<track kind="captions" />
 		Sorry, your browser doesn't support embedded videos.
 	</video>
