@@ -23,7 +23,7 @@ export async function get_one(id: number): Promise<{
     }
 }
 
-export async function update_one(id: number, file_path: string | null, downloaded: boolean | null): Promise<boolean> {
+export async function update_one(id: number, file_path: string | null, downloaded: boolean | null, length: number | null): Promise<boolean> {
     const update_strings = []
     const update_values: Array<string | number | boolean> = [id]
 
@@ -36,6 +36,10 @@ export async function update_one(id: number, file_path: string | null, downloade
     if (downloaded != null) {
         update_strings.push('downloaded = $' + arg_nbr++)
         update_values.push(downloaded)
+    }
+    if (length != null) {
+        update_strings.push('length = $' + arg_nbr++)
+        update_values.push(length)
     }
 
 

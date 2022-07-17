@@ -7,23 +7,26 @@ import { sleep } from "../utils/time";
 
 const cache_path = "./.cache";
 const cache_path_movies = cache_path + "/movies/";
-const extension_mp4 = ".mp4";
-const extension_webm = ".webm";
-const extension_mkv = ".mkv";
+
+const EXTENSION_mkv = "mkv"
+const EXTENSION_mp4 = "mp4"
+const EXTENSION_webm = "webm"
 
 interface DBTorrent {
 	torrent_url: string | null;
 	magnet: string | null;
 	file_path: string | null;
 	downloaded: boolean | null;
-	is_mkv: boolean | null;
+	length: number | null;
 }
 
 interface LocalTorrent {
 	file_path: string;
 	downloaded: boolean;
-	is_mkv: boolean;
+	original_extension: string | null;
 	corrupted: boolean;
+	length: number;
+	started: boolean;
 }
 
 interface SelectedFile {
@@ -31,25 +34,32 @@ interface SelectedFile {
 	path: string;
 	length: number;
 	createReadStream: Function;
-	is_mkv: boolean;
+	original_extension: string | null;
 }
+
+interface DownloadInfo {
+	path: string | null,
+	downloaded: boolean,
+	original_extension: string,
+	length: number
+}
+
 
 const local_torrents = new Map<number, LocalTorrent>();
 
-function is_mp4(path: string): boolean {
-	const file_name_length = path.length;
+function get_extension(path: string): string | null {
+	const extension = path.split('.').pop();
 
-	return Boolean(path.length > 4 && path.slice(file_name_length - 4, file_name_length) === extension_mp4);
-}
+	if (extension != EXTENSION_mkv &&
+		extension != EXTENSION_mp4 &&
+		extension != EXTENSION_webm)
+		return null
 
-function is_mkv(path: string): boolean {
-	const file_name_length = path.length;
-
-	return Boolean(path.length > 4 && path.slice(file_name_length - 4, file_name_length) === extension_mkv);
+	return extension
 }
 
 function generate_full_path(file_path: string, block_extention_adding: boolean): string {
-	return cache_path_movies + file_path + (is_mkv(file_path) && !block_extention_adding ? extension_webm : "");
+	return cache_path_movies + file_path + ((get_extension(file_path) === EXTENSION_mkv && !block_extention_adding) ? '.' + EXTENSION_webm : "");
 }
 
 function sanitize_torrent_id(torrent_id: string): number {
@@ -86,11 +96,10 @@ function get_movie_file_from_engine(engine: any): Promise<SelectedFile> {
 	return new Promise((resolve, reject) => {
 		engine.on("ready", async function () {
 			engine.files.every(function (file: SelectedFile) {
-				const file_is_mp4 = is_mp4(file.name);
-				const file_is_mkv = file_is_mp4 ? false : is_mkv(file.name);
+				const original_extension = get_extension(file.name);
 
-				if (file_is_mp4 || file_is_mkv) {
-					file.is_mkv = file_is_mkv;
+				if (original_extension != null) {
+					file.original_extension = original_extension;
 					resolve(file);
 					return false;
 				}
@@ -101,13 +110,14 @@ function get_movie_file_from_engine(engine: any): Promise<SelectedFile> {
 	});
 }
 
-function start_download_mp4(selected_file: SelectedFile) {
+function start_download_mp4_or_webm(selected_file: SelectedFile) {
 	selected_file.createReadStream();
 }
 
 function start_download_mkv(torrent_id: number, selected_file: SelectedFile) {
+	let started_saved = false
 	let local_file_path = generate_full_path(selected_file.path, true);
-	let local_file_path_mp4 = local_file_path + extension_webm;
+	let local_file_path_webm = local_file_path + '.' + EXTENSION_webm;
 
 	const stream = selected_file.createReadStream();
 
@@ -133,6 +143,17 @@ function start_download_mkv(torrent_id: number, selected_file: SelectedFile) {
 			console.log("start");
 		})
 		.on("progress", (progress: { timemark: string }) => {
+			if (started_saved === false) {
+				// notify the torrent start to be readable
+				local_torrents.set(torrent_id, <LocalTorrent>{
+					file_path: selected_file.path,
+					downloaded: false,
+					original_extension: selected_file.original_extension,
+					corrupted: false,
+					length: selected_file.length,
+					started: true
+				});
+			}
 			console.log(`ffmpeg: progress > ${progress.timemark}`);
 		})
 		.on("end", () => {
@@ -141,31 +162,38 @@ function start_download_mkv(torrent_id: number, selected_file: SelectedFile) {
 			local_torrents.set(torrent_id, <LocalTorrent>{
 				file_path: selected_file.path,
 				downloaded: true,
-				is_mkv: true,
+				original_extension: selected_file.original_extension,
 				corrupted: false,
+				length: selected_file.length,
+				started: true
 			});
-			update_one(torrent_id, selected_file.path, true);
+			update_one(torrent_id, selected_file.path, true, selected_file.length);
 		})
 		.on("error", (err: Error) => {
 			console.log(`ffmpeg: ERROR > ${err.message}`);
 			local_torrents.delete(torrent_id);
 		})
-		.output(local_file_path_mp4)
+		.output(local_file_path_webm)
 		.run();
 }
 
-async function wait_file_path(torrent_id: number): Promise<string> {
-	let file_path: string | undefined = undefined;
+async function wait_file_start_to_download(torrent_id: number): Promise<any> {
+	let started: boolean | undefined = false;
 
-	while (file_path === undefined || file_path === "") {
+	while (started === undefined || started === false) {
+		started = local_torrents.get(torrent_id)?.started;
+
 		await sleep(1000);
-		file_path = local_torrents.get(torrent_id)?.file_path;
 	}
 
-	return file_path;
+	return;
 }
 
-export async function download(torrent_id: string, want_mkv: boolean): Promise<string | null> {
+
+export async function download(torrent_id: string, want_mkv: boolean): Promise<DownloadInfo> {
+	let need_transcode = false;
+	let started_saved = false;
+
 	return new Promise(async (resolve, reject) => {
 		// sanitize the torrent id
 		let sanitized_torrent_id: number;
@@ -186,14 +214,25 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<s
 				return null;
 			}
 
-			resolve(generate_full_path(await wait_file_path(sanitized_torrent_id), want_mkv));
+			// wait the torrents start to download
+			await wait_file_start_to_download(sanitized_torrent_id)
+			resolve(<DownloadInfo>{
+				path: generate_full_path(local_torrent_info.file_path, want_mkv),
+				downloaded: local_torrent_info.downloaded,
+				original_extension: get_extension(local_torrent_info.file_path),
+				length: local_torrent_info.length,
+			});
 			return;
 		}
+
+		// set/block the torrent in local
 		local_torrents.set(sanitized_torrent_id, <LocalTorrent>{
 			file_path: "",
-			is_mkv: false,
+			original_extension: null,
 			downloaded: false,
 			corrupted: false,
+			length: 0,
+			started: false,
 		});
 
 		// get the torrent infos from db
@@ -202,7 +241,6 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<s
 			const res = await get_one(sanitized_torrent_id);
 			db_torrent_infos.downloaded = res.downloaded;
 			db_torrent_infos.file_path = res.file_path;
-			db_torrent_infos.is_mkv = null;
 			db_torrent_infos.magnet = res.magnet;
 			db_torrent_infos.torrent_url = res.torrent_url;
 		} catch (err) {
@@ -216,7 +254,13 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<s
 				reject(new Error("no path for the downloaded movie from db"));
 				return;
 			}
-			resolve(generate_full_path(db_torrent_infos.file_path, want_mkv));
+
+			resolve(<DownloadInfo>{
+				path: generate_full_path(db_torrent_infos.file_path, want_mkv),
+				downloaded: db_torrent_infos.downloaded,
+				original_extension: get_extension(db_torrent_infos.file_path),
+				length: db_torrent_infos.length,
+			});
 			return;
 		}
 
@@ -228,9 +272,11 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<s
 			// if the torrent is corrupted
 			local_torrents.set(sanitized_torrent_id, <LocalTorrent>{
 				file_path: "",
-				is_mkv: false,
+				original_extension: null,
 				downloaded: false,
 				corrupted: true,
+				length: 0,
+				started: false,
 			});
 			reject(new Error("magnet/torrent corrupted"));
 			return;
@@ -250,9 +296,19 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<s
 		let movie_file: SelectedFile;
 		try {
 			movie_file = await get_movie_file_from_engine(engine);
-			resolve(generate_full_path(movie_file.path, want_mkv));
+			
+			(async () => {
+				await wait_file_start_to_download(sanitized_torrent_id)
+
+				resolve(<DownloadInfo>{
+					path: generate_full_path(movie_file.path, want_mkv),
+					downloaded: false,
+					original_extension: get_extension(movie_file.path),
+					length: movie_file.length,
+				});
+			})()
 		} catch {
-			engine.destroy(() => {});
+			engine.destroy(() => { });
 			reject(new Error("no movie finded in the torrent"));
 			return;
 		}
@@ -260,24 +316,37 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<s
 		// save torrent/movie in local
 		local_torrents.set(sanitized_torrent_id, <LocalTorrent>{
 			file_path: movie_file.path,
-			is_mkv: false,
+			original_extension: movie_file.original_extension,
 			downloaded: false,
 			corrupted: false,
+			length: movie_file.length,
+			started: false,
 		});
 
 		// start download
-		if (movie_file.is_mkv) {
+		if (movie_file.original_extension == EXTENSION_mkv) {
+			need_transcode = true
 			start_download_mkv(sanitized_torrent_id, movie_file);
 		} else {
-			start_download_mp4(movie_file);
+			start_download_mp4_or_webm(movie_file);
 		}
 
 		engine.on("download", (index: string) => {
+			// notify the torrent start to be readable
+			if (started_saved === false && need_transcode === false)
+				local_torrents.set(sanitized_torrent_id, <LocalTorrent>{
+					file_path: movie_file.path,
+					original_extension: movie_file.original_extension,
+					downloaded: false,
+					corrupted: false,
+					length: movie_file.length,
+					started: true,
+				});
 			console.log(`state for: ${index}`);
 		});
 
 		engine.on("idle", async () => {
-			engine.destroy(() => {}); // ?
+			engine.destroy(() => { }); // ?
 		});
 	});
 }
