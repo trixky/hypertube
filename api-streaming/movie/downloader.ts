@@ -131,18 +131,18 @@ function start_download_mkv(torrent_id: number, selected_file: SelectedFile) {
 		// .videoBitrate(1)
 		// .outputOptions("-preset veryfast")
 		// .outputOptions("-crf 50")
-		// .outputOptions("-movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov")
+		// .outputOptions("-movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov+faststart")
 		// .outputFormat("mp4")
 		// * webm
 		.audioCodec("libvorbis")
-		.videoCodec("libvpx-vp9")
+		.videoCodec("libvpx")
 		.videoBitrate(1)
 		.outputOptions("-preset veryfast")
 		.outputOptions("-crf 50")
 		.outputOptions("-movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov")
 		.outputFormat("webm")
 		// *
-		// .outputOptions("-vf scale=-1:101")
+		.outputOptions("-vf scale=-1:101")
 		.on("ffmpeg: start", () => {
 			console.log("start");
 		})
