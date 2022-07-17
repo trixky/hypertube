@@ -1,7 +1,7 @@
 <!-- ========================= SCRIPT -->
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
-	import type { MediaComment, MediaProps } from '../../../src/types/Media';
+	import type { MediaComment, MediaProps } from '../../../../src/types/Media';
 
 	export const load: Load = async ({ params, fetch, session }) => {
 		const url = `http://localhost:7072/v1/media/${params.id}/get`;
@@ -45,7 +45,6 @@
 	import { _ } from 'svelte-i18n';
 	import quantize from 'quantize';
 	import { addUserTitle } from '$utils/media';
-	import { me_store } from '$stores/me';
 	import ArrowLeft from '$components/icons/ArrowLeft.svelte';
 	import Play from '$components/icons/Play.svelte';
 	import LazyLoad from '$components/lazy/LazyLoad.svelte';
@@ -441,7 +440,8 @@
 									<span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> /
 									<span class="text-red-600">{torrent.leech}</span>
 								</div>
-								<button
+								<a
+									href={`/media/${media.id}/torrent/${torrent.id}/stream`}
 									class="flex-shrink-0 p-[2px] mt-2 xl:mt-0 rounded-md font-bold border border-stone-400 hover:border-transparent transition-all relative overflow-hidden"
 									on:mouseenter={() => (torrent.hover = true)}
 									on:mouseleave={() => (torrent.hover = false)}
@@ -455,7 +455,7 @@
 										<Play />
 										<div class="inline-block flex-grow text-white">{$_('media.watch')}</div>
 									</div>
-								</button>
+								</a>
 							</div>
 						{/each}
 					</div>

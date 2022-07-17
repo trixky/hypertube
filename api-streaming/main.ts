@@ -4,11 +4,14 @@ import fs from "fs";
 import { download, DownloadInfo } from "./movie/downloader";
 import { connect } from "./postgres/db";
 import pump from "pump";
+import cors from "cors";
 
 const app = express();
 
 async function main() {
 	await connect();
+
+	app.use(cors());
 
 	app.get("/:torrent_id", async function (req, res) {
 		const torrentId: number = parseInt(req.params.torrent_id);
