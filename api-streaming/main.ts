@@ -26,7 +26,7 @@ async function main() {
 		let downloadResult: DownloadInfo;
 		try {
 			console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 0.1");
-			downloadResult = await download(`${torrentId}`, acceptMkv);
+			downloadResult = await download(`${torrentId}`, false);
 			console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 0.2");
 		} catch {
 			res.status(500).send();
@@ -80,10 +80,10 @@ async function main() {
 			// ... else the file comes from a transcode and we don't know the final file size
 			// TODO check Transfer-Encoding: chunked for chrome, maybe this works ?
 			else {
-				res.writeHead(206, {
-					"Content-Range": `bytes 0-`,
-					"Accept-Ranges": "bytes",
-					"Content-Type": "video/webm",
+				res.writeHead(200, {
+					// "Content-Range": `bytes 0-`,
+					// "Accept-Ranges": "bytes",
+					"Content-Type": `video/${extension}`,
 				});
 			}
 

@@ -11,6 +11,8 @@ const EXTENSION_mkv = "mkv";
 const EXTENSION_mp4 = "mp4";
 const EXTENSION_webm = "webm";
 
+const TRANSCODE_OUTPUT = EXTENSION_webm;
+
 interface DBTorrent {
 	torrent_url: string | null;
 	magnet: string | null;
@@ -57,7 +59,7 @@ function generate_full_path(file_path: string, block_extention_adding: boolean):
 	return (
 		cache_path_movies +
 		file_path +
-		(get_extension(file_path) === EXTENSION_mkv && !block_extention_adding ? "." + EXTENSION_webm : "")
+		(get_extension(file_path) === EXTENSION_mkv && !block_extention_adding ? "." + TRANSCODE_OUTPUT : "")
 	);
 }
 
@@ -116,7 +118,7 @@ function start_download_mp4_or_webm(selected_file: SelectedFile) {
 function start_download_mkv(torrent_id: number, selected_file: SelectedFile) {
 	let started_saved = false;
 	let local_file_path = generate_full_path(selected_file.path, true);
-	let local_file_path_webm = local_file_path + "." + EXTENSION_webm;
+	let local_file_path_webm = local_file_path + "." + TRANSCODE_OUTPUT;
 
 	const stream = selected_file.createReadStream();
 
@@ -126,18 +128,21 @@ function start_download_mkv(torrent_id: number, selected_file: SelectedFile) {
 		// * mp4
 		// .audioCodec("aac")
 		// .videoCodec("libx264")
-		// .outputOptions("-movflags frag_keyframe+empty_moov")
+		// .videoBitrate(1)
+		// .outputOptions("-preset veryfast")
+		// .outputOptions("-crf 50")
+		// .outputOptions("-movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov")
 		// .outputFormat("mp4")
 		// * webm
 		.audioCodec("libvorbis")
 		.videoCodec("libvpx-vp9")
-		.videoBitrate(20)
-		.outputOptions("-vf scale=-1:101")
+		.videoBitrate(1)
 		.outputOptions("-preset veryfast")
 		.outputOptions("-crf 50")
-		.outputOptions("-movflags frag_keyframe+empty_moov")
+		.outputOptions("-movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov")
 		.outputFormat("webm")
 		// *
+		// .outputOptions("-vf scale=-1:101")
 		.on("ffmpeg: start", () => {
 			console.log("start");
 		})
@@ -340,7 +345,7 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 					length: movie_file.length,
 					started: true,
 				});
-			console.log(`state for: ${index}`);
+			console.log(`Download piece ${index} for ${movie_file.path}`);
 		});
 
 		engine.on("idle", async () => {
