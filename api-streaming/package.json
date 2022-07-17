@@ -23,7 +23,9 @@
   },
   "dependencies": {
     "@logdna/tail-file": "^3.0.0",
+    "@types/cors": "^2.8.12",
     "@types/parse-torrent": "^5.8.4",
+    "cors": "^2.8.5",
     "express": "^4.18.1",
     "fluent-ffmpeg": "^2.1.2",
     "parse-torrent": "^9.1.5",
