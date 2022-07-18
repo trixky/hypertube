@@ -19,7 +19,6 @@ export type MediaTorrent = {
 	size?: string | null;
 	leech: number;
 	seed: number;
-	quality?: string;
 	hover: boolean;
 };
 
