@@ -6,19 +6,13 @@ export async function get_one(id: number): Promise<{
     file_path: string | null,
     downloaded: boolean | null,
 }> {
-    console.log("get_one 1")
     let res = await client.query("SELECT torrent_url, magnet, file_path, downloaded \
     FROM torrents \
     WHERE id = $1;", [id])
-    console.log("get_one 2")
-    
-    console.log("get_one 3")
     
     if (res.rows.length == 1) {
-        console.log("get_one 4")
         return res.rows[0]
     } else {
-        console.log("get_one ERROR")
         throw ('no torrent finded with this id')
     }
 }
