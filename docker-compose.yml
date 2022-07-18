@@ -87,6 +87,23 @@ services:
     ports:
       - "${API_STREAMING_PORT}:${API_STREAMING_PORT}"
 
+  api-position:
+    build: ./api-position
+    env_file:
+      - ./api-position/.env
+    volumes:
+      - ./api-position:/usr/src/app
+      # - position-node-modules:/app/node_modules
+    depends_on:
+      - postgres
+      - redis
+    links:
+      - client
+      - postgres
+      - redis
+    ports:
+      - "${API_POSITION_PORT}:${API_POSITION_PORT}"
+
   postgres:
     image: postgres
     restart: always

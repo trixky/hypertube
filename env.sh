@@ -1,4 +1,4 @@
-for FOLDER in api-auth api-user api-scrapper api-media tmdb-proxy api-streaming client postgres
+for FOLDER in api-auth api-user api-scrapper api-media tmdb-proxy api-streaming api-position client postgres
 do
     echo "source $FOLDER"
     export $(grep -v '^#' ./$FOLDER/.env | xargs)
