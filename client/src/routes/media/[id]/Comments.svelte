@@ -1,0 +1,159 @@
+<!-- ========================= SCRIPT -->
+<script lang="ts">
+	import { _ } from 'svelte-i18n';
+	import { session } from '$app/stores';
+	import { fly } from 'svelte/transition';
+	import type { MediaComment } from '../../../../src/types/Media';
+	import Warning from '$components/inputs/warning.svelte';
+
+	$: self = $session.user!;
+
+	export let mediaId: number;
+	export let list: MediaComment[];
+
+	let cleanComments = list.map((comment) => ({
+		...comment,
+		id: Number(comment.id),
+		user: {
+			...comment.user,
+			id: Number(comment.user.id)
+		},
+		date: new Date(comment.date)
+	}));
+
+	// Comment
+	let loadingComment: boolean = false;
+	let commentError: string | undefined;
+	let commentContent: string | null | undefined;
+	async function postComment() {
+		if (!commentContent) {
+			commentError = $_('sanitizer.missing');
+			return;
+		}
+		if (commentContent.length < 2) {
+			commentError = $_('sanitizer.too_short', { values: { amount: 2 } });
+			return;
+		}
+		if (commentContent.length >= 65535) {
+			commentError = $_('sanitizer.too_long', { values: { amount: 65535 } });
+			return;
+		}
+		commentError = undefined;
+		loadingComment = true;
+		const res = await fetch(`http://localhost:7072/v1/media/${mediaId}/comment`, {
+			method: 'POST',
+			credentials: 'include',
+			headers: { accept: 'application/json', 'content-type': 'application/json' },
+			body: JSON.stringify({ content: commentContent })
+		});
+		if (res.ok) {
+			const body = (await res.json()) as MediaComment;
+			const cleanComment = {
+				...body,
+				date: new Date(body.date)
+			};
+			commentContent = undefined;
+			cleanComments.unshift(cleanComment);
+			cleanComments = cleanComments;
+		} else {
+			commentError = $_('media.comment_fail');
+		}
+		loadingComment = false;
+	}
+</script>
+
+<!-- ========================= HTML -->
+
+<div class="my-4">
+	<h1 class="text-2xl mb-4">
+		{$_('media.comments')}
+		{#if cleanComments.length > 0}
+			({cleanComments.length})
+		{/if}
+	</h1>
+	{#if cleanComments.length == 0}
+		<div>{$_('media.no_comments')}</div>
+	{/if}
+	<form class="mt-4 mb-6" on:submit|preventDefault={postComment}>
+		<textarea
+			class="border border-white rounded-md w-full bg-transparent text-white p-4 disabled:opacity-50 transition-all"
+			name="comment"
+			id="comment"
+			rows="4"
+			disabled={loadingComment}
+			bind:value={commentContent}
+			placeholder={$_('media.comment_placeholder')}
+		/>
+		{#if commentError}
+			<Warning content={commentError} color="red" />
+		{/if}
+		<div class="text-right">
+			<button
+				class="py-2 px-4 bg-blue-300 text-black mt-1 rounded-sm hover:bg-blue-400 duration-[0.35s] disabled:opacity-50 transition-all"
+				disabled={loadingComment}
+			>
+				{$_('media.post_comment')}
+			</button>
+		</div>
+	</form>
+	{#each cleanComments as comment (comment.id)}
+		<div class="comment" class:self={comment.user.id == self.id} in:fly>
+			{#if comment.user.id == self.id}
+				<div class="bordered" />
+			{/if}
+			<div class="comment-header">
+				<div>
+					<span class="opacity-60 text-sm mr-2">#{comment.id}</span>
+					<span class="font-bold">{comment.user.name}</span>
+				</div>
+				<div class="text-sm">{comment.date.toLocaleString()}</div>
+			</div>
+			<div class="comment-content">{comment.content}</div>
+		</div>
+	{/each}
+</div>
+
+<!-- ========================= CSS -->
+<style lang="postcss">
+	.comment {
+		@apply mb-4 p-2 border border-stone-400 rounded-md bg-stone-900 relative;
+	}
+
+	.comment.self {
+		@apply border-transparent overflow-hidden;
+		padding: 1px;
+	}
+
+	.comment.self .comment-header {
+		@apply p-2 pb-0 bg-stone-900 rounded-t-md;
+	}
+	.comment.self .comment-content {
+		@apply p-2 pt-0 bg-stone-900 rounded-b-md;
+	}
+
+	.comment.self .bordered {
+		@apply absolute top-0 right-0 bottom-0 left-0;
+		background: rgb(170, 50, 201);
+		background: linear-gradient(to bottom right, rgb(170, 50, 201) 0%, rgba(107, 139, 176, 1) 100%);
+	}
+
+	.comment-header {
+		@apply flex justify-between w-full relative;
+	}
+
+	.comment-content {
+		@apply relative;
+	}
+
+	.comment-content::before {
+		@apply block w-full mb-1;
+		content: '';
+		height: 1px;
+		background: linear-gradient(
+			to right,
+			rgba(0, 0, 0, 0) 25%,
+			rgba(255, 255, 255, 0.8) 50%,
+			rgba(0, 0, 0, 0) 75%
+		);
+	}
+</style>

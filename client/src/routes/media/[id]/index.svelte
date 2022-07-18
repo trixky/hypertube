@@ -38,42 +38,26 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
-	import { session } from '$app/stores';
 	import { _ } from 'svelte-i18n';
-	import quantize from 'quantize';
 	import { addUserTitle } from '$utils/media';
 	import ArrowLeft from '$components/icons/ArrowLeft.svelte';
-	import Play from '$components/icons/Play.svelte';
 	import LazyLoad from '$components/lazy/LazyLoad.svelte';
-	import QualityIcon from './QualityIcon.svelte';
 	import Background from '$components/animations/Background.svelte';
 	import RefreshPeers, { type RefreshResult } from './RefreshPeers.svelte';
-	import Warning from '$components/inputs/warning.svelte';
 	import { imageUrl } from '$utils/image';
+	import Comments from './Comments.svelte';
+	import { extractPalette } from '$utils/color';
+	import Torrent from './Torrent.svelte';
 
 	/// @ts-expect-error media is given as a prop
 	export let props: MediaProps;
 	let { media, torrents, staffs, actors, comments } = props;
 	addUserTitle(media);
 
-	// Find quality for torrents
-	for (const torrent of torrents) {
-		if (/sd|720p?|(hq)?\s*cam(\s*rip)?/i.exec(torrent.name)) {
-			torrent.quality = 'sd';
-		} else if (/hd|1080p?/i.exec(torrent.name)) {
-			torrent.quality = 'hd';
-		} else if (/2160p?|4k/i.exec(torrent.name)) {
-			torrent.quality = '4k';
-		} else if (/8k/i.exec(torrent.name)) {
-			torrent.quality = '8k';
-		}
-	}
-
 	const cover = media.thumbnail ? imageUrl(media.thumbnail) : '/no_cover.png';
-
 	const durationStr = (() => {
 		if (!media.duration) {
 			return '';
@@ -124,76 +108,6 @@
 		}
 	}
 
-	function seedColor(amount: number) {
-		if (amount == 0) {
-			return 'text-red-600';
-		}
-		if (amount <= 10) {
-			return 'text-orange-600';
-		}
-		return 'text-green-600';
-	}
-
-	// Image average color
-	// @source https://stackoverflow.com/a/49837149
-	let gradientColor: string | undefined;
-	function extractPalette(image: HTMLImageElement) {
-		var context = document.createElement('canvas').getContext('2d');
-		if (!context) {
-			return undefined;
-		}
-		context.imageSmoothingEnabled = true;
-		context.drawImage(image, 0, 0, image.width, image.height);
-
-		// Extract pixels RGB channels as an array of pixel data
-		const pixels = context.getImageData(0, 0, image.width, image.height).data;
-		const imageData: [number, number, number][] = [];
-		for (var i = 0; i < pixels.length; i += 4) {
-			let rgb: [number, number, number] = [pixels[i], pixels[i + 1], pixels[i + 2]];
-			let a = pixels[i + 3];
-			// If pixel is mostly opaque and not white
-			if (typeof a === 'undefined' || a >= 125) {
-				if (
-					!(rgb[0] > 250 && rgb[1] > 250 && rgb[2] > 250) &&
-					!(rgb[0] < 30 && rgb[1] < 30 && rgb[2] < 30)
-				) {
-					imageData.push(rgb);
-				}
-			}
-		}
-
-		// Extract a color palette
-		const rawPalette: [number, number, number][] = quantize(imageData, 5, 10).palette();
-		palette = rawPalette.map((color) => {
-			return `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
-		});
-		if (backgroundAnimation) {
-			backgroundAnimation.start();
-		}
-
-		// Clamp each channels to 150 to avoid bright colors
-		let color = [rawPalette[0][0], rawPalette[0][1], rawPalette[0][2]];
-		let difference = color.reduce((carry, value) => {
-			if (value > 70) {
-				return Math.max(carry, value - 70);
-			}
-			return carry;
-		}, 0);
-		color = color.map((color) => Math.max(0, color - difference)) as [number, number, number];
-		gradientColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
-		loadingGradient = false;
-	}
-
-	let cleanComments = comments.map((comment) => ({
-		...comment,
-		id: Number(comment.id),
-		user: {
-			...comment.user,
-			id: Number(comment.user.id)
-		},
-		date: new Date(comment.date)
-	}));
-
 	// Peers refresh
 	function onPeersRefresh(event: CustomEvent<RefreshResult[]>) {
 		for (const result of event.detail) {
@@ -207,48 +121,11 @@
 		torrents = torrents;
 	}
 
-	// Comment
-	let loadingComment: boolean = false;
-	let commentError: string | undefined;
-	let commentContent: string | null | undefined;
-	async function postComment() {
-		if (!commentContent) {
-			commentError = $_('sanitizer.missing');
-			return;
-		}
-		if (commentContent.length < 2) {
-			commentError = $_('sanitizer.too_short', { values: { amount: 2 } });
-			return;
-		}
-		if (commentContent.length >= 65535) {
-			commentError = $_('sanitizer.too_long', { values: { amount: 65535 } });
-			return;
-		}
-		commentError = undefined;
-		loadingComment = true;
-		const res = await fetch(`http://localhost:7072/v1/media/${media.id}/comment`, {
-			method: 'POST',
-			credentials: 'include',
-			headers: { accept: 'application/json', 'content-type': 'application/json' },
-			body: JSON.stringify({ content: commentContent })
-		});
-		if (res.ok) {
-			const body = (await res.json()) as MediaComment;
-			const cleanComment = {
-				...body,
-				date: new Date(body.date)
-			};
-			commentContent = undefined;
-			cleanComments.unshift(cleanComment);
-			cleanComments = cleanComments;
-		} else {
-			commentError = $_('media.comment_fail');
-		}
-		loadingComment = false;
-	}
+	let play: number | undefined;
 
 	// Background gradient
 	let loadingGradient = true;
+	let gradientColor: string | undefined;
 	let background: string | undefined;
 	onMount(() => {
 		if (browser) {
@@ -276,7 +153,15 @@
 				image.setAttribute('crossOrigin', 'anonymous');
 				image.src = useImage;
 				image.addEventListener('load', () => {
-					extractPalette(image);
+					const result = extractPalette(image);
+					gradientColor = result?.color;
+					if (result?.palette) {
+						palette = result.palette;
+					}
+					if (backgroundAnimation) {
+						backgroundAnimation.start();
+					}
+					loadingGradient = false;
 				});
 			} else {
 				loadingGradient = false;
@@ -401,6 +286,20 @@
 	<div class="relative flex-grow">
 		<Background bind:this={backgroundAnimation} {palette} />
 		<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4 flex-grow relative">
+			{#if play}
+				<div in:fade>
+					<video
+						src={`http://localhost:3030/torrent/${play}/stream`}
+						controls
+						autoplay
+						muted
+						style="width: 100rem"
+						crossorigin="anonymous"
+					>
+						Sorry, your browser doesn't support embedded videos.
+					</video>
+				</div>
+			{/if}
 			<div>
 				<h1 class="flex justify-between items-center text-2xl mb-4">
 					<span>Torrents</span>
@@ -411,106 +310,18 @@
 				{#if torrents.length > 0}
 					<div class="w-full">
 						{#each torrents as torrent (torrent.id)}
-							<div
-								class="flex flex-col xl:flex-row xl:items-center w-full mb-4 last:mb-0 xl:mb-2 my-2 bg-black bg-opacity-80"
-							>
-								<div class="hidden xl:inline-block">
-									<QualityIcon quality={torrent.quality} class="mr-2" />
-								</div>
-								<div class="flex-grow truncate" title={torrent.name}>
-									{torrent.name}
-								</div>
-								{#if torrent.size}
-									<div class="hidden xl:block flex-shrink-0 opacity-80">
-										{torrent.size}
-									</div>
-								{/if}
-								<div class="xl:hidden">
-									<div class="inline-block xl:hidden">
-										<QualityIcon quality={torrent.quality} class="mr-1" />
-									</div>
-									{#if torrent.size}
-										{$_('media.size')}: {torrent.size} &#x2022;
-									{/if}
-									Seed: <span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> &#x2022;
-									Leech:
-									<span class=" text-red-600">{torrent.leech}</span>
-								</div>
-								<div class="hidden xl:block mx-4 flex-shrink-0 min-w-[3rem] text-center">
-									<span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> /
-									<span class="text-red-600">{torrent.leech}</span>
-								</div>
-								<a
-									href={`/media/${media.id}/torrent/${torrent.id}/stream`}
-									class="flex-shrink-0 p-[2px] mt-2 xl:mt-0 rounded-md font-bold border border-stone-400 hover:border-transparent transition-all relative overflow-hidden"
-									on:mouseenter={() => (torrent.hover = true)}
-									on:mouseleave={() => (torrent.hover = false)}
-								>
-									{#if torrent.hover}
-										<div class="loader" transition:fade />
-									{/if}
-									<div
-										class="flex items-center w-full h-full px-2 py-1 rounded-md relative overflow-hidden bg-black hover:bg-stone-900 transition-all text-blue-400"
-									>
-										<Play />
-										<div class="inline-block flex-grow text-white">{$_('media.watch')}</div>
-									</div>
-								</a>
-							</div>
+							<Torrent
+								{torrent}
+								on:select={() => (play = torrent.id)}
+								selected={play ? play == torrent.id : undefined}
+							/>
 						{/each}
 					</div>
 				{:else}
 					<div>{$_('media.no_torrents')}</div>
 				{/if}
 			</div>
-			<div class="my-4">
-				<h1 class="text-2xl mb-4">
-					{$_('media.comments')}
-					{#if cleanComments.length > 0}
-						({cleanComments.length})
-					{/if}
-				</h1>
-				{#if cleanComments.length == 0}
-					<div>{$_('media.no_comments')}</div>
-				{/if}
-				<form class="mt-4 mb-6" on:submit|preventDefault={postComment}>
-					<textarea
-						class="border border-white rounded-md w-full bg-transparent text-white p-4 disabled:opacity-50 transition-all"
-						name="comment"
-						id="comment"
-						rows="4"
-						disabled={loadingComment}
-						bind:value={commentContent}
-						placeholder={$_('media.comment_placeholder')}
-					/>
-					{#if commentError}
-						<Warning content={commentError} color="red" />
-					{/if}
-					<div class="text-right">
-						<button
-							class="py-2 px-4 bg-blue-300 text-black mt-1 rounded-sm hover:bg-blue-400 duration-[0.35s] disabled:opacity-50 transition-all"
-							disabled={loadingComment}
-						>
-							{$_('media.post_comment')}
-						</button>
-					</div>
-				</form>
-				{#each cleanComments as comment (comment.id)}
-					<div class="comment" class:self={comment.user.id == $session.user.id} in:fly>
-						{#if comment.user.id == $session.user.id}
-							<div class="bordered" />
-						{/if}
-						<div class="comment-header">
-							<div>
-								<span class="opacity-60 text-sm mr-2">#{comment.id}</span>
-								<span class="font-bold">{comment.user.name}</span>
-							</div>
-							<div class="text-sm">{comment.date.toLocaleString()}</div>
-						</div>
-						<div class="comment-content">{comment.content}</div>
-					</div>
-				{/each}
-			</div>
+			<Comments mediaId={media.id} list={comments} />
 		</div>
 	</div>
 </div>
@@ -539,56 +350,5 @@
 		--gradient-color: rgba(0, 0, 0, 0.7);
 		background-image: linear-gradient(to bottom right, rgba(0, 0, 0, 0.9), var(--gradient-color));
 		transition: background 150ms linear;
-	}
-
-	.loader {
-		@apply absolute top-0 right-0 bottom-0 left-0;
-		background: rgb(170, 50, 201);
-		background: linear-gradient(90deg, rgb(170, 50, 201) 0%, rgba(107, 139, 176, 1) 100%);
-		background-size: 300% 300%;
-		background-position: 0 50%;
-		animation: move-background 1s alternate infinite;
-	}
-
-	.comment {
-		@apply mb-4 p-2 border border-stone-400 rounded-md bg-stone-900 relative;
-	}
-
-	.comment.self {
-		@apply border-transparent overflow-hidden;
-		padding: 1px;
-	}
-
-	.comment.self .comment-header {
-		@apply p-2 pb-0 bg-stone-900 rounded-t-md;
-	}
-	.comment.self .comment-content {
-		@apply p-2 pt-0 bg-stone-900 rounded-b-md;
-	}
-
-	.comment.self .bordered {
-		@apply absolute top-0 right-0 bottom-0 left-0;
-		background: rgb(170, 50, 201);
-		background: linear-gradient(to bottom right, rgb(170, 50, 201) 0%, rgba(107, 139, 176, 1) 100%);
-	}
-
-	.comment-header {
-		@apply flex justify-between w-full relative;
-	}
-
-	.comment-content {
-		@apply relative;
-	}
-
-	.comment-content::before {
-		@apply block w-full mb-1;
-		content: '';
-		height: 1px;
-		background: linear-gradient(
-			to right,
-			rgba(0, 0, 0, 0) 25%,
-			rgba(255, 255, 255, 0.8) 50%,
-			rgba(0, 0, 0, 0) 75%
-		);
 	}
 </style>
