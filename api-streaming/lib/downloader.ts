@@ -1,5 +1,5 @@
 import torrentStream from "torrent-stream"; // https://github.com/mafintosh/torrent-stream#readme
-import { get_one, update_one } from "../postgres/movies";
+import { getTorrent, updateTorrent } from "../postgres/movies";
 import parseTorrent from "parse-torrent";
 import ffmpeg from "fluent-ffmpeg";
 import { sleep } from "../utils/time";
@@ -111,11 +111,16 @@ function get_movie_file_from_engine(engine: any): Promise<SelectedFile> {
 	});
 }
 
-function start_download_mp4_or_webm(selected_file: SelectedFile) {
+function start_download_mp4_or_webm(engine: TorrentStream.TorrentEngine, selected_file: SelectedFile) {
 	selected_file.createReadStream();
+
+	// Kill the engine as soon as possible when directly streaming the original file
+	engine.on("idle", async () => {
+		engine.destroy(() => {}); // ?
+	});
 }
 
-function start_download_mkv(torrent_id: number, selected_file: SelectedFile) {
+function start_download_mkv(engine: TorrentStream.TorrentEngine, torrent_id: number, selected_file: SelectedFile) {
 	let started_saved = false;
 	let local_file_path = generate_full_path(selected_file.path, true);
 	let local_file_path_webm = local_file_path + "." + TRANSCODE_OUTPUT;
@@ -136,13 +141,14 @@ function start_download_mkv(torrent_id: number, selected_file: SelectedFile) {
 		// * webm
 		.audioCodec("libvorbis")
 		.videoCodec("libvpx")
-		.videoBitrate(1)
-		.outputOptions("-preset veryfast")
-		.outputOptions("-crf 50")
+		// .videoBitrate(1)
+		// .outputOptions("-preset veryfast")
+		// .outputOptions("-crf 50")
 		.outputOptions("-movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov")
 		.outputFormat("webm")
 		// *
-		.outputOptions("-vf scale=-1:101")
+		.outputOptions("-qp 0")
+		// .outputOptions("-vf scale=-1:101")
 		.on("ffmpeg: start", () => {
 			console.log("start");
 		})
@@ -158,7 +164,7 @@ function start_download_mkv(torrent_id: number, selected_file: SelectedFile) {
 					started: true,
 				});
 			}
-			console.log(`ffmpeg: progress > ${progress.timemark}`);
+			console.log(`ffmpeg: progress > ${progress.timemark} for ${local_file_path_webm}`);
 		})
 		.on("end", () => {
 			console.log("ffmpeg: Finished processing");
@@ -171,7 +177,10 @@ function start_download_mkv(torrent_id: number, selected_file: SelectedFile) {
 				length: selected_file.length,
 				started: true,
 			});
-			update_one(torrent_id, selected_file.path, true, selected_file.length);
+			updateTorrent(torrent_id, selected_file.path, true, selected_file.length);
+			// Destroy the engine only when the transcode is completed
+			// -- to avoid killing the stream while transcoding
+			engine.destroy(() => {});
 		})
 		.on("error", (err: Error) => {
 			console.log(`ffmpeg: ERROR > ${err.message}`);
@@ -241,7 +250,7 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 		// get the torrent infos from db
 		let db_torrent_infos: DBTorrent = <DBTorrent>{};
 		try {
-			const res = await get_one(sanitized_torrent_id);
+			const res = await getTorrent(sanitized_torrent_id);
 			db_torrent_infos.downloaded = res.downloaded;
 			db_torrent_infos.file_path = res.file_path;
 			db_torrent_infos.magnet = res.magnet;
@@ -312,7 +321,7 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 			})();
 		} catch {
 			engine.destroy(() => {});
-			reject(new Error("no movie finded in the torrent"));
+			reject(new Error("no movie found in the torrent"));
 			return;
 		}
 
@@ -329,9 +338,9 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 		// start download
 		if (movie_file.original_extension == EXTENSION_mkv) {
 			need_transcode = true;
-			start_download_mkv(sanitized_torrent_id, movie_file);
+			start_download_mkv(engine, sanitized_torrent_id, movie_file);
 		} else {
-			start_download_mp4_or_webm(movie_file);
+			start_download_mp4_or_webm(engine, movie_file);
 		}
 
 		engine.on("download", (index: string) => {
@@ -346,10 +355,6 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 					started: true,
 				});
 			console.log(`Download piece ${index} for ${movie_file.path}`);
-		});
-
-		engine.on("idle", async () => {
-			engine.destroy(() => {}); // ?
 		});
 	});
 }
