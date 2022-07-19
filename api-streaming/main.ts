@@ -20,7 +20,12 @@ config();
 	console.log("**************************************** START");
 	console.log("**************************************** START");
 
-	app.use(cors());
+	app.use(
+		cors({
+			origin: ["http://localhost:4040"],
+			credentials: true,
+		})
+	);
 
 	app.use("/", subtitlesRouter);
 	app.use("/", streamRouter);
