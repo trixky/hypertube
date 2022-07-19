@@ -28,6 +28,8 @@ interface LocalTorrent {
 	corrupted: boolean;
 	length: number;
 	started: boolean;
+	download_complete: boolean;
+	ffmpeg_closed: boolean;
 }
 
 interface SelectedFile {
@@ -147,8 +149,9 @@ function start_download_mkv(engine: TorrentStream.TorrentEngine, torrent_id: num
 		.outputOptions("-movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov")
 		.outputFormat("webm")
 		// *
-		.outputOptions("-qp 0")
 		// .outputOptions("-vf scale=-1:101")
+		// .outputOptions("-qp 0")
+		.outputOptions("-crf 18")
 		.on("ffmpeg: start", () => {
 			console.log("start");
 		})
@@ -162,6 +165,7 @@ function start_download_mkv(engine: TorrentStream.TorrentEngine, torrent_id: num
 					corrupted: false,
 					length: selected_file.length,
 					started: true,
+					ffmpeg_closed: false,
 				});
 			}
 			console.log(`ffmpeg: progress > ${progress.timemark} for ${local_file_path_webm}`);
@@ -176,14 +180,21 @@ function start_download_mkv(engine: TorrentStream.TorrentEngine, torrent_id: num
 				corrupted: false,
 				length: selected_file.length,
 				started: true,
+				ffmpeg_closed: true,
 			});
 			updateTorrent(torrent_id, selected_file.path, true, selected_file.length);
 			// Destroy the engine only when the transcode is completed
 			// -- to avoid killing the stream while transcoding
-			engine.destroy(() => {});
+			if (local_torrents.get(torrent_id)?.download_complete) {
+				engine.destroy(() => {});
+			}
 		})
 		.on("error", (err: Error) => {
 			console.log(`ffmpeg: ERROR > ${err.message}`);
+			// Don't forget to destroy the engine if the download was already completed
+			if (local_torrents.get(torrent_id)?.download_complete) {
+				engine.destroy(() => {});
+			}
 			local_torrents.delete(torrent_id);
 		})
 		.output(local_file_path_webm)
@@ -245,6 +256,7 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 			corrupted: false,
 			length: 0,
 			started: false,
+			ffmpeg_closed: false,
 		});
 
 		// get the torrent infos from db
@@ -289,6 +301,7 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 				corrupted: true,
 				length: 0,
 				started: false,
+				ffmpeg_closed: false,
 			});
 			reject(new Error("magnet/torrent corrupted"));
 			return;
@@ -297,7 +310,7 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 		// start the torrent engine
 		const engine = torrentStream(magnet, {
 			connections: 100,
-			uploads: 10, // 0 ?
+			uploads: 0,
 			tmp: cache_path,
 			path: cache_path_movies,
 			verify: true,
@@ -333,6 +346,7 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 			corrupted: false,
 			length: movie_file.length,
 			started: false,
+			ffmpeg_closed: false,
 		});
 
 		// start download
@@ -353,8 +367,19 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 					corrupted: false,
 					length: movie_file.length,
 					started: true,
+					ffmpeg_closed: local_torrents.get(sanitized_torrent_id)!.ffmpeg_closed,
 				});
 			console.log(`Download piece ${index} for ${movie_file.path}`);
+		});
+
+		engine.on("idle", () => {
+			const localTorrent = local_torrents.get(sanitized_torrent_id);
+			if (localTorrent) {
+				localTorrent.download_complete = true;
+			}
+			if (!localTorrent || localTorrent.ffmpeg_closed) {
+				engine.destroy(() => {});
+			}
 		});
 	});
 }
