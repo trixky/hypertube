@@ -7,6 +7,7 @@
 
 	export let palette: string[];
 	$: paletteLength = palette.length;
+	export let enabled: boolean = true;
 
 	// * Logic
 
@@ -48,9 +49,24 @@
 		line.color = palette[Math.round(randomNumber(0, paletteLength))];
 		line.duration = Math.round(randomNumber(1500, 3500));
 		setTimeout(function () {
-			line.visible = true;
-			lines = lines;
+			if (enabled) {
+				line.visible = true;
+				lines = lines;
+			}
 		}, randomNumber(100, 500));
+	}
+
+	export function stop() {
+		enabled = false;
+	}
+
+	export function restart() {
+		enabled = true;
+		for (let index = 0; index < lines.length; index++) {
+			setTimeout(() => {
+				resetLine(index);
+			}, randomNumber(0, 500));
+		}
 	}
 </script>
 
