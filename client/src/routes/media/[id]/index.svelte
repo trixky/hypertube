@@ -38,10 +38,10 @@
 
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
-	import { locale, _ } from 'svelte-i18n';
+	import { _ } from 'svelte-i18n';
 	import { addUserTitle } from '$utils/media';
 	import ArrowLeft from '$components/icons/ArrowLeft.svelte';
 	import LazyLoad from '$components/lazy/LazyLoad.svelte';
@@ -51,7 +51,7 @@
 	import Comments from './Comments.svelte';
 	import { extractPalette } from '$utils/color';
 	import Torrent from './Torrent.svelte';
-	import { session } from '$app/stores';
+	import Player from './Player.svelte';
 
 	/// @ts-expect-error media is given as a prop
 	export let props: MediaProps;
@@ -123,135 +123,19 @@
 	}
 
 	// Player
-	const POSITION_DELAY_MS = 15_000; /* 15sec */
-	const ERROR_TIMEOUT = 300_000; /* 5min */
-
-	// @source https://stackoverflow.com/a/41776483
-	function seekToTime(player: HTMLVideoElement, ts: number) {
-		// try and avoid pauses after seeking
-		player.pause();
-		player.currentTime = ts; // if this is far enough away from current, it implies a "play" call as well...oddly. I mean seriously that is junk.
-		// however if it close enough, then we need to call play manually
-		// some shenanigans to try and work around this:
-		let timer = setInterval(function () {
-			if ((player.paused && player.readyState == 4) || !player.paused) {
-				player.play();
-				clearInterval(timer);
-			}
-		}, 50);
-	}
-
 	let infoContainer: HTMLElement;
-	let play: number | undefined;
-	let player: HTMLVideoElement | undefined;
-	let playMessage: { type: 'info' | 'error'; content: string } | undefined;
-	let updateErrored: number | null = null;
-	let lastUpdate: number = 0;
+	let selectedTorrent: MediaTorrent | undefined;
 	async function playTorrent(torrent: MediaTorrent) {
+		selectedTorrent = torrent;
 		backgroundAnimation.stop();
-
-		// Open player
-		play = torrent.id;
-		playMessage = { type: 'info', content: 'Video is loading...' };
-		// Infer media lang from the torrent name
-		let mediaLang = 'en';
-		if (torrent.name.match(/(?:vost)?fr(?:ench|an[cç]ais)?/i)) {
-			mediaLang = 'fr';
-		}
-
-		// Wait for the player to exist and bind events
-		await tick();
-		if (player) {
-			// Load subtitles
-			try {
-				const subtitlesUrl = `http://localhost:3030/torrent/${play}/subtitles`;
-				fetch(subtitlesUrl, { method: 'GET' })
-					.then(async (response) => {
-						if (response.ok) {
-							const body = (await response.json()) as
-								| { subtitles: { id: number; lang: string }[] }
-								| { error: string };
-							if ('error' in body) {
-								// TODO playMessage: failed to load subtitles
-							} else {
-								let index = 0;
-								for (const subtitle of body.subtitles) {
-									const track = document.createElement('track');
-									track.kind = 'captions';
-									track.label = subtitle.lang == 'fr' ? 'Francais' : 'English';
-									track.srclang = subtitle.lang;
-									track.src = `http://localhost:3030/subtitles/${subtitle.id}`;
-									player?.appendChild(track);
-									if (
-										!$session.locale!.startsWith(mediaLang) &&
-										$session.locale!.startsWith(subtitle.lang)
-									) {
-										/// @ts-expect-error Track element *has* the showing property
-										track.mode = 'showing';
-										player!.textTracks[index].mode = 'showing';
-									}
-									index++;
-								}
-							}
-						}
-					})
-					.catch((error) => {
-						console.error(error);
-						// TODO playMessage: failed to load subtitles
-					});
-			} catch (error) {
-				console.error(error);
-				// TODO playMessage: failed to load subtitles
-			}
-
-			// Bind
-			player.addEventListener('loadedmetadata', () => {
-				playMessage = undefined;
-				if (torrent.position) {
-					seekToTime(player!, torrent.position);
-				}
-			});
-			let updatingPosition = false;
-			player.addEventListener('timeupdate', (event) => {
-				if (!updatingPosition && event.timeStamp - lastUpdate >= POSITION_DELAY_MS) {
-					if (!updateErrored || Date.now() - updateErrored >= ERROR_TIMEOUT /* 5min */) {
-						lastUpdate = event.timeStamp;
-						const currentTime = player?.currentTime;
-						updatingPosition = true;
-						fetch(`http://localhost:3040/v1/position/${play}`, {
-							method: 'POST',
-							credentials: 'include',
-							headers: {
-								'Content-Type': 'application/json'
-							},
-							body: JSON.stringify({
-								position: currentTime
-							})
-						})
-							.then((response) => {
-								updatingPosition = false;
-								if (!response.ok || response.status >= 400) {
-									throw new Error('Response status is not ok');
-								}
-							})
-							.catch((error) => {
-								updatingPosition = false;
-								console.error(error);
-								updateErrored = Date.now();
-							});
-					} else {
-						lastUpdate = event.timeStamp + Date.now() - updateErrored;
-					}
-				}
-			});
-		}
 		if (infoContainer) {
+			await tick();
 			infoContainer.scrollIntoView(true);
 		}
 	}
 
-	function closePlayer() {
-		play = undefined;
+	function onPlayerClose() {
+		selectedTorrent = undefined;
 		backgroundAnimation.restart();
 	}
 
@@ -421,40 +305,9 @@
 			bind:this={infoContainer}
 			class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4 flex-grow relative"
 		>
-			<div>
-				{#if play}
-					<div class="mb-10" transition:fade>
-						<video
-							bind:this={player}
-							class="w-full"
-							src={`http://localhost:3030/torrent/${play}/stream`}
-							controls
-							autoplay
-							muted
-							crossorigin="use-credentials"
-						>
-							Sorry, your browser doesn't support embedded videos.
-						</video>
-						<div class="mt-2 flex justify-between items-center">
-							{#if playMessage}
-								<span class={`play-message ${playMessage.type}`} transition:fly>
-									{playMessage.content}
-								</span>
-							{:else}
-								<span />
-							{/if}
-							<div>
-								<button
-									class="p-1 border border-gray-400 text-sm hover:bg-gray-800 rounded-md transition-colors"
-									on:click={closePlayer}
-								>
-									Close
-								</button>
-							</div>
-						</div>
-					</div>
-				{/if}
-			</div>
+			{#if selectedTorrent}
+				<Player torrent={selectedTorrent} on:close={onPlayerClose} />
+			{/if}
 			<div>
 				<h1 class="flex justify-between items-center text-2xl mb-4">
 					<span>Torrents</span>
@@ -468,7 +321,7 @@
 							<Torrent
 								{torrent}
 								on:select={playTorrent.bind(null, torrent)}
-								selected={play ? play == torrent.id : undefined}
+								selected={selectedTorrent ? selectedTorrent.id == torrent.id : undefined}
 							/>
 						{/each}
 					</div>
@@ -505,15 +358,5 @@
 		--gradient-color: rgba(0, 0, 0, 0.7);
 		background-image: linear-gradient(to bottom right, rgba(0, 0, 0, 0.9), var(--gradient-color));
 		transition: background 150ms linear;
-	}
-
-	.play-message {
-		@apply text-sm;
-	}
-	.play-message.info {
-		@apply text-blue-400;
-	}
-	.play-message.error {
-		@apply text-red-600;
 	}
 </style>

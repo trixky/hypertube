@@ -43,7 +43,8 @@
     "comment_fail": "Failed to post comment, retry layer",
     "watching": "Watching",
     "watched": "Watched",
-    "resume": "Resume"
+    "resume": "Resume",
+    "theatre_mode": "Theatre mode"
   },
   "auth": {
     "email": "Email",
