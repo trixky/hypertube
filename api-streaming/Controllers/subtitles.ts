@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { parse, parseSync, resync, stringify, stringifySync } from "subtitle";
+import { parseSync, stringifySync } from "subtitle";
 import osdb, { SearchInformations } from "../lib/osdb";
 import { getTorrent, Torrent } from "../postgres/movies";
 import {
@@ -11,6 +11,7 @@ import {
 	Subtitle,
 } from "../postgres/subtitles";
 import { mkdir, writeFile } from "fs/promises";
+import { resolve } from "path";
 
 const router = Router();
 
@@ -106,7 +107,7 @@ router.get("/torrent/:torrentId/subtitles", async function (req, res) {
 	return res.status(200).send({ subtitles: collected });
 });
 
-router.get("/subtitle/:subtitleId", async function (req, res) {
+router.get("/subtitles/:subtitleId", async function (req, res) {
 	// Sanitize subtitleId
 	const subtitleId: number = parseInt(req.params.subtitleId);
 
@@ -120,7 +121,7 @@ router.get("/subtitle/:subtitleId", async function (req, res) {
 
 	// Read and return the file
 	res.contentType("text/vtt");
-	return res.sendFile(subtitle.path);
+	return res.sendFile(resolve(subtitle.path));
 });
 
 export default router;
