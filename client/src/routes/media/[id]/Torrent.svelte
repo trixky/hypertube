@@ -6,6 +6,7 @@
 	import Play from '$components/icons/Play.svelte';
 	import type { MediaTorrent } from '../../../../src/types/Media';
 	import { createEventDispatcher } from 'svelte';
+	import Eye from '$components/icons/Eye.svelte';
 
 	export let torrent: MediaTorrent;
 	export let selected: boolean | undefined = undefined;
@@ -52,20 +53,33 @@
 			{torrent.size}
 		</div>
 	{/if}
-	<div class="xl:hidden">
+	<div class="flex items-center xl:hidden">
 		<div class="inline-block xl:hidden">
 			<QualityIcon {quality} class="mr-1" />
 		</div>
-		{#if torrent.size}
-			{$_('media.size')}: {torrent.size} &#x2022;
+		<div>
+			{#if torrent.size}
+				{$_('media.size')}: {torrent.size} &#x2022;
+			{/if}
+			Seed: <span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> &#x2022; Leech:
+			<span class=" text-red-600">{torrent.leech}</span>
+		</div>
+		{#if typeof torrent.position === 'number'}
+			<div class="flex-grow" />
+			<span class="text-white" title={$_('media.watched')}>
+				<Eye />
+			</span>
 		{/if}
-		Seed: <span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> &#x2022; Leech:
-		<span class=" text-red-600">{torrent.leech}</span>
 	</div>
 	<div class="hidden xl:block mx-4 flex-shrink-0 min-w-[3rem] text-center">
 		<span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> /
 		<span class="text-red-600">{torrent.leech}</span>
 	</div>
+	{#if typeof torrent.position === 'number'}
+		<span class=" hidden lg:flex items-center text-white mr-4" title={$_('media.watched')}>
+			<Eye />
+		</span>
+	{/if}
 	<button
 		class="flex-shrink-0 p-[2px] mt-2 xl:mt-0 rounded-md font-bold border border-stone-400 hover:border-transparent transition-all relative overflow-hidden"
 		class:border-transparent={selected}
@@ -83,6 +97,8 @@
 			<div class="inline-block flex-grow text-white">
 				{#if selected}
 					{$_('media.watching')}
+				{:else if typeof torrent.position === 'number'}
+					{$_('media.resume')}
 				{:else}
 					{$_('media.watch')}
 				{/if}

@@ -1,7 +1,7 @@
 <!-- ========================= SCRIPT -->
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
-	import type { MediaComment, MediaProps, MediaTorrent } from '../../../../src/types/Media';
+	import type { MediaProps, MediaTorrent } from '../../../../src/types/Media';
 
 	export const load: Load = async ({ params, fetch, session }) => {
 		const url = `http://localhost:7072/v1/media/${params.id}/get`;
@@ -125,6 +125,22 @@
 	// Player
 	const POSITION_DELAY_MS = 15_000; /* 15sec */
 	const ERROR_TIMEOUT = 300_000; /* 5min */
+
+	// @source https://stackoverflow.com/a/41776483
+	function seekToTime(player: HTMLVideoElement, ts: number) {
+		// try and avoid pauses after seeking
+		player.pause();
+		player.currentTime = ts; // if this is far enough away from current, it implies a "play" call as well...oddly. I mean seriously that is junk.
+		// however if it close enough, then we need to call play manually
+		// some shenanigans to try and work around this:
+		let timer = setInterval(function () {
+			if ((player.paused && player.readyState == 4) || !player.paused) {
+				player.play();
+				clearInterval(timer);
+			}
+		}, 50);
+	}
+
 	let infoContainer: HTMLElement;
 	let play: number | undefined;
 	let player: HTMLVideoElement | undefined;
@@ -189,6 +205,9 @@
 			// Bind
 			player.addEventListener('loadedmetadata', () => {
 				playMessage = undefined;
+				if (torrent.position) {
+					seekToTime(player!, torrent.position);
+				}
 			});
 			let updatingPosition = false;
 			player.addEventListener('timeupdate', (event) => {
@@ -405,7 +424,7 @@
 							controls
 							autoplay
 							muted
-							crossorigin="anonymous"
+							crossorigin="use-credentials"
 						>
 							Sorry, your browser doesn't support embedded videos.
 						</video>
@@ -420,6 +439,7 @@
 							<div>
 								<button
 									class="p-1 border border-gray-400 text-sm hover:bg-gray-800 rounded-md transition-colors"
+									on:click={() => (play = undefined)}
 								>
 									Close
 								</button>

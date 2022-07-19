@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store';
 import type { Result } from '../../src/types/Media';
 import { addUserTitle } from '$utils/media';
-import { browser } from '$app/env';
 
 export const searching = writable(true);
 export const loadingMore = writable(false);

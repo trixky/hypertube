@@ -11,6 +11,7 @@ export type Result = {
 	thumbnail: string;
 	background?: string | null;
 	rating: number | null;
+	watched: boolean;
 };
 
 export type MediaTorrent = {
@@ -20,6 +21,7 @@ export type MediaTorrent = {
 	leech: number;
 	seed: number;
 	hover: boolean;
+	position?: number | null;
 };
 
 export type MediaStaff = {

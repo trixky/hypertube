@@ -11,6 +11,7 @@
 	import SortDesc from '$components/icons/SortDesc.svelte';
 	import LazyLoad from '$components/lazy/LazyLoad.svelte';
 	import { imageUrl } from '$utils/image';
+	import Eye from '$components/icons/Eye.svelte';
 
 	let sortColumns: string[] = ['year', 'name', 'duration', 'id'];
 
@@ -200,12 +201,13 @@
 				<LazyLoad
 					tag="a"
 					href={`/media/${result.id}`}
-					class="result overflow-hidden w-40 min-h-[220px] mx-auto"
+					class="relative result overflow-hidden w-40 min-h-[220px] mx-auto"
 				>
 					<div
 						class="cover"
-						in:fade={{ duration: 150, delay: (index - $search.startAt) * 10 }}
+						class:opacity-80={result.watched}
 						style={`background-image: url(${cover})`}
+						in:fade={{ duration: 150, delay: (index - $search.startAt) * 10 }}
 					>
 						{#if result.rating}
 							{@const rating = Math.round(result.rating * 10) / 10}
@@ -225,6 +227,11 @@
 					</div>
 					{#if result.year}
 						<div class="text-white text-sm opacity-80">{result.year}</div>
+					{/if}
+					{#if result.watched}
+						<div class="absolute bottom-1 right-1 text-white">
+							<Eye />
+						</div>
 					{/if}
 				</LazyLoad>
 			{/each}

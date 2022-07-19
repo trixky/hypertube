@@ -41,7 +41,9 @@
     "comment_placeholder": "Post a new comment...",
     "post_comment": "Post",
     "comment_fail": "Failed to post comment, retry layer",
-    "watching": "Watching"
+    "watching": "Watching",
+    "watched": "Watched",
+    "resume": "Resume"
   },
   "auth": {
     "email": "Email",
