@@ -16,7 +16,7 @@
 		return Math.random() * (maxExcl - minInc) + minInc;
 	}
 
-	const nbLines = 10;
+	const nbLines = 5;
 	let lines: {
 		id: number;
 		visible: boolean;
