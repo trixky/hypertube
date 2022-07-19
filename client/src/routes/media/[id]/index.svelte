@@ -1,7 +1,7 @@
 <!-- ========================= SCRIPT -->
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
-	import type { MediaProps, MediaTorrent } from '../../../../src/types/Media';
+	import type { MediaComment, MediaProps, MediaTorrent } from '../../../../src/types/Media';
 
 	export const load: Load = async ({ params, fetch, session }) => {
 		const url = `http://localhost:7072/v1/media/${params.id}/get`;
@@ -190,11 +190,34 @@
 			player.addEventListener('loadedmetadata', () => {
 				playMessage = undefined;
 			});
+			let updatingPosition = false;
 			player.addEventListener('timeupdate', (event) => {
-				if (event.timeStamp - lastUpdate < POSITION_DELAY_MS) {
+				if (!updatingPosition && event.timeStamp - lastUpdate >= POSITION_DELAY_MS) {
 					if (!updateErrored || Date.now() - updateErrored >= ERROR_TIMEOUT /* 5min */) {
-						// TODO api-position
 						lastUpdate = event.timeStamp;
+						const currentTime = player?.currentTime;
+						updatingPosition = true;
+						fetch(`http://localhost:3040/v1/position/${play}`, {
+							method: 'POST',
+							credentials: 'include',
+							headers: {
+								'Content-Type': 'application/json'
+							},
+							body: JSON.stringify({
+								position: currentTime
+							})
+						})
+							.then((response) => {
+								updatingPosition = false;
+								if (!response.ok || response.status >= 400) {
+									throw new Error('Response status is not ok');
+								}
+							})
+							.catch((error) => {
+								updatingPosition = false;
+								console.error(error);
+								updateErrored = Date.now();
+							});
 					} else {
 						lastUpdate = event.timeStamp + Date.now() - updateErrored;
 					}
