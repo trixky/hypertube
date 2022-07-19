@@ -43,7 +43,8 @@
     "comment_fail": "Echec de la creation du commentaire, reesayez plus tard",
     "watching": "En cours",
     "watched": "Visionne",
-    "resume": "Reprendre"
+    "resume": "Reprendre",
+    "theatre_mode": "Mode theatre"
   },
   "auth": {
     "email": "Email",
