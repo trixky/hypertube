@@ -1,7 +1,7 @@
 <!-- ========================= SCRIPT -->
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
-	import type { MediaComment, MediaProps } from '../../../../src/types/Media';
+	import type { MediaProps, MediaTorrent } from '../../../../src/types/Media';
 
 	export const load: Load = async ({ params, fetch, session }) => {
 		const url = `http://localhost:7072/v1/media/${params.id}/get`;
@@ -37,11 +37,11 @@
 </script>
 
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { onMount, tick } from 'svelte';
+	import { fade, fly } from 'svelte/transition';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
-	import { _ } from 'svelte-i18n';
+	import { locale, _ } from 'svelte-i18n';
 	import { addUserTitle } from '$utils/media';
 	import ArrowLeft from '$components/icons/ArrowLeft.svelte';
 	import LazyLoad from '$components/lazy/LazyLoad.svelte';
@@ -51,6 +51,7 @@
 	import Comments from './Comments.svelte';
 	import { extractPalette } from '$utils/color';
 	import Torrent from './Torrent.svelte';
+	import { session } from '$app/stores';
 
 	/// @ts-expect-error media is given as a prop
 	export let props: MediaProps;
@@ -121,7 +122,89 @@
 		torrents = torrents;
 	}
 
+	// Player
+	const POSITION_DELAY_MS = 15_000; /* 15sec */
+	const ERROR_TIMEOUT = 300_000; /* 5min */
+	let infoContainer: HTMLElement;
 	let play: number | undefined;
+	let player: HTMLVideoElement | undefined;
+	let playMessage: { type: 'info' | 'error'; content: string } | undefined;
+	let updateErrored: number | null = null;
+	let lastUpdate: number = 0;
+	async function playTorrent(torrent: MediaTorrent) {
+		// Open player
+		play = torrent.id;
+		playMessage = { type: 'info', content: 'Video is loading...' };
+		// Infer media lang from the torrent name
+		let mediaLang = 'en';
+		if (torrent.name.match(/(?:vost)?fr(?:ench|an[cç]ais)?/i)) {
+			mediaLang = 'fr';
+		}
+
+		// Wait for the player to exist and bind events
+		await tick();
+		if (player) {
+			// Load subtitles
+			try {
+				const subtitlesUrl = `http://localhost:3030/torrent/${play}/subtitles`;
+				fetch(subtitlesUrl, { method: 'GET' })
+					.then(async (response) => {
+						if (response.ok) {
+							const body = (await response.json()) as
+								| { subtitles: { id: number; lang: string }[] }
+								| { error: string };
+							if ('error' in body) {
+								// TODO playMessage: failed to load subtitles
+							} else {
+								let index = 0;
+								for (const subtitle of body.subtitles) {
+									const track = document.createElement('track');
+									track.kind = 'captions';
+									track.label = subtitle.lang == 'fr' ? 'Francais' : 'English';
+									track.srclang = subtitle.lang;
+									track.src = `http://localhost:3030/subtitles/${subtitle.id}`;
+									player?.appendChild(track);
+									if (
+										!$session.locale!.startsWith(mediaLang) &&
+										$session.locale!.startsWith(subtitle.lang)
+									) {
+										/// @ts-expect-error Track element *has* the showing property
+										track.mode = 'showing';
+										player!.textTracks[index].mode = 'showing';
+									}
+									index++;
+								}
+							}
+						}
+					})
+					.catch((error) => {
+						console.error(error);
+						// TODO playMessage: failed to load subtitles
+					});
+			} catch (error) {
+				console.error(error);
+				// TODO playMessage: failed to load subtitles
+			}
+
+			// Bind
+			player.addEventListener('loadedmetadata', () => {
+				playMessage = undefined;
+			});
+			player.addEventListener('timeupdate', (event) => {
+				if (event.timeStamp - lastUpdate < POSITION_DELAY_MS) {
+					if (!updateErrored || Date.now() - updateErrored >= ERROR_TIMEOUT /* 5min */) {
+						// TODO api-position
+						lastUpdate = event.timeStamp;
+					} else {
+						lastUpdate = event.timeStamp + Date.now() - updateErrored;
+					}
+				}
+			});
+		}
+		if (infoContainer) {
+			infoContainer.scrollIntoView(true);
+		}
+	}
 
 	// Background gradient
 	let loadingGradient = true;
@@ -285,21 +368,43 @@
 	</div>
 	<div class="relative flex-grow">
 		<Background bind:this={backgroundAnimation} {palette} />
-		<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4 flex-grow relative">
-			{#if play}
-				<div in:fade>
-					<video
-						src={`http://localhost:3030/torrent/${play}/stream`}
-						controls
-						autoplay
-						muted
-						style="width: 100rem"
-						crossorigin="anonymous"
-					>
-						Sorry, your browser doesn't support embedded videos.
-					</video>
-				</div>
-			{/if}
+		<div
+			bind:this={infoContainer}
+			class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4 flex-grow relative"
+		>
+			<div>
+				{#if play}
+					<div class="mb-10" in:fade>
+						<video
+							bind:this={player}
+							class="w-full"
+							src={`http://localhost:3030/torrent/${play}/stream`}
+							controls
+							autoplay
+							muted
+							crossorigin="anonymous"
+						>
+							Sorry, your browser doesn't support embedded videos.
+						</video>
+						<div class="mt-2 flex justify-between items-center">
+							{#if playMessage}
+								<span class={`play-message ${playMessage.type}`} transition:fly>
+									{playMessage.content}
+								</span>
+							{:else}
+								<span />
+							{/if}
+							<div>
+								<button
+									class="p-1 border border-gray-400 text-sm hover:bg-gray-800 rounded-md transition-colors"
+								>
+									Close
+								</button>
+							</div>
+						</div>
+					</div>
+				{/if}
+			</div>
 			<div>
 				<h1 class="flex justify-between items-center text-2xl mb-4">
 					<span>Torrents</span>
@@ -312,7 +417,7 @@
 						{#each torrents as torrent (torrent.id)}
 							<Torrent
 								{torrent}
-								on:select={() => (play = torrent.id)}
+								on:select={playTorrent.bind(null, torrent)}
 								selected={play ? play == torrent.id : undefined}
 							/>
 						{/each}
@@ -350,5 +455,15 @@
 		--gradient-color: rgba(0, 0, 0, 0.7);
 		background-image: linear-gradient(to bottom right, rgba(0, 0, 0, 0.9), var(--gradient-color));
 		transition: background 150ms linear;
+	}
+
+	.play-message {
+		@apply text-sm;
+	}
+	.play-message.info {
+		@apply text-blue-400;
+	}
+	.play-message.error {
+		@apply text-red-600;
 	}
 </style>

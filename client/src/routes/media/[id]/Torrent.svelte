@@ -77,9 +77,9 @@
 			<div class="loader" transition:fade />
 		{/if}
 		<div
-			class="flex items-center w-full h-full px-2 py-1 rounded-md relative overflow-hidden bg-black hover:bg-stone-900 transition-all text-blue-400"
+			class="flex items-center w-full h-full px-2 py-1 rounded-md relative overflow-hidden bg-black hover:bg-stone-900 transition-all text-blue-400 visible"
 		>
-			<Play />
+			<Play style={selected ? `visibility: collapse` : ''} />
 			<div class="inline-block flex-grow text-white">
 				{#if selected}
 					{$_('media.watching')}
