@@ -115,11 +115,6 @@ function get_movie_file_from_engine(engine: any): Promise<SelectedFile> {
 
 function start_download_mp4_or_webm(engine: TorrentStream.TorrentEngine, selected_file: SelectedFile) {
 	selected_file.createReadStream();
-
-	// Kill the engine as soon as possible when directly streaming the original file
-	engine.on("idle", async () => {
-		engine.destroy(() => {}); // ?
-	});
 }
 
 function start_download_mkv(engine: TorrentStream.TorrentEngine, torrent_id: number, selected_file: SelectedFile) {
@@ -228,6 +223,7 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 		}
 
 		// check if torrent is known in local
+		console.log("############################ 1.1");
 		if (local_torrents.has(sanitized_torrent_id)) {
 			const local_torrent_info = local_torrents.get(sanitized_torrent_id);
 
@@ -249,6 +245,7 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 		}
 
 		// set/block the torrent in local
+		console.log("############################ 1.2");
 		local_torrents.set(sanitized_torrent_id, <LocalTorrent>{
 			file_path: "",
 			original_extension: null,
@@ -260,6 +257,7 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 		});
 
 		// get the torrent infos from db
+		console.log("############################ 1.3");
 		let db_torrent_infos: DBTorrent = <DBTorrent>{};
 		try {
 			const res = await getTorrent(sanitized_torrent_id);
@@ -273,6 +271,7 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 		}
 
 		// check if the torrent is already downloaded
+		console.log("############################ 1.4");
 		if (db_torrent_infos.downloaded) {
 			if (db_torrent_infos.file_path == null) {
 				reject(new Error("no path for the downloaded movie from db"));
@@ -289,6 +288,7 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 		}
 
 		// get the magnet of the torrent
+		console.log("############################ 1.5");
 		let magnet: string;
 		try {
 			magnet = await get_magnet(db_torrent_infos);
@@ -308,9 +308,10 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 		}
 
 		// start the torrent engine
+		console.log("############################ 1.6");
 		const engine = torrentStream(magnet, {
 			connections: 100,
-			uploads: 0,
+			uploads: 1,
 			tmp: cache_path,
 			path: cache_path_movies,
 			verify: true,
@@ -318,6 +319,7 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 		});
 
 		// select the good file in the torrent (using extensions)
+		console.log("############################ 1.7");
 		let movie_file: SelectedFile;
 		try {
 			movie_file = await get_movie_file_from_engine(engine);
@@ -339,6 +341,7 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 		}
 
 		// save torrent/movie in local
+		console.log("############################ 1.8");
 		local_torrents.set(sanitized_torrent_id, <LocalTorrent>{
 			file_path: movie_file.path,
 			original_extension: movie_file.original_extension,
@@ -346,10 +349,11 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 			corrupted: false,
 			length: movie_file.length,
 			started: false,
-			ffmpeg_closed: false,
+			ffmpeg_closed: movie_file.original_extension != EXTENSION_mkv,
 		});
 
 		// start download
+		console.log("############################ 1.9");
 		if (movie_file.original_extension == EXTENSION_mkv) {
 			need_transcode = true;
 			start_download_mkv(engine, sanitized_torrent_id, movie_file);
@@ -372,10 +376,14 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 			console.log(`Download piece ${index} for ${movie_file.path}`);
 		});
 
-		engine.on("idle", () => {
+		engine.on("idle", async () => {
+			console.log("############################ 1.10");
 			const localTorrent = local_torrents.get(sanitized_torrent_id);
 			if (localTorrent) {
 				localTorrent.download_complete = true;
+				if (!need_transcode) {
+					await updateTorrent(sanitized_torrent_id, localTorrent.file_path, true, localTorrent.length);
+				}
 			}
 			if (!localTorrent || localTorrent.ffmpeg_closed) {
 				engine.destroy(() => {});

@@ -24,12 +24,13 @@ message Media {
 	media.MediaCategory type = 2;
 	string description = 3;
 	uint32 year = 4;
-	repeated MediaName names = 5;
-	repeated string genres = 6;
-	optional int32 duration = 7;
-	optional string thumbnail = 8;
-	optional string background = 9;
-	optional float rating = 10;
+	bool watched = 5;
+	repeated MediaName names = 6;
+	repeated string genres = 7;
+	optional int32 duration = 8;
+	optional string thumbnail = 9;
+	optional string background = 10;
+	optional float rating = 11;
 }
 
 message SearchRequest {
@@ -74,6 +75,7 @@ message TorrentPublicInformations {
 	optional int32 seed = 3;
 	optional int32 leech = 4;
 	optional string size = 5;
+	optional int32 position = 6;
 }
 
 message GetResponse {

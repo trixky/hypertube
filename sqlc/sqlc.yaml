@@ -20,6 +20,7 @@ packages:
     schema:
       - "sql/medias/schema.sql"
       - "sql/torrents/schema.sql"
+      - "sql/position/schema.sql"
     queries:
       - "sql/scrapper/query.sql"
       - "sql/medias/query.sql"
@@ -31,6 +32,7 @@ packages:
       - "sql/medias/schema.sql"
       - "sql/torrents/schema.sql"
       - "sql/comments/schema.sql"
+      - "sql/position/schema.sql"
     queries:
       - "sql/medias/query.sql"
       - "sql/comments/query.sql"

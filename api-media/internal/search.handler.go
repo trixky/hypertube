@@ -10,12 +10,14 @@ import (
 	"github.com/trixky/hypertube/api-media/databases"
 	"github.com/trixky/hypertube/api-media/finder"
 	pb "github.com/trixky/hypertube/api-media/proto"
+	"github.com/trixky/hypertube/api-media/sqlc"
 	"github.com/trixky/hypertube/api-media/utils"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.SearchResponse, error) {
-	if _, err := utils.RequireLogin(ctx); err != nil {
+	user, err := utils.RequireLogin(ctx)
+	if err != nil {
 		return nil, err
 	}
 
@@ -108,6 +110,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 	// Convert to proto
 	pb_medias := make([]*pb.Media, 0)
 	for _, media := range medias {
+		media_id := int32(media.ID)
 		rating := float32(media.Rating.Float64)
 		thumbnail := media.Thumbnail.String
 		pb_media := pb.Media{
@@ -117,6 +120,21 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 			Names:     make([]*pb.MediaName, 0),
 			Thumbnail: &thumbnail,
 			Rating:    &rating,
+			Watched:   true,
+		}
+
+		// Check watched status
+		// -- at least one torrent has a position
+		_, err := databases.DBs.SqlcQueries.WatcheMedia(ctx, sqlc.WatcheMediaParams{
+			UserID:  int32(user.ID),
+			MediaID: utils.MakeNullInt32(&media_id),
+		})
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				pb_media.Watched = false
+			} else {
+				return nil, err
+			}
 		}
 
 		// Load relations

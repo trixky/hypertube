@@ -42,7 +42,8 @@ func indexOf(slice []string, value string) int {
 }
 
 func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetResponse, error) {
-	if _, err := utils.RequireLogin(ctx); err != nil {
+	user, err := utils.RequireLogin(ctx)
+	if err != nil {
 		return nil, err
 	}
 
@@ -90,7 +91,10 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 		}
 	}
 
-	torrents, err := databases.DBs.SqlcQueries.GetMediaTorrents(ctx, ut.MakeNullInt32(&media_id))
+	torrents, err := databases.DBs.SqlcQueries.GetMediaTorrentsForUser(ctx, sqlc.GetMediaTorrentsForUserParams{
+		MediaID: ut.MakeNullInt32(&media_id),
+		UserID:  int32(user.ID),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -98,12 +102,18 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 		size := torrent.Size.String
 		seed := torrent.Seed.Int32
 		leech := torrent.Leech.Int32
+		var position *int32
+		if torrent.Position.Valid {
+			position = &torrent.Position.Int32
+		}
+
 		response.Torrents = append(response.Torrents, &pb.TorrentPublicInformations{
-			Id:    int32(torrent.ID.Int64),
-			Name:  torrent.Name.String,
-			Size:  &size,
-			Seed:  &seed,
-			Leech: &leech,
+			Id:       int32(torrent.ID.Int64),
+			Name:     torrent.Name.String,
+			Size:     &size,
+			Seed:     &seed,
+			Leech:    &leech,
+			Position: position,
 		})
 	}
 

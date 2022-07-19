@@ -41,7 +41,9 @@
     "comment_placeholder": "Poster un nouveau commentaire...",
     "post_comment": "Poster",
     "comment_fail": "Echec de la creation du commentaire, reesayez plus tard",
-    "watching": "En cours"
+    "watching": "En cours",
+    "watched": "Visionne",
+    "resume": "Reprendre"
   },
   "auth": {
     "email": "Email",
