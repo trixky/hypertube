@@ -148,6 +148,8 @@
 	let updateErrored: number | null = null;
 	let lastUpdate: number = 0;
 	async function playTorrent(torrent: MediaTorrent) {
+		backgroundAnimation.stop();
+
 		// Open player
 		play = torrent.id;
 		playMessage = { type: 'info', content: 'Video is loading...' };
@@ -246,6 +248,11 @@
 		if (infoContainer) {
 			infoContainer.scrollIntoView(true);
 		}
+	}
+
+	function closePlayer() {
+		play = undefined;
+		backgroundAnimation.restart();
 	}
 
 	// Background gradient
@@ -416,7 +423,7 @@
 		>
 			<div>
 				{#if play}
-					<div class="mb-10" in:fade>
+					<div class="mb-10" transition:fade>
 						<video
 							bind:this={player}
 							class="w-full"
@@ -439,7 +446,7 @@
 							<div>
 								<button
 									class="p-1 border border-gray-400 text-sm hover:bg-gray-800 rounded-md transition-colors"
-									on:click={() => (play = undefined)}
+									on:click={closePlayer}
 								>
 									Close
 								</button>
