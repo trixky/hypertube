@@ -14,6 +14,9 @@ interface Config {
 	// ----------------------------------- API_POSITION
 	API_POSITION_addresse: string;
 	API_POSITION_port: number | undefined;
+	// ----------------------------------- API_MEDIA
+	API_MEDIA_addresse: string;
+	API_MEDIA_port: number | undefined;
 }
 
 const config = <Config>{
@@ -31,7 +34,10 @@ const config = <Config>{
 	API_USER_port: undefined,
 	// ----------------------------------- API_POSITION
 	API_POSITION_addresse: 'api-position',
-	API_POSITION_port: undefined
+	API_POSITION_port: undefined,
+	// ----------------------------------- API_POSITION
+	API_MEDIA_addresse: 'api-media',
+	API_MEDIA_port: undefined
 };
 
 export function get_config(): Config {
@@ -73,4 +79,12 @@ export function read_env() {
 	);
 	if (isNaN(config.API_POSITION_port))
 		throw new Error('API_POSITION_PORT environment variable is missing');
+	// ----------------------------------- API_MEDIA
+	config.API_MEDIA_port = parseInt(
+		process.env.API_SEARCH_GRPC_GATEWAY_PORT === undefined
+			? 'x'
+			: process.env.API_SEARCH_GRPC_GATEWAY_PORT
+	);
+	if (isNaN(config.API_MEDIA_port))
+		throw new Error('API_MEDIA_PORT environment variable is missing');
 }

@@ -20,9 +20,9 @@ export function DESCRIBE_TEST_client() {
 	it('GET 200 /recover/apply', (done) => {
 		CLIENT_request.get('/recover/apply').expect(200).end(done);
 	});
-	// ---------------------------------------- GET 500 /nothing
-	it('GET 500 /nothing', (done) => {
-		CLIENT_request.get('/nothing').expect(500).end(done);
+	// ---------------------------------------- GET 404 /nothing
+	it('GET 404 /nothing', (done) => {
+		CLIENT_request.get('/nothing').expect(404).end(done);
 	});
 	// ---------------------------------------- GET 302 /
 	it('GET 302 /', (done) => {
