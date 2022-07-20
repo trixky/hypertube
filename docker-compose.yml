@@ -113,9 +113,12 @@ services:
       - ./api-auth/.env
       - ./api-user/.env
       - ./api-position/.env
+      - ./api-media/.env
       - ./redis/.env
     volumes:
       - ./api-tester:/app
+      - /app/node_modules
+      - /app/.yarn
     depends_on:
       - client
       - api-auth
@@ -191,6 +194,14 @@ services:
       - tmdb-proxy
     ports:
       - "${CLIENT_PORT}:${CLIENT_PORT}"
+
+  movies-proxy:
+    image: nginx:1.23-alpine
+    volumes:
+      - ./movies-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./api-streaming/.cache:/var/www/cache
+    ports:
+      - "8888:80"
 
 volumes:
   postgres-data:

@@ -1,7 +1,7 @@
-import { DESCRIBE_TEST_client } from "./1.client"
-import { DESCRIBE_TEST_api_auth } from "./2.api-auth-internal"
-import { DESCRIBE_TEST_api_user } from "./3.api-user"
-import { DESCRIBE_TEST_api_position } from "./4.api-position"
+import { DESCRIBE_TEST_client } from './tests/1.client';
+import { DESCRIBE_TEST_api_auth } from './tests/2.api-auth-internal';
+import { DESCRIBE_TEST_api_user } from './tests/3.api-user';
+import { DESCRIBE_TEST_api_position } from './tests/4.api-position';
 
 jest.setTimeout(15000);
 
