@@ -58,3 +58,20 @@ export async function updateTorrent(
 
 	return res.rowCount > 0;
 }
+
+export function refreshTorrentLastAccess(id: number) {
+	return client.query(`UPDATE torrents SET last_access = NOW() WHERE id = $1`, [id]);
+}
+
+export function markTorrentAsDeleted(id: number) {
+	return client.query<{ id: number; file_path: string | null }>(
+		'UPDATE torrents SET downloaded = false, file_path = NULL, last_access = NULL WHERE id = $1',
+		[id]
+	);
+}
+
+export function getUnusedFiles() {
+	return client.query<{ id: number; file_path: string | null }>(
+		"SELECT id, file_path FROM torrents WHERE downloaded = true AND last_access < NOW() - INTERVAL '30 days'"
+	);
+}
