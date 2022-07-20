@@ -12,7 +12,7 @@ export default async function get_position_handler(req: express.Request, res: ex
         return res.status(400).send("corrupted torrent id")
     }
     
-    const position = await get_position(sanitized_torrent_id)
+    const position = await get_position(res.locals.user_id, sanitized_torrent_id)
 
     res.json({position: position.position})
 }
