@@ -79,6 +79,7 @@ services:
     volumes:
       - ./api-streaming:/app
       - /app/node_modules
+      - /app/.yarn
     depends_on:
       - postgres
     links:
@@ -94,6 +95,7 @@ services:
     volumes:
       - ./api-position:/app
       - /app/node_modules
+      - /app/.yarn
     depends_on:
       - postgres
       - redis
@@ -179,6 +181,7 @@ services:
     volumes:
       - ./client:/app
       - /app/node_modules
+      - /app/.yarn
     depends_on:
       - api-auth
       - api-media

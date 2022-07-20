@@ -39,9 +39,8 @@ async function main() {
 
 	app.use('/v1/position', service_router);
 
-	app.listen(3040);
+	app.listen(process.env.API_POSITION_PORT);
+	console.log('[api-position] listening on port', process.env.API_POSITION_PORT);
 }
-
-console.log('---------------------------------------------------- start');
 
 main();

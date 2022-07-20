@@ -1,8 +1,13 @@
-FROM node:16-alpine3.15
+FROM node:16-alpine3.15 as builder
+
+RUN yarn set version stable
+
+FROM builder
 
 WORKDIR /app
 COPY ./package.json .
-# COPY ./yarn.lock .
+COPY ./.yarnrc.yml .
+COPY ./yarn.lock .
 
 RUN yarn install
 COPY . .
