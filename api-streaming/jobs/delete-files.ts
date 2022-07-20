@@ -1,16 +1,29 @@
 import path from 'path';
 import Cron from 'node-cron';
 import rimraf from 'rimraf';
+import env from '../env';
 import { getUnusedFiles, markTorrentAsDeleted } from '../postgres/movies';
 
+const DEFAULT_CRON = '0 * * * *'; // Defaults to every hour
+const DEFAULT_INTERVAL = '30 days'; // Defaults to file older than 30 days
+
+let cron = env.OLD_FILES_CRON ?? DEFAULT_CRON;
+let interval = env.OLD_FILES_INTERVAL ?? DEFAULT_INTERVAL; // Defaults to file older than 30 days
+
 export default function scheduleDeleteFiles() {
+	// Handle invalid CRONs
+	if (!Cron.validate(cron)) {
+		cron = DEFAULT_CRON;
+	}
+
+	console.log('Schedule [delete-files]', cron, 'older than', interval);
 	let running = false;
-	return Cron.schedule('0 * * * *', async (now) => {
+	return Cron.schedule(cron, async (now) => {
 		if (running) return;
 		running = true;
 		console.log(`[${now}] Checking unused files`);
 		try {
-			const unused = await getUnusedFiles();
+			const unused = await getUnusedFiles(interval);
 			if (unused.rows.length > 0) {
 				console.log('Deleting', unused.rows.length, 'old torrents');
 				// Delete all old torrents
@@ -81,7 +94,10 @@ export default function scheduleDeleteFiles() {
 				}
 			}
 		} catch (error) {
+			// Revert to default interval on failure, to make sure it's not the error
+			interval = DEFAULT_INTERVAL;
 			console.error('Failed to check or delete unused files', error);
+			console.log('Schedule [delete-files]', cron, 'older than', interval);
 		}
 		running = false;
 	});

@@ -70,8 +70,9 @@ export function markTorrentAsDeleted(id: number) {
 	);
 }
 
-export function getUnusedFiles() {
+export function getUnusedFiles(interval: string) {
 	return client.query<{ id: number; file_path: string | null }>(
-		"SELECT id, file_path FROM torrents WHERE downloaded = true AND last_access < NOW() - INTERVAL '30 days'"
+		'SELECT id, file_path FROM torrents WHERE downloaded = true AND last_access < NOW() - $1::interval',
+		[interval]
 	);
 }
