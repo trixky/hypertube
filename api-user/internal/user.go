@@ -31,7 +31,7 @@ func (s *UserServer) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.Us
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, status.Errorf(codes.NotFound, "no user finded with this id")
+			return nil, status.Errorf(codes.NotFound, "no user found with this id")
 		}
 		return nil, status.Errorf(codes.Internal, "user infos retrieving failed")
 	}

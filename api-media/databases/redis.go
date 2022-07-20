@@ -29,7 +29,7 @@ func RetrieveToken(token string) (*Token_info, error) {
 	key_nbr := len(keys)
 
 	if key_nbr != 1 {
-		return nil, fmt.Errorf("expected one session for one token (%d finded)", key_nbr)
+		return nil, fmt.Errorf("expected one session for one token (%d found)", key_nbr)
 	}
 
 	id, err := strconv.Atoi(strings.SplitN(keys[0], ".", 3)[2])
