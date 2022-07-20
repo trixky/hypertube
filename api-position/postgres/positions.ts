@@ -12,9 +12,9 @@ export async function save_position(position: models.Position): Promise<any> {
     }
 }
 
-export async function get_position(torrend_id: number): Promise<models.Position> {
+export async function get_position(user_id: number, torrend_id: number): Promise<models.Position> {
     try {
-        const res = await client.query("SELECT * FROM positions WHERE id = $1;", [torrend_id])
+        const res = await client.query("SELECT * FROM positions WHERE user_id = $1 AND torrent_id = $2;", [user_id, torrend_id])
 
         if (res.rows.length != 1)
             throw (new Error('zero or too many positions finded'))

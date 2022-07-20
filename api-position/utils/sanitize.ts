@@ -14,5 +14,5 @@ export function sanitize_string_to_positive_integer(input: any): number {
     if (isNaN(sanitized_input)) throw new Error("input corrupted");
     if (sanitized_input < 0) throw new Error("input need to be positive");
 
-    return sanitized_input;
+    return Math.round(sanitized_input);
 }
