@@ -1,13 +1,18 @@
-# https://nodejs.org/en/docs/guides/nodejs-docker-webapp/
+FROM node:16-alpine3.15 as builder
 
-FROM node:16-alpine3.15
+RUN yarn set version stable
 
-WORKDIR /usr/src/app
+WORKDIR /app
+COPY ./package.json .
+COPY ./.yarnrc.yml .
+COPY ./yarn.lock .
 
-# copy configuration and project files
+RUN yarn install
+
+FROM builder
+
+WORKDIR /app
+
 COPY . .
 
-# install project
-RUN npm install
-
-ENTRYPOINT npx jest --runInBand
+ENTRYPOINT npx jest --runInBand --forceExit
