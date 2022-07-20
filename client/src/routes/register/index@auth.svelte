@@ -95,10 +95,7 @@
 					await res
 						.json()
 						.then((body) => {
-							if (
-								body.hasOwnProperty(cookies.labels.token) &&
-								body.hasOwnProperty(cookies.labels.user_info)
-							) {
+							if (cookies.labels.token in body && cookies.labels.user_info in body) {
 								cookies.add_a_cookie(cookies.labels.token, body.token);
 								cookies.add_a_cookie(cookies.labels.user_info, body[cookies.labels.user_info]);
 								resolve(true);
@@ -153,17 +150,21 @@
 
 		return email_warning.length > 0;
 	}
-	function check_password(event: any = null): boolean {
+	function check_password(
+		event: (Event & { currentTarget: EventTarget & HTMLInputElement }) | null = null
+	): boolean {
 		response_warning = '';
-		if (event) password = event.target.value;
+		if (event) password = event.currentTarget.value;
 
 		if (registration_attempts || password_blur) password_warning = sanitizer.password(password);
 
 		return password_warning.length > 0;
 	}
-	function check_confirm_password(event: any = null): boolean {
+	function check_confirm_password(
+		event: (Event & { currentTarget: EventTarget & HTMLInputElement }) | null = null
+	): boolean {
 		response_warning = '';
-		if (event) confirm_password = event.target.value;
+		if (event) confirm_password = event.currentTarget.value;
 
 		if (registration_attempts || confirm_password_blur)
 			confirm_password_warning = sanitizer.confirm_password(password, confirm_password);

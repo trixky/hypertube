@@ -7,11 +7,11 @@
 
 	export let palette: string[];
 	$: paletteLength = palette.length;
-	export let enabled: boolean = true;
+	export let enabled = true;
 
 	// * Logic
 
-	let backgroundHeight: number = 0;
+	let backgroundHeight = 0;
 
 	function randomNumber(minInc: number, maxExcl: number) {
 		return Math.random() * (maxExcl - minInc) + minInc;

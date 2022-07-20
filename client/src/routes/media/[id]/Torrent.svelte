@@ -21,7 +21,7 @@
 		return 'text-green-600';
 	}
 
-	let quality: string = '';
+	let quality = '';
 	if (/sd|720p?|(hq)?\s*cam(\s*rip)?/i.exec(torrent.name)) {
 		quality = 'sd';
 	} else if (/hd|1080p?/i.exec(torrent.name)) {

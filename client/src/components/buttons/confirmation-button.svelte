@@ -3,8 +3,8 @@
 	import Spinner from '../animations/spinner.svelte';
 	import { fade } from 'svelte/transition';
 
-	export let name: string = '...';
-	export let handler: Function;
+	export let name = '...';
+	export let handler: () => unknown | Promise<unknown>;
 	export let disabled = false;
 
 	export let loading = false;

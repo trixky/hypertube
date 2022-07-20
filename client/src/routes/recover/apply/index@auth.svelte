@@ -92,18 +92,22 @@
 	}
 
 	// ----------------------------------------------------------------- sanitizing
-	function check_new_password(event: any = null): boolean {
+	function check_new_password(
+		event: (Event & { currentTarget: EventTarget & HTMLInputElement }) | null = null
+	): boolean {
 		response_warning = '';
-		if (event) new_password = event.target.value;
+		if (event) new_password = event.currentTarget.value;
 
 		if (registration_attempts || new_password_blur)
 			new_password_warning = sanitizer.password(new_password);
 
 		return new_password_warning.length > 0;
 	}
-	function check_confirm_new_password(event: any = null): boolean {
+	function check_confirm_new_password(
+		event: (Event & { currentTarget: EventTarget & HTMLInputElement }) | null = null
+	): boolean {
 		response_warning = '';
-		if (event) confirm_new_password = event.target.value;
+		if (event) confirm_new_password = event.currentTarget.value;
 
 		let warning = sanitizer.confirm_password(new_password, confirm_new_password);
 		if (confirm_new_password.length > 0 && !warning.length) confirm_new_password_blur = true;

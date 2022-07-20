@@ -138,7 +138,7 @@
 					await res
 						.json()
 						.then((body) => {
-							if (body.hasOwnProperty(cookies.labels.user_info)) {
+							if (cookies.labels.user_info in body) {
 								const user_64 = body[cookies.labels.user_info];
 								const user_json = atob(user_64);
 								const user = JSON.parse(user_json);
@@ -206,7 +206,7 @@
 					await res
 						.json()
 						.then((body) => {
-							if (body.hasOwnProperty(cookies.labels.user_info)) {
+							if (cookies.labels.user_info in body) {
 								cookies.add_a_cookie(cookies.labels.user_info, body[cookies.labels.user_info]);
 								me_store.refresh_from_cookies();
 								clear_all_inputs();
@@ -288,11 +288,13 @@
 		return false;
 	}
 
-	function check_current_password(event: any = null): boolean {
+	function check_current_password(
+		event: (Event & { currentTarget: EventTarget & HTMLInputElement }) | null = null
+	): boolean {
 		response_update_warning = '';
 		const warning = sanitizer.password(current_password, true);
 		if (!warning.length) current_password_blur = true;
-		if (event) current_password = event.target.value;
+		if (event) current_password = event.currentTarget.value;
 		if (check_if_all_password_are_empty()) return false;
 
 		if (patch_attemps || current_password_blur)
@@ -300,11 +302,13 @@
 
 		return current_password_warning.length > 0;
 	}
-	function check_new_password(event: any = null): boolean {
+	function check_new_password(
+		event: (Event & { currentTarget: EventTarget & HTMLInputElement }) | null = null
+	): boolean {
 		response_update_warning = '';
 		const warning = sanitizer.password(new_password, true);
 		if (!warning.length) new_password_blur = true;
-		if (event) new_password = event.target.value;
+		if (event) new_password = event.currentTarget.value;
 		if (check_if_all_password_are_empty()) return false;
 
 		if (patch_attemps || new_password_blur)
@@ -312,11 +316,13 @@
 
 		return new_password_warning.length > 0;
 	}
-	function check_confirm_new_password(event: any = null): boolean {
+	function check_confirm_new_password(
+		event: (Event & { currentTarget: EventTarget & HTMLInputElement }) | null = null
+	): boolean {
 		response_update_warning = '';
 		const warning = sanitizer.confirm_password(new_password, confirm_new_password, true);
 		if (!warning.length) confirm_new_password_blur = true;
-		if (event) confirm_new_password = event.target.value;
+		if (event) confirm_new_password = event.currentTarget.value;
 		if (check_if_all_password_are_empty()) return false;
 
 		if (patch_attemps || confirm_new_password_blur)
@@ -325,8 +331,10 @@
 		return confirm_new_password_warning.length > 0;
 	}
 
-	function handle_keydown(event: any) {
-		if (event.keyCode == 27) modification_mode = false;
+	function handle_keydown(event: KeyboardEvent) {
+		if (event.keyCode == 27 || event.key == 'Escape') {
+			modification_mode = false;
+		}
 	}
 </script>
 

@@ -21,6 +21,7 @@ function email(email: string, can_be_null = false): string {
 	return '';
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function password(password: string, _ /* can_be_null */ = false): string {
 	const password_warnings = [];
 
@@ -55,6 +56,7 @@ function password(password: string, _ /* can_be_null */ = false): string {
 function confirm_password(
 	password: string,
 	confirm_password: string,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	_ /* can_be_null */ = false
 ): string {
 	if (!confirm_password.length) return $t('sanitizer.missing');

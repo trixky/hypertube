@@ -78,7 +78,7 @@
 					await res
 						.json()
 						.then((body) => {
-							if (body.hasOwnProperty(cookies.labels.token)) {
+							if (cookies.labels.token in body) {
 								const user = atob(body[cookies.labels.user_info]);
 								const me = JSON.parse(user);
 								if (me) {
@@ -127,9 +127,11 @@
 
 		return email_warning.length > 0;
 	}
-	function check_password(event: any = null): boolean {
+	function check_password(
+		event: (Event & { currentTarget: EventTarget & HTMLInputElement }) | null = null
+	): boolean {
 		response_warning = '';
-		if (event) password = event.target.value;
+		if (event) password = event.currentTarget.value;
 
 		if (login_attempts || password_blur) password_warning = sanitizer.password(password);
 
