@@ -25,7 +25,7 @@ func (s *MediaServer) PostComment(ctx context.Context, in *pb.PostCommentRequest
 	}
 
 	// Sanitize comment, only check the length
-	if len(in.Content) < 2 || len(in.Content) > 65535 {
+	if len(in.Content) < 2 || len(in.Content) > 500 {
 		return nil, status.Errorf(codes.InvalidArgument, "Invalid comment content length")
 	}
 

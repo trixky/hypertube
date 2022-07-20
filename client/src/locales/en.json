@@ -1,105 +1,105 @@
 {
-	"search": {
-		"form": {
-			"year": "Year",
-			"query_placeholder": "Search",
-			"rating": "Rating",
-			"rating_placeholder": "Min. Rating",
-			"sort_by": "Sort By",
-			"genres": {
-				"name": "Genres",
-				"clear": "Clear",
-				"no_results": "No genres, yet !",
-				"loading": "Loading..."
-			},
-			"sort_columns": {
-				"year": "Year",
-				"name": "Name",
-				"duration": "Duration",
-				"id": "#"
-			}
-		},
-		"no_results": "No results !",
-		"load_more": "Load More"
-	},
-	"asc": {
-		"short": "Asc"
-	},
-	"desc": {
-		"short": "Desc"
-	},
-	"media": {
-		"go_back": "Go Back",
-		"actors": "Actors",
-		"staffs": "Staffs",
-		"refresh_peers": "Refresh Peers",
-		"size": "Size",
-		"watch": "Watch",
-		"comments": "Comments",
-		"no_torrents": "No torrents for this media, yet !",
-		"no_comments": "No comments on this media, yet, be the first one !",
-		"comment_placeholder": "Post a new comment...",
-		"post_comment": "Post",
-		"comment_fail": "Failed to post comment, retry layer",
-		"watching": "Watching",
-		"watched": "Watched",
-		"resume": "Resume",
-		"theatre_mode": "Theatre mode"
-	},
-	"auth": {
-		"email": "Email",
-		"password": "Password",
-		"forgot_password": "Forgot your password ?",
-		"join_question": "Not on Hypertube yet ?",
-		"signup": "Sign up",
-		"continue_with": "Continue with",
-		"omniauth_separator": "or",
-		"username": "Username",
-		"first_name": "Firstname",
-		"last_name": "Lastname",
-		"confirm_password": "Confirm password",
-		"member_question": "Already a member ?",
-		"login": "Log in",
-		"back_to": "Back to",
-		"to_login": "Log in",
-		"login_header": "Login",
-		"register_header": "Register",
-		"forgot_password_header": "Recover password",
-		"login_action": "Login",
-		"register_action": "Register",
-		"recover_by_mail": "Recover by Email",
-		"change_password": "Change password",
-		"server_error": "An error occured in the response from the server side, please try again",
-		"recover_mail_sent": "An email will be sent",
-		"no_user_mail": "No user found for this email",
-		"email_already_in_use": "Email is already in use, please choose another one",
-		"login_failed": "Incorrect email and/or password",
-		"password_updated": "Password changed successfully",
-		"current_password": "Current password",
-		"new_password": "New Password",
-		"update": "Update",
-		"invalid_password": "invalid password",
-		"profile_updated": "profile updated",
-		"cancel": "Cancel",
-		"modify": "Update",
-		"my_profile": "My Profile",
-		"profile": "Profile",
-		"user_does_not_exists": "The user does not exist"
-	},
-	"sanitizer": {
-		"missing": "Is missing",
-		"passwords_dont_match": "passwords must be the same",
-		"too_short": "is too short, needs at least {amount} characters",
-		"too_long": "is too short, must contain a maximum of {amount} characters",
-		"missing_lowercase": "must contain at least one lowercase character (a-z)",
-		"missing_uppercase": "must contain at least one uppercase character (A-Z)",
-		"missing_digit": "must contain at least one numeric character (0-9)",
-		"missing_special": "must contain at least one specific character (!@#...)",
-		"badly_formatted": "is badly formatted"
-	},
-	"logout": "Logout",
-	"navigation": {
-		"search": "Search"
-	},
-	"language": "Language"
+  "search": {
+    "form": {
+      "year": "Year",
+      "query_placeholder": "Search",
+      "rating": "Rating",
+      "rating_placeholder": "Min. Rating",
+      "sort_by": "Sort By",
+      "genres": {
+        "name": "Genres",
+        "clear": "Clear",
+        "no_results": "No genres, yet !",
+        "loading": "Loading..."
+      },
+      "sort_columns": {
+        "year": "Year",
+        "name": "Name",
+        "duration": "Duration",
+        "id": "#"
+      }
+    },
+    "no_results": "No results !",
+    "load_more": "Load More"
+  },
+  "asc": {
+    "short": "Asc"
+  },
+  "desc": {
+    "short": "Desc"
+  },
+  "media": {
+    "go_back": "Go Back",
+    "actors": "Actors",
+    "staffs": "Staffs",
+    "refresh_peers": "Refresh Peers",
+    "size": "Size",
+    "watch": "Watch",
+    "comments": "Comments",
+    "no_torrents": "No torrents for this media, yet !",
+    "no_comments": "No comments on this media, yet, be the first one !",
+    "comment_placeholder": "Post a new comment...",
+    "post_comment": "Post",
+    "comment_fail": "Failed to post comment, retry layer",
+    "watching": "Watching",
+    "watched": "Watched",
+    "resume": "Resume",
+    "theatre_mode": "Theatre mode"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "forgot_password": "Forgot your password ?",
+    "join_question": "Not on Hypertube yet ?",
+    "signup": "Sign up",
+    "continue_with": "Continue with",
+    "omniauth_separator": "or",
+    "username": "Username",
+    "first_name": "Firstname",
+    "last_name": "Lastname",
+    "confirm_password": "Confirm password",
+    "member_question": "Already a member ?",
+    "login": "Log in",
+    "back_to": "Back to",
+    "to_login": "Log in",
+    "login_header": "Login",
+    "register_header": "Register",
+    "forgot_password_header": "Recover password",
+    "login_action": "Login",
+    "register_action": "Register",
+    "recover_by_mail": "Recover by Email",
+    "change_password": "Change password",
+    "server_error": "An error occured in the response from the server side, please try again",
+    "recover_mail_sent": "An email will be sent",
+    "no_user_mail": "No user found for this email",
+    "email_already_in_use": "Email is already in use, please choose another one",
+    "login_failed": "Incorrect email and/or password",
+    "password_updated": "Password changed successfully",
+    "current_password": "Current password",
+    "new_password": "New Password",
+    "update": "Update",
+    "invalid_password": "invalid password",
+    "profile_updated": "profile updated",
+    "cancel": "Cancel",
+    "modify": "Update",
+    "my_profile": "My Profile",
+    "profile": "Profile",
+    "user_does_not_exists": "The user does not exist"
+  },
+  "sanitizer": {
+    "missing": "Is missing",
+    "passwords_dont_match": "passwords must be the same",
+    "too_short": "is too short, needs at least {amount} characters",
+    "too_long": "is too long, must contain a maximum of {amount} characters",
+    "missing_lowercase": "must contain at least one lowercase character (a-z)",
+    "missing_uppercase": "must contain at least one uppercase character (A-Z)",
+    "missing_digit": "must contain at least one numeric character (0-9)",
+    "missing_special": "must contain at least one specific character (!@#...)",
+    "badly_formatted": "is badly formatted"
+  },
+  "logout": "Logout",
+  "navigation": {
+    "search": "Search"
+  },
+  "language": "Language"
 }

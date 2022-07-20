@@ -99,7 +99,7 @@
 									}
 									index++;
 								}
-								setSubtitleMessage('success', `Loaded ${index} subtitles`);
+								setSubtitleMessage('success', `Loaded ${index} subtitle${index > 1 ? 's' : ''}`);
 							}
 						} else {
 							throw new Error('Failed to load subtitles');
