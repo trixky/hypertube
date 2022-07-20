@@ -34,8 +34,8 @@
 			commentError = $_('sanitizer.too_short', { values: { amount: 2 } });
 			return;
 		}
-		if (commentContent.length >= 65535) {
-			commentError = $_('sanitizer.too_long', { values: { amount: 65535 } });
+		if (commentContent.length > 500) {
+			commentError = $_('sanitizer.too_long', { values: { amount: 500 } });
 			return;
 		}
 		commentError = undefined;
