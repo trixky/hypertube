@@ -1,7 +1,8 @@
 import { fetch } from 'undici';
 import { URL, URLSearchParams } from 'url';
+import env from '../env';
 
-const ApiKey = process.env.OSDB_API_KEY || '';
+const ApiKey = env.OSDB_API_KEY || '';
 
 export type SearchInformations = {
 	imdb_id?: number | null;
@@ -101,8 +102,8 @@ class OSDBClass {
 				'Api-Key': ApiKey
 			},
 			body: JSON.stringify({
-				username: process.env.OSDB_USERNAME,
-				password: process.env.OSDB_PASSWORD
+				username: env.OSDB_USERNAME,
+				password: env.OSDB_PASSWORD
 			})
 		});
 		if (response.ok) {

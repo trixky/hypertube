@@ -1,19 +1,17 @@
 import express from 'express';
 import cors from 'cors';
-import { config } from 'dotenv';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import middleware_auth from './middlewares/auth';
 import { connect as connectPostgres } from './postgres/db';
+import env from './env';
 import { connect as connectRedis } from './redis/db';
 import subtitlesRouter from './Controllers/subtitles';
 import streamRouter from './Controllers/streaming';
 import scheduleDeleteFiles from './jobs/delete-files';
 
-config();
-
 (async () => {
-	if (!process.env.OSDB_API_KEY || !process.env.OSDB_USERNAME || !process.env.OSDB_PASSWORD) {
+	if (!env.OSDB_API_KEY || !env.OSDB_USERNAME || !env.OSDB_PASSWORD) {
 		throw new Error('Missing required env keys');
 	}
 
@@ -53,8 +51,8 @@ config();
 	app.use('/', subtitlesRouter);
 	app.use('/', streamRouter);
 
-	app.listen(process.env.API_STREAMING_PORT);
-	console.log('[api-streaming] listening on port', process.env.API_STREAMING_PORT);
+	app.listen(env.API_STREAMING_PORT);
+	console.log('[api-streaming] listening on port', env.API_STREAMING_PORT);
 
 	// *
 
