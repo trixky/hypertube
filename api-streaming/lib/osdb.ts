@@ -1,7 +1,7 @@
-import { fetch } from "undici";
-import { URL, URLSearchParams } from "url";
+import { fetch } from 'undici';
+import { URL, URLSearchParams } from 'url';
 
-const ApiKey = process.env.OSDB_API_KEY || "";
+const ApiKey = process.env.OSDB_API_KEY || '';
 
 export type SearchInformations = {
 	imdb_id?: number | null;
@@ -75,7 +75,7 @@ class OSDBClass {
 	reset: Date | null;
 
 	constructor() {
-		this.token = "";
+		this.token = '';
 		this.blocked = false;
 		this.reset = null;
 	}
@@ -94,16 +94,16 @@ class OSDBClass {
 	}
 
 	async login() {
-		const response = await fetch("https://api.opensubtitles.com/api/v1/login", {
-			method: "POST",
+		const response = await fetch('https://api.opensubtitles.com/api/v1/login', {
+			method: 'POST',
 			headers: {
-				"Content-Type": "application/json",
-				"Api-Key": ApiKey,
+				'Content-Type': 'application/json',
+				'Api-Key': ApiKey
 			},
 			body: JSON.stringify({
 				username: process.env.OSDB_USERNAME,
-				password: process.env.OSDB_PASSWORD,
-			}),
+				password: process.env.OSDB_PASSWORD
+			})
 		});
 		if (response.ok) {
 			const body = (await response.json()) as {
@@ -121,40 +121,43 @@ class OSDBClass {
 			return true;
 		}
 
-		this.token = "";
+		this.token = '';
 		return false;
 	}
 
-	async search(searchInformations: SearchInformations, doRetry = true): Promise<OSDBSubtitle[] | false> {
+	async search(
+		searchInformations: SearchInformations,
+		doRetry = true
+	): Promise<OSDBSubtitle[] | false> {
 		if (!this.token) {
 			await this.login();
 		}
 
 		// Construct search URL
 		// Use the tmdb_id or the imdb_id if there is one, else search by name and year
-		const url = new URL("https://api.opensubtitles.com/api/v1/subtitles");
+		const url = new URL('https://api.opensubtitles.com/api/v1/subtitles');
 		const params = new URLSearchParams({
-			type: "movie",
-			languages: "en,fr",
-			order_by: "download_count",
+			type: 'movie',
+			languages: 'en,fr',
+			order_by: 'download_count'
 		});
 		if (searchInformations.tmdb_id) {
-			params.append("tmdb_id", `${searchInformations.tmdb_id}`);
+			params.append('tmdb_id', `${searchInformations.tmdb_id}`);
 		} else if (searchInformations.imdb_id) {
-			params.append("imdb_id", `${searchInformations.imdb_id}`);
+			params.append('imdb_id', `${searchInformations.imdb_id}`);
 		} else {
 			// if (searchInformations.year) {
 			// 	params.append('year', `${searchInformations.year}`)
 			// }
 			// params.append('query', searchInformations.media_name)
-			params.append("query", searchInformations.torrent_name);
+			params.append('query', searchInformations.torrent_name);
 		}
 
 		const response = await fetch(`${url}?${params}`, {
 			headers: {
-				"Content-Type": "application/json",
-				"Api-Key": ApiKey,
-			},
+				'Content-Type': 'application/json',
+				'Api-Key': ApiKey
+			}
 		});
 		if (response.ok) {
 			const body = (await response.json()) as SearchResponse;
@@ -181,16 +184,16 @@ class OSDBClass {
 		}
 
 		// Initial request to get the file link
-		console.log("Downloading", downloadInformations.fileId);
-		const response = await fetch("https://api.opensubtitles.com/api/v1/download", {
-			method: "POST",
+		console.log('Downloading', downloadInformations.fileId);
+		const response = await fetch('https://api.opensubtitles.com/api/v1/download', {
+			method: 'POST',
 			headers: {
-				"Content-Type": "application/json",
-				"Api-Key": ApiKey,
+				'Content-Type': 'application/json',
+				'Api-Key': ApiKey
 			},
 			body: JSON.stringify({
-				file_id: downloadInformations.fileId,
-			}),
+				file_id: downloadInformations.fileId
+			})
 		});
 		if (response.ok) {
 			const body = (await response.json()) as {
@@ -204,7 +207,7 @@ class OSDBClass {
 			};
 
 			// Update block status
-			console.log("Remaining quota", body.remaining, "until", body.reset_time_utc);
+			console.log('Remaining quota', body.remaining, 'until', body.reset_time_utc);
 			if (body.remaining == 0) {
 				this.blocked = true;
 				this.reset = new Date(body.reset_time_utc);
@@ -212,17 +215,17 @@ class OSDBClass {
 
 			// Then download the file
 			const downloadResponse = await fetch(body.link, {
-				method: "GET",
+				method: 'GET',
 				headers: {
-					Authorization: `Bearer ${this.token}`,
-				},
+					Authorization: `Bearer ${this.token}`
+				}
 			});
 			if (response.ok) {
 				const subtitle = await downloadResponse.text();
-				const extension = body.file_name.split(".").pop()!;
+				const extension = body.file_name.split('.').pop()!;
 				return { extension, buffer: subtitle };
 			} else {
-				console.error("Failed to download", downloadInformations.fileId);
+				console.error('Failed to download', downloadInformations.fileId);
 				this.blocked = true;
 				this.reset = new Date();
 				this.reset.setMinutes(this.reset.getMinutes() + 5);

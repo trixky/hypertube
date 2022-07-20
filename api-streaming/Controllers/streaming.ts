@@ -1,12 +1,12 @@
-import { Router } from "express";
-import TailFile from "@logdna/tail-file";
-import fs from "fs";
-import { download, DownloadInfo } from "../lib/downloader";
-import pump from "pump";
+import { Router } from 'express';
+import TailFile from '@logdna/tail-file';
+import fs from 'fs';
+import { download, DownloadInfo } from '../lib/downloader';
+import pump from 'pump';
 
 const router = Router();
 
-router.get("/torrent/:torrentId/stream", async function (req, res) {
+router.get('/torrent/:torrentId/stream', async function (req, res) {
 	const torrentId: number = parseInt(req.params.torrentId);
 
 	if (isNaN(torrentId) || torrentId < 0) {
@@ -14,13 +14,14 @@ router.get("/torrent/:torrentId/stream", async function (req, res) {
 	}
 
 	const acceptHeader = req.headers.accept;
-	const acceptMkv = (acceptHeader && (acceptHeader.indexOf("video/mkv") >= 0 || acceptHeader == "*/*")) == true;
+	const acceptMkv =
+		(acceptHeader && (acceptHeader.indexOf('video/mkv') >= 0 || acceptHeader == '*/*')) == true;
 
 	let downloadResult: DownloadInfo;
 	try {
-		console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 0.1");
+		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 0.1');
 		downloadResult = await download(`${torrentId}`, false);
-		console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 0.2");
+		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 0.2');
 	} catch {
 		res.status(500).send();
 		return;
@@ -31,17 +32,17 @@ router.get("/torrent/:torrentId/stream", async function (req, res) {
 	}
 
 	console.log("on s'en sort aveeeec download result: ", downloadResult);
-	const extension = downloadResult.path.split(".").pop()!;
-	const nativeExtensions = ["mp4", "webm"];
+	const extension = downloadResult.path.split('.').pop()!;
+	const nativeExtensions = ['mp4', 'webm'];
 	const sendNative =
 		(nativeExtensions.indexOf(downloadResult.original_extension) >= 0 ||
-			(downloadResult.original_extension == "mkv" && acceptMkv)) &&
+			(downloadResult.original_extension == 'mkv' && acceptMkv)) &&
 		downloadResult.length > 0;
 
-	console.log("acceptMkv", acceptMkv);
-	console.log("extension", extension);
-	console.log("sendNative", sendNative);
-	console.log("using path", downloadResult.path);
+	console.log('acceptMkv', acceptMkv);
+	console.log('extension', extension);
+	console.log('sendNative', sendNative);
+	console.log('using path', downloadResult.path);
 
 	// * Downloading
 	// * This can either be the original file if the torrent has an accepted file for the client
@@ -49,47 +50,47 @@ router.get("/torrent/:torrentId/stream", async function (req, res) {
 	// * The result is an used file path in either way, which is tailed
 	if (!downloadResult.downloaded) {
 		const file = new TailFile(downloadResult.path, { startPos: 0 })
-			.on("tail_error", (err: any) => {
-				console.error("TailFile had an error!", err);
+			.on('tail_error', (err) => {
+				console.error('TailFile had an error!', err);
 			})
-			.on("error", (err: any) => {
-				console.error("A TailFile stream error was likely encountered", err);
+			.on('error', (err) => {
+				console.error('A TailFile stream error was likely encountered', err);
 			});
 		file.start();
-		console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1.3");
+		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1.3');
 
 		// When sending the file that existed in the torrent we already have all of the size informations ...
 		if (sendNative) {
 			const realSize = downloadResult.length;
-			console.log("Sending headers", {
-				"Content-Length": realSize,
+			console.log('Sending headers', {
+				'Content-Length': realSize,
 				// "Content-Range": `bytes 0-${realSize - 1}/${realSize}`,
 				// "Accept-Ranges": "bytes",
-				"Content-Type": `video/${extension}`,
+				'Content-Type': `video/${extension}`
 			});
 			res.writeHead(200, {
-				"Content-Length": realSize,
+				'Content-Length': realSize,
 				// "Content-Range": `bytes 0-${realSize - 1}/${realSize}`,
 				// "Accept-Ranges": "bytes",
-				"Content-Type": `video/${extension}`,
+				'Content-Type': `video/${extension}`
 			});
 		}
 		// ... else the file comes from a transcode and we don't know the final file size
 		else {
-			console.log("Sending headers", {
+			console.log('Sending headers', {
 				// "Content-Range": `bytes 0-`,
 				// "Accept-Ranges": "bytes",
-				"Content-Type": `video/${extension}`,
+				'Content-Type': `video/${extension}`
 			});
 			res.writeHead(200, {
 				// "Content-Range": `bytes 0-`,
 				// "Accept-Ranges": "bytes",
-				"Content-Type": `video/${extension}`,
+				'Content-Type': `video/${extension}`
 			});
 		}
 
 		// Send the file read to the response
-		console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1.5");
+		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1.5');
 		pump(file, res, () => {
 			file.quit();
 		});
@@ -100,59 +101,59 @@ router.get("/torrent/:torrentId/stream", async function (req, res) {
 		const size = sendNative ? downloadResult.length : fs.statSync(downloadResult.path).size;
 
 		// Check and support ranges if the client supports them
-		const range = req.headers["range"];
+		const range = req.headers['range'];
 		let start = 0;
 		let end = size - 1;
 		// Handle invalid ranges with a 416
-		console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.0");
+		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.0');
 		if (range) {
-			var parts = range!.slice(6).split("-");
+			const parts = range!.slice(6).split('-');
 			if (parts.length >= 1 && parts.length < 3) {
-				var partialStart = parseInt(parts[0]);
-				var partialEnd = parseInt(parts[1]);
+				const partialStart = parseInt(parts[0]);
+				const partialEnd = parseInt(parts[1]);
 				if (!isNaN(partialStart) && partialStart >= 0 && partialStart < size) {
 					start = partialStart;
 				} else {
-					console.error("Invalid range start", start, size);
-					return res.status(416).header("Content-Range", `*/${size}`).send();
+					console.error('Invalid range start', start, size);
+					return res.status(416).header('Content-Range', `*/${size}`).send();
 				}
 				if (!isNaN(partialEnd)) {
 					if (partialEnd > start && partialEnd <= size) {
 						end = partialEnd;
 					} else {
-						console.error("Invalid range end");
-						return res.status(416).header("Content-Range", `*/${size}`).send();
+						console.error('Invalid range end');
+						return res.status(416).header('Content-Range', `*/${size}`).send();
 					}
 				}
 			} else {
-				console.error("Invalid ranges format");
-				return res.status(416).header("Content-Range", `*/${size}`).send();
+				console.error('Invalid ranges format');
+				return res.status(416).header('Content-Range', `*/${size}`).send();
 			}
 		}
 
 		// If the browser has no support for range we just returns a 200 with no ranges
-		console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.1");
+		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.1');
 		let returnCode = 200;
-		let headers: Record<string, any> = {
-			"Content-Length": size,
-			"Content-Type": `video/${extension}`,
+		const headers: Record<string, string | number> = {
+			'Content-Length': size,
+			'Content-Type': `video/${extension}`
 		};
 		if (range) {
 			returnCode = 206;
-			headers["Content-Range"] = `bytes ${start}-${end - 1}/${size}`;
-			headers["Accept-Ranges"] = "bytes";
+			headers['Content-Range'] = `bytes ${start}-${end - 1}/${size}`;
+			headers['Accept-Ranges'] = 'bytes';
 		}
-		console.log("Sending headers", headers);
+		console.log('Sending headers', headers);
 		res.writeHead(returnCode, headers);
 
 		// Send the file read to the response
-		console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.2");
+		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.2');
 		const file = fs.createReadStream(downloadResult.path, { start, end });
 		pump(file, res, () => {
 			file.close();
 		});
 
-		console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.3");
+		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.3');
 	}
 });
 
