@@ -104,6 +104,29 @@ services:
     ports:
       - "${API_POSITION_PORT}:${API_POSITION_PORT}"
 
+  api-tester:
+    build: ./api-tester
+    env_file:
+      - ./client/.env
+      - ./api-auth/.env
+      - ./api-user/.env
+      - ./api-position/.env
+      - ./redis/.env
+    volumes:
+      - ./api-tester:/app
+    depends_on:
+      - client
+      - api-auth
+      - api-user
+      - api-position
+      - redis
+    links:
+      - client
+      - api-auth
+      - api-user
+      - api-position
+      - redis
+
   postgres:
     image: postgres
     restart: always
@@ -119,10 +142,14 @@ services:
 
   redis:
     image: redis:7.0.2-alpine
+    env_file:
+      - ./redis/.env
     volumes:
       - redis-data:/data
-    # access to the redis CLI:
-    # $> docker exec -it <container> /bin/sh -c 'redis-cli -h redis'
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+      # access to the redis CLI:
+      # $> docker exec -it <container> /bin/sh -c 'redis-cli -h redis'
 
   adminer:
     image: adminer:4.8.1-standalone
