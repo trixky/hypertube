@@ -17,7 +17,7 @@ export async function get_position(user_id: number, torrend_id: number): Promise
 		[user_id, torrend_id]
 	);
 
-	if (res.rows.length != 1) throw new Error('zero or too many positions finded');
+	if (res.rows.length != 1) throw new Error('zero or too many positions found');
 
 	return res.rows[0];
 }
