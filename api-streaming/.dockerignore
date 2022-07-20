@@ -6,3 +6,4 @@ Dockerfile
 .gitignore
 .cache/movies
 .cache/torrent-stream
+.yarn

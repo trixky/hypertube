@@ -38,10 +38,6 @@ config();
 
 	const app = express();
 
-	console.log('**************************************** START');
-	console.log('**************************************** START');
-	console.log('**************************************** START');
-
 	app.use(
 		cors({
 			origin: ['http://localhost:4040'],
@@ -56,5 +52,6 @@ config();
 	app.use('/', subtitlesRouter);
 	app.use('/', streamRouter);
 
-	app.listen(3030);
+	app.listen(process.env.API_STREAMING_PORT);
+	console.log('[api-streaming] listening on port', process.env.API_STREAMING_PORT);
 })();
