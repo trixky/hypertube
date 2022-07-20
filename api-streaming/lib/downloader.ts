@@ -1,5 +1,5 @@
 import torrentStream from 'torrent-stream'; // https://github.com/mafintosh/torrent-stream#readme
-import { getTorrent, updateTorrent } from '../postgres/movies';
+import { getTorrent, refreshTorrentLastAccess, updateTorrent } from '../postgres/movies';
 import parseTorrent from 'parse-torrent';
 import ffmpeg from 'fluent-ffmpeg';
 import { sleep } from '../utils/time';
@@ -278,6 +278,14 @@ export async function download(torrent_id: string, want_mkv: boolean): Promise<D
 			db_torrent_infos.file_path = res.file_path;
 			db_torrent_infos.magnet = res.magnet;
 			db_torrent_infos.torrent_url = res.torrent_url;
+		} catch (err) {
+			reject(err);
+			return;
+		}
+
+		// Update torrent last access to delay deletion
+		try {
+			await refreshTorrentLastAccess(sanitized_torrent_id);
 		} catch (err) {
 			reject(err);
 			return;

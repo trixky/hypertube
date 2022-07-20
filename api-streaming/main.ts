@@ -1,13 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import { config } from 'dotenv';
-import middleware_auth from './middlewares/auth';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
+import middleware_auth from './middlewares/auth';
 import { connect as connectPostgres } from './postgres/db';
 import { connect as connectRedis } from './redis/db';
 import subtitlesRouter from './Controllers/subtitles';
 import streamRouter from './Controllers/streaming';
+import scheduleDeleteFiles from './jobs/delete-files';
 
 config();
 
@@ -54,4 +55,8 @@ config();
 
 	app.listen(process.env.API_STREAMING_PORT);
 	console.log('[api-streaming] listening on port', process.env.API_STREAMING_PORT);
+
+	// *
+
+	scheduleDeleteFiles();
 })();
