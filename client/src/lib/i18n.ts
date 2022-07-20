@@ -1,5 +1,3 @@
-// import { browser } from '$app/env';
-import { get } from 'svelte/store';
 import { browser } from '$app/env';
 import { init, getLocaleFromNavigator, addMessages, locale } from 'svelte-i18n';
 import { add_a_cookie, del_a_cookie, extract_cookie } from '$utils/cookies';

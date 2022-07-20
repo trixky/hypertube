@@ -1,8 +1,6 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
 	import Logo from './logo.svelte';
-	import { browser } from '$app/env';
-	import { me_store } from '$stores/me';
 	import * as cookies from '$utils/cookies';
 	import { locale, _ } from 'svelte-i18n';
 	import Logout from '$components/icons/Logout.svelte';

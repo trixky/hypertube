@@ -1,6 +1,6 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
-	export let size: number = 20;
+	export let size = 20;
 	export let inversed = false;
 	$: color = inversed ? '#ffffff' : '#000000';
 </script>

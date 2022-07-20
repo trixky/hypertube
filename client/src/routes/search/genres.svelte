@@ -12,7 +12,7 @@
 
 	// * Popup logic
 	export let disabled = false;
-	let classes: string = '';
+	let classes = '';
 	let show = false;
 	let isOpen = false;
 	let wrapper: HTMLElement;

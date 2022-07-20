@@ -2,7 +2,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	export let tag: string = 'div';
+	export let tag = 'div';
 
 	let container: HTMLElement;
 	let intersected = false;

@@ -1,7 +1,7 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
 	import { createEventDispatcher, onMount, tick } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import type { MediaTorrent } from 'src/types/Media';
 	import { session } from '$app/stores';
 	import { _ } from 'svelte-i18n';
@@ -39,7 +39,7 @@
 	let playMessage: Message | undefined;
 	let subtitleMessage: Message | undefined;
 	let updateErrored: number | null = null;
-	let lastUpdate: number = 0;
+	let lastUpdate = 0;
 
 	function setPlayMessage(type: MessageType, content: string) {
 		playMessage = { type, content };

@@ -6,7 +6,7 @@
 	import Sd from '$components/icons/SD.svelte';
 
 	export let quality: string | undefined = undefined;
-	let classes: string = '';
+	let classes = '';
 	export { classes as class };
 </script>
 

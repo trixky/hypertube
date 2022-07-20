@@ -22,7 +22,7 @@
 	}));
 
 	// Comment
-	let loadingComment: boolean = false;
+	let loadingComment = false;
 	let commentError: string | undefined;
 	let commentContent: string | null | undefined;
 	async function postComment() {

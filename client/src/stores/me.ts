@@ -12,6 +12,8 @@ function create_me() {
 	});
 
 	return {
+		set,
+		update,
 		subscribe,
 		refresh_from_cookies: () => {
 			const me_from_cookie = get_me_from_cookie();
