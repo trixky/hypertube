@@ -2,6 +2,9 @@ package internal
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"log"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/trixky/hypertube/api-media/databases"
@@ -21,7 +24,12 @@ func (s *MediaServer) PostComment(ctx context.Context, in *pb.PostCommentRequest
 	// Check if media exists
 	media, err := databases.DBs.SqlcQueries.GetMediaByID(ctx, int64(in.MediaId))
 	if err != nil {
-		return nil, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, status.Errorf(codes.NotFound, "no media with this id")
+		} else {
+			log.Println(err)
+			return nil, err
+		}
 	}
 
 	// Sanitize comment, only check the length
@@ -36,6 +44,7 @@ func (s *MediaServer) PostComment(ctx context.Context, in *pb.PostCommentRequest
 		Content: in.Content,
 	})
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 

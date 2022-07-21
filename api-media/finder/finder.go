@@ -68,7 +68,7 @@ WHERE
 `
 
 const findMedias = `-- name: FindMedias :many
-SELECT DISTINCT medias.id, medias.imdb_id, medias.tmdb_id, medias.thumbnail, medias.year, medias.rating, media_names.name
+SELECT DISTINCT medias.id, medias.imdb_id, medias.tmdb_id, medias.thumbnail, medias.year, medias.rating, media_names.name, medias.duration
 FROM medias
 RIGHT JOIN (
 	SELECT media_names.id, media_names.media_id, media_names.name FROM media_names
@@ -232,6 +232,7 @@ func FindMedias(ctx context.Context, arg FindMediasParams) ([]sqlc.Media, error)
 			&i.Year,
 			&i.Rating,
 			&name,
+			&i.Duration,
 		); err != nil {
 			return nil, err
 		}

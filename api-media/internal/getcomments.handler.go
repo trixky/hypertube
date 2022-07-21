@@ -10,7 +10,8 @@ import (
 	"github.com/trixky/hypertube/api-media/databases"
 	pb "github.com/trixky/hypertube/api-media/proto"
 	"github.com/trixky/hypertube/api-media/utils"
-	grpcMetadata "google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *MediaServer) GetComments(ctx context.Context, in *pb.GetCommentsRequest) (*pb.GetCommentsResponse, error) {
@@ -18,19 +19,15 @@ func (s *MediaServer) GetComments(ctx context.Context, in *pb.GetCommentsRequest
 		return nil, err
 	}
 
-	md, ok := grpcMetadata.FromIncomingContext(ctx)
-	if !ok {
-		log.Println("missing args")
-		return nil, nil
-	}
-
-	getComments := md.Get("getComments")
-	log.Println("getComments:", getComments)
-
 	// Find the media
 	media, err := databases.DBs.SqlcQueries.GetMediaByID(ctx, int64(in.MediaId))
 	if err != nil {
-		return nil, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, status.Errorf(codes.NotFound, "no media with this id")
+		} else {
+			log.Println(err)
+			return nil, err
+		}
 	}
 
 	// Load comments
@@ -39,6 +36,7 @@ func (s *MediaServer) GetComments(ctx context.Context, in *pb.GetCommentsRequest
 		if errors.Is(err, sql.ErrNoRows) {
 			return &pb.GetCommentsResponse{}, nil
 		} else {
+			log.Println(err)
 			return nil, err
 		}
 	}
