@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-co-op/gocron"
 	"github.com/trixky/hypertube/api-scrapper/databases"
 	"github.com/trixky/hypertube/api-scrapper/environment"
 	"github.com/trixky/hypertube/api-scrapper/internal"
@@ -38,10 +39,12 @@ func main() {
 	}()
 
 	// ------------- loop forever to scrape
-	for {
+	scheduler := gocron.NewScheduler(time.UTC)
+	scheduler.SingletonMode()
+	scheduler.StartImmediately()
+	scheduler.Every(30).Minutes().Do(func() {
 		internal.DoScrapeLatest(nil)
 		log.Println("Next scrape in 30min")
-		time.Sleep(time.Duration(30) * time.Minute)
-	}
-
+	})
+	scheduler.StartBlocking()
 }
