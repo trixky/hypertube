@@ -8,21 +8,21 @@ export type Torrent = {
 	magnet: string | null;
 	file_path: string | null;
 	downloaded: boolean | null;
+	length: string | null;
 };
 
 export async function getTorrent(id: number) {
 	const res = await client.query<Torrent>(
-		'SELECT id, name, media_id, torrent_url, magnet, file_path, downloaded \
+		'SELECT id, name, media_id, torrent_url, magnet, file_path, downloaded, length \
         FROM torrents \
         WHERE id = $1;',
 		[id]
 	);
 
-	if (res.rows.length == 1) {
-		return res.rows[0];
-	} else {
-		throw 'no torrent found with this id';
+	if (res.rows.length === 0) {
+		return undefined;
 	}
+	return res.rows[0];
 }
 
 export async function updateTorrent(

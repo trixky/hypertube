@@ -1,78 +1,116 @@
 import { Router } from 'express';
 import TailFile from '@logdna/tail-file';
 import fs from 'fs';
-import { download, DownloadInfo } from '../lib/downloader';
+import { download, DownloadInfo, localTorrents } from '../lib/downloader';
 import pump from 'pump';
+import { getTorrent, refreshTorrentLastAccess } from '../postgres/torrents';
+import { Readable } from 'stream';
 
 const router = Router();
 
 router.get('/torrent/:torrentId/stream', async function (req, res) {
+	// Sanitize Torrent id
 	const torrentId: number = parseInt(req.params.torrentId);
-
 	if (isNaN(torrentId) || torrentId < 0) {
-		res.status(400).send();
+		res.status(400).send({ error: 'Invalid torrent id' });
 	}
 
+	// Check if the torrent exists
+	const torrent = await getTorrent(torrentId);
+	if (torrent === undefined) {
+		return res.status(404).send({ error: 'The torrent does not exists' });
+	}
+
+	// Update torrent last access to delay deletion
+	try {
+		await refreshTorrentLastAccess(torrentId);
+	} catch (err) {
+		return res.status(500).send({ error: 'Internal server error' });
+	}
+
+	// Check the Accept header to know if we can send mkv to the client if he can handle it
 	const acceptHeader = req.headers.accept;
 	const acceptMkv =
 		(acceptHeader && (acceptHeader.indexOf('video/mkv') >= 0 || acceptHeader == '*/*')) == true;
 
+	// Download the torrent
 	let downloadResult: DownloadInfo;
 	try {
-		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 0.1');
-		downloadResult = await download(`${torrentId}`, false);
-		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 0.2');
-	} catch {
-		res.status(500).send();
+		downloadResult = await download(torrent, acceptMkv);
+	} catch (error) {
+		console.error('Failed to download torrent', error);
+		res.status(500).send({ error: 'Failed to download torrent' });
 		return;
 	}
-
 	if (downloadResult.path == null) {
 		return res.status(500).send();
 	}
 
-	console.log("on s'en sort aveeeec download result: ", downloadResult);
+	// Extract some informations from the result to return the file
 	const extension = downloadResult.path.split('.').pop()!;
 	const nativeExtensions = ['mp4', 'webm'];
 	const sendNative =
-		(nativeExtensions.indexOf(downloadResult.original_extension) >= 0 ||
-			(downloadResult.original_extension == 'mkv' && acceptMkv)) &&
+		(nativeExtensions.indexOf(downloadResult.originalExtension) >= 0 ||
+			(downloadResult.originalExtension == 'mkv' && acceptMkv)) &&
+		// HEVC and x265 files can't be read on Chromium browsers
+		// -- So even if the client accept mkv it can't display it
+		!torrent.name.match(/hevc|x\s?265/i) &&
 		downloadResult.length > 0;
 
-	console.log('acceptMkv', acceptMkv);
-	console.log('extension', extension);
-	console.log('sendNative', sendNative);
-	console.log('using path', downloadResult.path);
+	console.log(
+		'acceptMkv',
+		acceptMkv,
+		'extension',
+		extension,
+		'downloadResult.originalExtension',
+		downloadResult.originalExtension,
+		'downloadResult.downloaded',
+		downloadResult.downloaded,
+		'sendNative',
+		sendNative,
+		'using path',
+		downloadResult.path,
+		'has stream ?',
+		downloadResult.stream ? 'yes' : 'no'
+	);
 
 	// * Downloading
 	// * This can either be the original file if the torrent has an accepted file for the client
 	// * -- or a transcode result in webm format
 	// * The result is an used file path in either way, which is tailed
 	if (!downloadResult.downloaded) {
-		const file = new TailFile(downloadResult.path, { startPos: 0 })
-			.on('tail_error', (err) => {
-				console.error('TailFile had an error!', err);
-			})
-			.on('error', (err) => {
-				console.error('A TailFile stream error was likely encountered', err);
-			});
-		file.start();
-		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1.3');
+		let stream: Readable | TailFile;
+		if (sendNative && downloadResult.stream) {
+			console.log('Using TorrentStream file stream');
+			stream = downloadResult.stream;
+		} else {
+			console.log('Opening tail stream for file still being downloaded');
+			// TODO: Bigger idle timeout ?
+			stream = new TailFile(downloadResult.path, { startPos: 0 })
+				.on('tail_error', (err) => {
+					console.error('TailFile had an error!', err);
+				})
+				.on('error', (err) => {
+					console.error('A TailFile stream error was likely encountered', err);
+				});
+			(stream as TailFile).start();
+		}
 
 		// When sending the file that existed in the torrent we already have all of the size informations ...
 		if (sendNative) {
+			console.log('Sending native torrent file');
 			const realSize = downloadResult.length;
 			console.log('Sending headers', {
 				'Content-Length': realSize,
 				// "Content-Range": `bytes 0-${realSize - 1}/${realSize}`,
 				// "Accept-Ranges": "bytes",
-				'Content-Type': `video/${extension}`
+				'Content-Type': `video/${downloadResult.originalExtension}`
 			});
 			res.writeHead(200, {
 				'Content-Length': realSize,
 				// "Content-Range": `bytes 0-${realSize - 1}/${realSize}`,
 				// "Accept-Ranges": "bytes",
-				'Content-Type': `video/${extension}`
+				'Content-Type': `video/${downloadResult.originalExtension}`
 			});
 		}
 		// ... else the file comes from a transcode and we don't know the final file size
@@ -90,22 +128,30 @@ router.get('/torrent/:torrentId/stream', async function (req, res) {
 		}
 
 		// Send the file read to the response
-		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1.5');
-		pump(file, res, () => {
-			file.quit();
-		});
+		console.log('Sending file still being downloaded');
+		// Avoid closing torrent-stream stream, only close tailed streams
+		// -- since it also mark the torrent as "completed" if closed
+		if ('quit' in stream) {
+			return pump(stream, res, () => {
+				if ('quit' in stream) {
+					stream.quit();
+				}
+			});
+		} else {
+			return stream.pipe(res);
+		}
 	}
 	// * File is completed already
 	// * Accept ranges on the file
 	else {
-		const size = sendNative ? downloadResult.length : fs.statSync(downloadResult.path).size;
+		const size = downloadResult.length;
 
 		// Check and support ranges if the client supports them
 		const range = req.headers['range'];
 		let start = 0;
 		let end = size - 1;
 		// Handle invalid ranges with a 416
-		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.0');
+		console.log('Sending completed torrent with ranges', range);
 		if (range) {
 			const parts = range!.slice(6).split('-');
 			if (parts.length >= 1 && parts.length < 3) {
@@ -132,7 +178,6 @@ router.get('/torrent/:torrentId/stream', async function (req, res) {
 		}
 
 		// If the browser has no support for range we just returns a 200 with no ranges
-		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.1');
 		let returnCode = 200;
 		const headers: Record<string, string | number> = {
 			'Content-Length': size,
@@ -147,13 +192,9 @@ router.get('/torrent/:torrentId/stream', async function (req, res) {
 		res.writeHead(returnCode, headers);
 
 		// Send the file read to the response
-		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.2');
+		console.log('Sending completed torrent file');
 		const file = fs.createReadStream(downloadResult.path, { start, end });
-		pump(file, res, () => {
-			file.close();
-		});
-
-		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2.3');
+		pump(file, res);
 	}
 });
 

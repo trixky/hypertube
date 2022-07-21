@@ -1,17 +1,18 @@
+import { mkdir, stat, writeFile } from 'fs/promises';
+import { resolve } from 'path';
 import { Router } from 'express';
 import { parseSync, stringifySync } from 'subtitle';
-import osdb, { SearchInformations } from '../lib/osdb';
-import { getTorrent, Torrent } from '../postgres/movies';
+import { getTorrent } from '../postgres/torrents';
 import {
 	createTorrentSubtitle,
+	deleteTorrentSubtitle,
 	getMediaInformations,
 	getTorrentSubtitle,
 	getTorrentSubtitles,
-	MediaInformations,
-	Subtitle
+	MediaInformations
 } from '../postgres/subtitles';
-import { mkdir, writeFile } from 'fs/promises';
-import { resolve } from 'path';
+import osdb, { SearchInformations } from '../lib/osdb';
+import { CACHE_PATH_SUBTITLES } from '../lib/cache';
 
 const router = Router();
 
@@ -23,15 +24,13 @@ router.get('/torrent/:torrentId/subtitles', async function (req, res) {
 	}
 
 	// ... check that the torrent exists
-	let torrent: Torrent;
-	try {
-		torrent = await getTorrent(torrentId);
-		// IF the torrent has no Media attached to it, abort the request with an empty response
-		if (!torrent.media_id) {
-			return res.status(200).send({ subtitles: [] });
-		}
-	} catch (err) {
+	const torrent = await getTorrent(torrentId);
+	if (!torrent) {
 		return res.status(404).send({ error: 'The torrent does not exists' });
+	}
+	// IF the torrent has no Media attached to it, abort the request with an empty response
+	if (!torrent.media_id) {
+		return res.status(200).send({ subtitles: [] });
 	}
 
 	// Check if there already is subtitles for the torrent
@@ -89,8 +88,9 @@ router.get('/torrent/:torrentId/subtitles', async function (req, res) {
 				const convertedSubtitle = stringifySync(parseSync(downloadedSubtitle.buffer), {
 					format: 'WebVTT'
 				});
-				const path = `./.cache/subtitles/${torrent.id}/${lang}.vtt`;
-				await mkdir(path.split('/').slice(0, -1).join('/'), { recursive: true });
+				const folder = `${CACHE_PATH_SUBTITLES}${torrent.id}`;
+				const path = `${folder}/${lang}.vtt`;
+				await mkdir(folder, { recursive: true });
 				await writeFile(path, convertedSubtitle);
 				const created = await createTorrentSubtitle({
 					torrent_id: torrent.id,
@@ -112,10 +112,16 @@ router.get('/subtitles/:subtitleId', async function (req, res) {
 	const subtitleId: number = parseInt(req.params.subtitleId);
 
 	// ... check that the subtitle exists
-	let subtitle: Subtitle;
+	const subtitle = await getTorrentSubtitle(subtitleId);
+	if (!subtitle) {
+		return res.status(404).send({ error: 'The subtitle does not exists' });
+	}
+
+	// Delete files that are saved but doesn't exist
 	try {
-		subtitle = await getTorrentSubtitle(subtitleId);
-	} catch (err) {
+		await stat(resolve(subtitle.path));
+	} catch (error) {
+		deleteTorrentSubtitle(subtitle.id);
 		return res.status(404).send({ error: 'The subtitle does not exists' });
 	}
 
