@@ -8,7 +8,7 @@
 	import { scale } from 'svelte/transition';
 	import { goto } from '$app/navigation';
 
-	$: user = $session.user!;
+	$: user = $session.user;
 
 	const logout = () => {
 		$session.token = undefined;
@@ -39,34 +39,36 @@
 		<Logo />
 	</div>
 	<div class="md:w-1/2 md:flex justify-end items-center px-4 md:pl-0">
-		<div class="flex flex-col">
-			<div title={$_('language')}>
-				{#if $locale == 'fr'}
-					<button on:click={() => locale.set('en')} class="text-white">English</button>
-				{:else}
-					<button on:click={() => locale.set('fr')} class="text-white">Francais</button>
-				{/if}
-			</div>
+		{#if user}
+			<div class="flex flex-col">
+				<div title={$_('language')}>
+					{#if $locale == 'fr'}
+						<button on:click={() => locale.set('en')} class="text-white">English</button>
+					{:else}
+						<button on:click={() => locale.set('fr')} class="text-white">Francais</button>
+					{/if}
+				</div>
 
-			<div>
-				<a href={`/users/${user.id}`}>
-					<p class="text-white inline">{user.username}</p>
-					<img
-						class="invert inline-block -translate-y-[1px] translate-x-1"
-						src="/user.png"
-						width="16px"
-						height="16px"
-						alt={$_('auth.my_profile')}
-					/>
-				</a>
-			</div>
+				<div>
+					<a href={`/users/${user.id}`}>
+						<p class="text-white inline">{user.username}</p>
+						<img
+							class="invert inline-block -translate-y-[1px] translate-x-1"
+							src="/user.png"
+							width="16px"
+							height="16px"
+							alt={$_('auth.my_profile')}
+						/>
+					</a>
+				</div>
 
-			<button
-				class="flex items-center text-red-500 border border-red-100 py-1 px-2 mt-2 rounded-md hover:bg-red-700 transition-all hover:shadow-md shadow-red-900 hover:text-white"
-				on:click|preventDefault={logout}
-			>
-				<Logout /> <span class="hover:text-white transition-all">{$_('logout')}</span>
-			</button>
-		</div>
+				<button
+					class="flex items-center text-red-500 border border-red-100 py-1 px-2 mt-2 rounded-md hover:bg-red-700 transition-all hover:shadow-md shadow-red-900 hover:text-white"
+					on:click|preventDefault={logout}
+				>
+					<Logout /> <span class="hover:text-white transition-all">{$_('logout')}</span>
+				</button>
+			</div>
+		{/if}
 	</div>
 </header>
