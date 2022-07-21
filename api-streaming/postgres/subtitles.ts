@@ -20,9 +20,12 @@ export async function getTorrentSubtitle(id: number) {
 
 	if (res.rows.length == 1) {
 		return res.rows[0];
-	} else {
-		throw 'no subtitles found with this id';
 	}
+	return undefined;
+}
+
+export function deleteTorrentSubtitle(id: number | string) {
+	return client.query<Subtitle>('DELETE FROM torrent_subtitles WHERE id = $1', [id]);
 }
 
 export type MediaInformations = {

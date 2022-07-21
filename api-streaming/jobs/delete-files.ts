@@ -2,7 +2,7 @@ import path from 'path';
 import Cron from 'node-cron';
 import rimraf from 'rimraf';
 import env from '../env';
-import { getUnusedFiles, markTorrentAsDeleted } from '../postgres/movies';
+import { getUnusedFiles, markTorrentAsDeleted } from '../postgres/torrents';
 
 const DEFAULT_CRON = '0 * * * *'; // Defaults to every hour
 const DEFAULT_INTERVAL = '30 days'; // Defaults to file older than 30 days
