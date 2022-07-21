@@ -50,7 +50,7 @@ func RetrieveToken(token string) (*Token_info, error) {
 	}, nil
 }
 
-func AddSearch(path *string, results *string) error {
+func CacheSearch(path *string, results *string) error {
 	// Save in redis
 	err := DBs.Redis.Append(REDIS_PATTERN_KEY_search+*path, *results).Err()
 	return err

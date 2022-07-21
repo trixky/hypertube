@@ -79,13 +79,14 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 
 	// Count the Medias first
 	medias_count, err := finder.CountMedias(ctx, params)
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		log.Println(err)
 		return nil, err
 	}
 	if medias_count == 0 {
 		response := pb.SearchResponse{}
 		search := protojson.Format(response.ProtoReflect().Interface())
-		err = databases.AddSearch(&path, &search)
+		err = databases.CacheSearch(&path, &search)
 		if err != nil {
 			log.Println("failed to save to redis cache", err)
 		}
@@ -98,12 +99,13 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 		if errors.Is(err, sql.ErrNoRows) {
 			response := pb.SearchResponse{}
 			search := protojson.Format(response.ProtoReflect().Interface())
-			err = databases.AddSearch(&path, &search)
+			err = databases.CacheSearch(&path, &search)
 			if err != nil {
 				log.Println("failed to save to redis cache", err)
 			}
 			return &response, nil
 		}
+		log.Println(err)
 		return nil, err
 	}
 
@@ -133,13 +135,15 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 			if errors.Is(err, sql.ErrNoRows) {
 				pb_media.Watched = false
 			} else {
+				log.Println(err)
 				return nil, err
 			}
 		}
 
-		// Load relations
+		// Load names
 		names, err := databases.DBs.SqlcQueries.GetMediaNames(ctx, int32(media.ID))
 		if err != nil {
+			log.Println(err)
 			return nil, err
 		}
 		for _, name := range names {
@@ -164,7 +168,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 
 	// Save in redis
 	search := protojson.Format(response.ProtoReflect().Interface())
-	err = databases.AddSearch(&path, &search)
+	err = databases.CacheSearch(&path, &search)
 	if err != nil {
 		log.Println("failed to save to redis cache", err)
 	}

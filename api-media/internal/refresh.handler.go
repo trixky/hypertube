@@ -11,7 +11,8 @@ import (
 	pb "github.com/trixky/hypertube/api-media/proto"
 	"github.com/trixky/hypertube/api-media/utils"
 	ut "github.com/trixky/hypertube/api-media/utils"
-	grpcMetadata "google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *MediaServer) Refresh(in *pb.RefreshMediaRequest, out pb.MediaService_RefreshServer) error {
@@ -20,19 +21,16 @@ func (s *MediaServer) Refresh(in *pb.RefreshMediaRequest, out pb.MediaService_Re
 	}
 
 	ctx := out.Context()
-	md, ok := grpcMetadata.FromIncomingContext(ctx)
-	if !ok {
-		log.Println("missing args")
-		return nil
-	}
-
-	refresh := md.Get("refresh")
-	log.Println("refresh:", refresh)
 
 	// Find the media
 	media, err := databases.DBs.SqlcQueries.GetMediaByID(ctx, int64(in.MediaId))
 	if err != nil {
-		return err
+		if errors.Is(err, sql.ErrNoRows) {
+			return status.Errorf(codes.NotFound, "no media with this id")
+		} else {
+			log.Println(err)
+			return err
+		}
 	}
 
 	// Get the torrents associated with the Media
@@ -42,6 +40,7 @@ func (s *MediaServer) Refresh(in *pb.RefreshMediaRequest, out pb.MediaService_Re
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
 		} else {
+			log.Println(err)
 			return err
 		}
 	}
@@ -61,6 +60,7 @@ func (s *MediaServer) Refresh(in *pb.RefreshMediaRequest, out pb.MediaService_Re
 				TorrentId: uint64(torrent.ID.Int64),
 			})
 			if err != nil {
+				log.Println(err)
 				return err
 			}
 

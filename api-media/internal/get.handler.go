@@ -2,6 +2,9 @@ package internal
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"log"
 	"sort"
 
 	"github.com/golang/protobuf/ptypes"
@@ -10,6 +13,8 @@ import (
 	"github.com/trixky/hypertube/api-media/sqlc"
 	"github.com/trixky/hypertube/api-media/utils"
 	ut "github.com/trixky/hypertube/api-media/utils"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var StaffOrder []string = []string{
@@ -52,7 +57,12 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 	// Find the media
 	media, err := databases.DBs.SqlcQueries.GetMediaByID(ctx, int64(in.Id))
 	if err != nil {
-		return nil, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, status.Errorf(codes.NotFound, "no media with this id")
+		} else {
+			log.Println(err)
+			return nil, err
+		}
 	}
 
 	// Construct the response
@@ -79,8 +89,11 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 
 	// Find relations
 	names, err := databases.DBs.SqlcQueries.GetMediaNames(ctx, int32(media.ID))
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		log.Println(err)
 		return nil, err
+	} else {
+		err = nil
 	}
 	for _, name := range names {
 		if ut.NameMatchLocale(&user_locale, name.Lang) {
@@ -95,8 +108,11 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 		MediaID: ut.MakeNullInt32(&media_id),
 		UserID:  int32(user.ID),
 	})
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		log.Println(err)
 		return nil, err
+	} else {
+		err = nil
 	}
 	for _, torrent := range torrents {
 		size := torrent.Size.String
@@ -118,16 +134,21 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 	}
 
 	genres, err := databases.DBs.SqlcQueries.GetMediaGenres(ctx, int32(media.ID))
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
+	} else {
+		err = nil
 	}
 	for _, genre := range genres {
 		response.Media.Genres = append(response.Media.Genres, genre.Name)
 	}
 
 	actors, err := databases.DBs.SqlcQueries.GetMediaActors(ctx, int32(media.ID))
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		log.Println(err)
 		return nil, err
+	} else {
+		err = nil
 	}
 	// Actors are limited to 15 and are already ordered by the `cast_order` column
 	for _, actor := range actors {
@@ -140,8 +161,11 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 	}
 
 	staffs, err := databases.DBs.SqlcQueries.GetMediaStaffs(ctx, int32(media.ID))
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		log.Println(err)
 		return nil, err
+	} else {
+		err = nil
 	}
 	// Sort by "importance" before de-duplicating
 	sort.SliceStable(staffs, func(i, j int) bool {
@@ -179,8 +203,11 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 
 	// Load comments
 	comments, err := databases.DBs.SqlcQueries.GetMediaComments(ctx, int32(media.ID))
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		log.Println(err)
 		return nil, err
+	} else {
+		err = nil
 	}
 	for _, comment := range comments {
 		created_at, _ := ptypes.TimestampProto(comment.CreatedAt.Time)
