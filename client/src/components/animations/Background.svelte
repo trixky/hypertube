@@ -1,5 +1,7 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
+import { onDestroy } from 'svelte';
+
 	import { linear } from 'svelte/easing';
 	import { fade, fly } from 'svelte/transition';
 
@@ -16,7 +18,7 @@
 	function randomNumber(minInc: number, maxExcl: number) {
 		return Math.random() * (maxExcl - minInc) + minInc;
 	}
-
+	
 	const nbLines = 5;
 	let lines: {
 		id: number;
@@ -25,12 +27,15 @@
 		height: number;
 		color: string;
 		duration: number;
-	}[] = [];
+		timeout: number
+	}[] = []; 
+	let restartTimeouts: number[] = new Array(nbLines).fill(0)
 
 	export function start() {
 		for (let index = 0; index < nbLines; index++) {
-			lines.push({ id: index, visible: false, left: 0, height: 0, color: '', duration: 0 });
-			setTimeout(() => {
+			let line = { id: index, visible: false, left: 0, height: 0, color: '', duration: 0,timeout:0 }
+			lines.push(line);
+			line.timeout = setTimeout(() => {
 				resetLine(index);
 			}, randomNumber(0, 500));
 		}
@@ -48,7 +53,7 @@
 		line.height = Math.round(randomNumber(32, 64));
 		line.color = palette[Math.round(randomNumber(0, paletteLength))];
 		line.duration = Math.round(randomNumber(1500, 3500));
-		setTimeout(function () {
+		line.timeout = setTimeout(function () {
 			if (enabled) {
 				line.visible = true;
 				lines = lines;
@@ -63,11 +68,20 @@
 	export function restart() {
 		enabled = true;
 		for (let index = 0; index < lines.length; index++) {
-			setTimeout(() => {
+			restartTimeouts[index] = setTimeout(() => {
 				resetLine(index);
 			}, randomNumber(0, 500));
 		}
 	}
+
+	onDestroy(() => {
+		for (const line of lines) {
+			clearTimeout(line.timeout)
+		}
+		for (const restartTimeout of restartTimeouts) {
+			clearTimeout(restartTimeout)
+		}
+	})
 </script>
 
 <!-- ========================= HTML -->

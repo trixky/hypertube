@@ -198,4 +198,48 @@ router.get('/torrent/:torrentId/stream', async function (req, res) {
 	}
 });
 
+// Check the torrent status for
+// -- completion status
+// -- download progress
+// -- transcode progress
+router.get('/torrent/:torrentId/status', async function (req, res) {
+	// Sanitize Torrent id
+	const torrentId: number = parseInt(req.params.torrentId);
+	if (isNaN(torrentId) || torrentId < 0) {
+		res.status(400).send({ error: 'Invalid torrent id' });
+	}
+
+	// Check if the torrent exists
+	const torrent = await getTorrent(torrentId);
+	if (torrent === undefined) {
+		return res.status(404).send({ error: 'The torrent does not exists' });
+	}
+
+	// If the torrent is already completed there is no informations to get
+	if (torrent.downloaded) {
+		return res.status(200).send({ status: 'complete' });
+		// -- else check if there is a LocalTorrent instance, that means the torrent is being downloaded/transcoded
+	} else if (localTorrents[torrentId]) {
+		const localTorrent = localTorrents[torrentId];
+		const response: {
+			status: 'ongoing';
+			download?: { completed: number; total: number };
+			encoding?: { processed?: string; fps?: number; completeDuration: string };
+		} = { status: 'ongoing' };
+		if (localTorrent.movieFile && localTorrent.engine?.swarm) {
+			response.download = {
+				completed: localTorrent.engine.swarm.downloaded,
+				total: localTorrent.movieFile.length
+			};
+		}
+		if (localTorrent.ffmpegProgress) {
+			response.encoding = localTorrent.ffmpegProgress;
+		}
+		return res.status(200).send(response);
+	}
+
+	// -- else if there is no LocalTorrent instance, the torrent is idle, no download or transcode
+	return res.status(200).send({ status: 'idle' });
+});
+
 export default router;

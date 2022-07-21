@@ -5,6 +5,8 @@ import ffmpeg from 'fluent-ffmpeg';
 import { sleep } from '../utils/time';
 import { CACHE_PATH, CACHE_PATH_MOVIES } from './cache';
 import { Readable } from 'stream';
+import { unlink } from 'fs/promises';
+import path from 'path';
 
 const EXTENSION_mkv = 'mkv';
 const EXTENSION_mp4 = 'mp4';
@@ -26,6 +28,12 @@ interface LocalTorrent {
 	downloadComplete: boolean;
 	ffmpegClosed: boolean;
 	movieFile?: TorrentFile;
+	engine?: TorrentStream.TorrentEngine;
+	ffmpegProgress?: {
+		processed?: string;
+		fps?: number;
+		completeDuration: string;
+	};
 }
 
 export interface DownloadInfo {
@@ -93,7 +101,7 @@ function selectMovieFromTorrent(engine: TorrentStream.TorrentEngine): Promise<To
 	});
 }
 
-function transcodeMovieFile(
+async function transcodeMovieFile(
 	engine: TorrentStream.TorrentEngine,
 	torrentId: number,
 	movieFile: TorrentFile
@@ -101,8 +109,14 @@ function transcodeMovieFile(
 	const localFilePath = generateFullPath(movieFile.path, true);
 	const localOutputPath = localFilePath + '.' + TRANSCODE_OUTPUT;
 
-	const stream = movieFile.createReadStream();
+	// Delete any remaining of previous transcode tries
+	try {
+		await unlink(path.resolve(localOutputPath));
+	} catch (error) {
+		// Ignore errors, the file shouldn't already exist
+	}
 
+	const stream = movieFile.createReadStream();
 	ffmpeg()
 		.input(stream)
 		.inputFormat('matroska')
@@ -122,8 +136,8 @@ function transcodeMovieFile(
 		// *
 		// .outputOptions("-vf scale=-1:101")
 		// .outputOptions("-qp 0")
-		.outputOptions('-crf 14')
-		.outputOptions('-b:v 5000K')
+		.outputOptions('-crf 18')
+		.outputOptions('-b:v 4000K')
 		// .videoBitrate(1)
 		// .outputOptions('-preset veryfast')
 		// .outputOptions('-crf 50')
@@ -132,8 +146,29 @@ function transcodeMovieFile(
 		.on('ffmpeg: start', () => {
 			console.log('start');
 		})
-		.on('progress', (progress: { timemark: string }) => {
-			localTorrents[torrentId].downloadStarted = true;
+		.on('codecData', (data: { format: string; duration: string }) => {
+			if (localTorrents[torrentId].ffmpegProgress) {
+				localTorrents[torrentId].ffmpegProgress!.completeDuration = data.duration;
+			} else {
+				localTorrents[torrentId].ffmpegProgress = {
+					completeDuration: data.duration
+				};
+			}
+		})
+		.on('progress', (progress: { timemark: string; currentFps: number }) => {
+			if (localTorrents[torrentId]) {
+				localTorrents[torrentId].downloadStarted = true;
+				if (localTorrents[torrentId].ffmpegProgress) {
+					localTorrents[torrentId].ffmpegProgress!.fps = progress.currentFps;
+					localTorrents[torrentId].ffmpegProgress!.processed = progress.timemark;
+				} else {
+					localTorrents[torrentId].ffmpegProgress = {
+						fps: progress.currentFps,
+						processed: progress.timemark,
+						completeDuration: 'unknown'
+					};
+				}
+			}
 			console.log(`ffmpeg: progress > ${progress.timemark} for ${localOutputPath}`);
 		})
 		.on('end', async () => {
@@ -266,6 +301,7 @@ export async function download(torrent: Torrent, acceptMkv: boolean): Promise<Do
 			verify: true,
 			tracker: true // false ?
 		});
+		localTorrents[torrent.id].engine = engine;
 
 		// Select the good file in the torrent (using extension and size)
 		let movieFile: TorrentFile;
@@ -277,10 +313,12 @@ export async function download(torrent: Torrent, acceptMkv: boolean): Promise<Do
 				console.log('TorrentEngine destroyed');
 			});
 			reject(new Error('No movie found in the torrent'));
+			delete localTorrents[torrent.id];
 			return;
 		}
 
 		// Update local torrent state
+		localTorrents[torrent.id].movieFile = movieFile;
 		localTorrents[torrent.id].file_path = movieFile.path;
 		localTorrents[torrent.id].extension = movieFile.extension;
 		localTorrents[torrent.id].length = movieFile.length;
@@ -290,8 +328,7 @@ export async function download(torrent: Torrent, acceptMkv: boolean): Promise<Do
 		if (movieFile.extension == EXTENSION_mkv) {
 			console.log('Resolving download with transcode');
 			needTranscode = true;
-			transcodeMovieFile(engine, torrent.id, movieFile);
-
+			await transcodeMovieFile(engine, torrent.id, movieFile);
 			await waitForFileToExist(torrent.id);
 			resolve({
 				path: generateFullPath(movieFile.path, acceptMkv),
@@ -314,7 +351,9 @@ export async function download(torrent: Torrent, acceptMkv: boolean): Promise<Do
 
 		engine.on('download', (index: string) => {
 			// Notify the torrent start to be readable
-			localTorrents[torrent.id].downloadStarted = true;
+			if (!needTranscode) {
+				localTorrents[torrent.id].downloadStarted = true;
+			}
 			console.log(`Download piece ${index} for ${movieFile.path}`);
 		});
 
@@ -324,6 +363,9 @@ export async function download(torrent: Torrent, acceptMkv: boolean): Promise<Do
 			console.log('Torrent download complete', torrent.name);
 			const localTorrent = localTorrents[torrent.id];
 			if (localTorrent) {
+				if (localTorrent.engine && localTorrent.movieFile) {
+					localTorrent.engine.swarm.downloaded = localTorrent.movieFile.length;
+				}
 				localTorrent.downloadComplete = true;
 				// If no transcode was needed the torrent is updated with the final values
 				if (!needTranscode) {

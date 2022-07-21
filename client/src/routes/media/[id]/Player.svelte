@@ -1,10 +1,25 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
-	import { createEventDispatcher, onMount, tick } from 'svelte';
+	import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import type { MediaTorrent } from 'src/types/Media';
 	import { session } from '$app/stores';
 	import { _ } from 'svelte-i18n';
+
+	type StatusResponse = {
+		status: 'complete' | 'idle'
+	} | {
+		status: 'ongoing'; 
+		"download"?: {
+			"completed": number,
+			"total": number
+		},
+		"encoding"?: {
+			"completeDuration": string,
+			"fps"?: number,
+			"processed"?: string
+		}
+	}
 
 	const POSITION_DELAY_MS = 15_000; /* 15sec */
 	const ERROR_TIMEOUT = 300_000; /* 5min */
@@ -56,6 +71,7 @@
 		}, 1000);
 	}
 
+	let statusTimeout = 0;
 	onMount(async () => {
 		setPlayMessage('info', 'Video is loading...');
 
@@ -114,12 +130,43 @@
 				setSubtitleMessage('error', 'Failed to load subtitles...');
 			}
 
+			// Check torrent status for some informations
+			let idledFor = 0
+			async function checkStatus() {
+				const response = await fetch(`http://localhost:3030/torrent/${torrent.id}/status`, {
+					method: 'GET',
+					credentials: 'include',
+					headers: {
+						'Accept': 'application/json'
+					}
+				});
+				if (response.ok) {
+					const body = await response.json() as StatusResponse
+					if (body.status == "ongoing") {
+						setPlayMessage('info', `Video is still being processed. ${body.download?.completed} / ${body.download?.total} | ${body.encoding?.processed} / ${body.encoding?.completeDuration} (${body.encoding?.fps}fps)`)
+						statusTimeout = setTimeout(checkStatus, 5000)
+					} else if (body.status == "idle") {
+							idledFor += 1 ;
+							if (idledFor < 3) {
+								statusTimeout = setTimeout(checkStatus, 5000)
+								playMessage = undefined
+							} else {
+								setPlayMessage('error', `Failed to get torrent status: ${response.status}, close and re-open`)
+							}
+					}
+				} else {
+					setPlayMessage('error', `Failed to get torrent status: ${response.status}`)
+					statusTimeout = setTimeout(checkStatus, 5000)
+				}
+			}
+
 			// Bind
 			player.addEventListener('loadedmetadata', () => {
 				playMessage = undefined;
 				if (torrent.position) {
 					seekToTime(player!, torrent.position);
 				}
+				checkStatus()
 			});
 			let updatingPosition = false;
 			player.addEventListener('timeupdate', (event) => {
@@ -156,6 +203,10 @@
 			});
 		}
 	});
+
+	onDestroy(() => {
+		clearTimeout(statusTimeout)
+	})
 </script>
 
 <!-- ========================= HTML -->
