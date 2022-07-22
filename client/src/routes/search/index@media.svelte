@@ -238,13 +238,20 @@
 			{#if $totalResults != $results.length}
 				<div
 					bind:this={loader}
-					class="result overflow-hidden min-h-[14rem] w-40 mx-auto cursor-pointer"
+					class="result overflow-hidden min-h-[14rem] w-40 mx-auto cursor-pointer text-white"
 					class:opacity-50={loading}
 					on:click={loadMore}
 				>
-					<div class="flex w-full h-full justify-center items-center text-2xl text-white">
-						{$_('search.load_more')}
-					</div>
+					{#if loading}
+						<div class="flex w-full h-full justify-center items-center text-2xl text-white">
+							{$_('search.loading_more')}
+							<Spinner size={32} />
+						</div>
+					{:else}
+						<div class="flex w-full h-full justify-center items-center text-2xl text-white">
+							{$_('search.load_more')}
+						</div>
+					{/if}
 				</div>
 			{/if}
 		</div>
