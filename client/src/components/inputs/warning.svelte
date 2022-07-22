@@ -6,7 +6,7 @@
 
 	export let content = '';
 	export let centered = false;
-	export let color = 'gray'; // gray (default) / green / red / blue
+	export let color = 'gray'; // gray (default) / green / red / blue / orange
 
 	let height_warning = 0;
 	let progress_warning = tweened(height_warning, {
@@ -28,7 +28,8 @@
 		class:text-red-300={color == 'red'}
 		class:text-green-300={color == 'green'}
 		class:text-blue-300={color == 'blue'}
-		class=" text-xs  pb-2 whitespace-pre-line px-2"
+		class:text-orange-300={color == 'orange'}
+		class="text-xs pb-2 whitespace-pre-line px-2 transition-colors"
 		bind:offsetHeight={height_warning}
 	>
 		{uppercase_first_character(content)}

@@ -25,6 +25,7 @@
 	let loadingComment = false;
 	let commentError: string | undefined;
 	let commentContent: string | null | undefined;
+	$: commentLength = commentContent ? commentContent.length : 0;
 	async function postComment() {
 		if (!commentContent) {
 			commentError = $_('sanitizer.missing');
@@ -84,16 +85,24 @@
 			bind:value={commentContent}
 			placeholder={$_('media.comment_placeholder')}
 		/>
-		{#if commentError}
-			<Warning content={commentError} color="red" />
-		{/if}
-		<div class="text-right">
-			<button
-				class="py-2 px-4 bg-blue-300 text-black mt-1 rounded-sm hover:bg-blue-400 duration-[0.35s] disabled:opacity-50 transition-all"
-				disabled={loadingComment}
-			>
-				{$_('media.post_comment')}
-			</button>
+		<div class="flex justify-between">
+			<div>
+				<Warning
+					content={`${commentLength} / 500`}
+					color={commentLength > 500 ? 'red' : commentLength > 400 ? 'orange' : 'gray'}
+				/>
+				{#if commentError}
+					<Warning content={commentError} color="red" />
+				{/if}
+			</div>
+			<div class="text-right">
+				<button
+					class="py-2 px-4 bg-blue-300 text-black mt-1 rounded-sm hover:bg-blue-400 duration-[0.35s] disabled:opacity-50 transition-all"
+					disabled={commentLength < 2 || commentLength > 500 || loadingComment}
+				>
+					{$_('media.post_comment')}
+				</button>
+			</div>
 		</div>
 	</form>
 	{#each cleanComments as comment (comment.id)}
