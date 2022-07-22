@@ -7,6 +7,7 @@ import (
 
 	"github.com/trixky/hypertube/api-auth/databases"
 	"github.com/trixky/hypertube/api-auth/sqlc"
+	"github.com/trixky/hypertube/api-auth/utils"
 )
 
 type PostgresDatabaseMock struct {
@@ -28,7 +29,8 @@ var InitialsSqlMockUsers = []sqlc.User{ // Don't touche me
 		},
 		Password: sql.NullString{
 			Valid:  true,
-			String: "22280755e9747a2b40ec92502dbb76f612049fb0f7a2926216e2bdcfa849f368",
+			String: utils.EncryptPassword("22280755e9747a2b40ec92502dbb76f612049fb0f7a2926216e2bdcfa849f368"),
+			// 9ba9862e6c992abe652e575881931b22a29676b328d6cc00d04f1659888d40a1
 		},
 	},
 	{ // -------------------------------- 1
@@ -45,7 +47,8 @@ var InitialsSqlMockUsers = []sqlc.User{ // Don't touche me
 		},
 		Password: sql.NullString{
 			Valid:  true,
-			String: "cd180755e9747a2b40ec92502dbb76f612049fb0f7a2926216e2bdcfa849f368",
+			String: utils.EncryptPassword("cd180755e9747a2b40ec92502dbb76f612049fb0f7a2926216e2bdcfa849f368"),
+			// c47b37adeba3497e1de2005bf3d0f8c28806a813527ce9f3cb917ae896b41cd4
 		},
 	},
 }

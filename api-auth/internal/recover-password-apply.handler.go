@@ -9,6 +9,7 @@ import (
 	pb "github.com/trixky/hypertube/api-auth/proto"
 	"github.com/trixky/hypertube/api-auth/sanitizer"
 	"github.com/trixky/hypertube/api-auth/sqlc"
+	"github.com/trixky/hypertube/api-auth/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -44,7 +45,7 @@ func (s *AuthServer) InternalApplyRecoverPassword(ctx context.Context, in *pb.In
 	if err := databases.DBs.SqlcQueries.UpdateUserPassword(context.Background(), sqlc.UpdateUserPasswordParams{
 		ID: password_token_info.Id,
 		Password: sql.NullString{
-			String: in.GetNewPassword(),
+			String: utils.EncryptPassword(in.GetNewPassword()),
 			Valid:  true,
 		},
 	}); err != nil {

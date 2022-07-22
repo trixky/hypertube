@@ -85,14 +85,14 @@ func TestInternalLogin(t *testing.T) {
 		{
 			input: &proto.InternalLoginRequest{
 				Email:    databases.InitialsSqlMockUsers[0].Email,
-				Password: databases.InitialsSqlMockUsers[0].Password.String,
+				Password: "22280755e9747a2b40ec92502dbb76f612049fb0f7a2926216e2bdcfa849f368",
 			},
 			error_expected: false,
 		},
 		{
 			input: &proto.InternalLoginRequest{
 				Email:    databases.InitialsSqlMockUsers[1].Email,
-				Password: databases.InitialsSqlMockUsers[1].Password.String,
+				Password: "cd180755e9747a2b40ec92502dbb76f612049fb0f7a2926216e2bdcfa849f368",
 			},
 			error_expected: false,
 		},

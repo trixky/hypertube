@@ -39,7 +39,7 @@ func (s *AuthServer) InternalLogin(ctx context.Context, in *pb.InternalLoginRequ
 	user, err := databases.DBs.SqlcQueries.GetInternalUserByCredentials(context.Background(), sqlc.GetInternalUserByCredentialsParams{
 		Email: in.GetEmail(),
 		Password: sql.NullString{
-			String: in.GetPassword(),
+			String: utils.EncryptPassword(in.GetPassword()),
 			Valid:  true,
 		},
 	})
