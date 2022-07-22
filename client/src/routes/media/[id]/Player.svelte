@@ -86,6 +86,7 @@
 		isPlayerOpen = true;
 		dispatch('open');
 	}
+
 	function focusPlayer() {
 		clearTimeout(focusTimeout);
 		dispatch('focus');
@@ -97,6 +98,18 @@
 	}
 
 	let statusTimeout = 0;
+	let loading = true;
+	function refreshPlayer() {
+		clearTimeout(statusTimeout);
+		loading = true;
+		let currentSrc = player.currentSrc;
+		let currentTime = player.currentTime;
+		player.src = '';
+		player.src = currentSrc;
+		seekToTime(player, currentTime);
+	}
+
+	let initialStatusTimeout = 0;
 	onMount(async () => {
 		setPlayMessage('info', 'Video is loading...');
 
@@ -190,6 +203,8 @@
 								`Failed to get torrent status: ${response.status}, close and re-open`
 							);
 						}
+					} else {
+						playMessage = undefined;
 					}
 				} else {
 					setPlayMessage('error', `Failed to get torrent status: ${response.status}`);
@@ -198,41 +213,66 @@
 			}
 
 			// Bind
-			player.addEventListener('loadedmetadata', () => {
+			let bind = false;
+			player.addEventListener('loadedmetadata', async () => {
+				loading = false;
 				playMessage = undefined;
 				if (torrent.position) {
 					seekToTime(player!, torrent.position);
 				}
-				checkStatus();
+				clearTimeout(initialStatusTimeout);
+				await checkStatus();
+
+				if (!bind) {
+					let retryCount = 0;
+					player.addEventListener('stalled', () => {
+						if (retryCount <= 3) {
+							refreshPlayer();
+							retryCount += 1;
+						} else {
+							setPlayMessage(
+								'error',
+								'The player is having some problems, you need to refresh it.'
+							);
+						}
+					});
+					bind = true;
+				}
 			});
+			initialStatusTimeout = setTimeout(() => {
+				checkStatus();
+			}, 1000);
+
 			let updatingPosition = false;
 			player.addEventListener('timeupdate', (event) => {
 				if (!updatingPosition && event.timeStamp - lastUpdate >= POSITION_DELAY_MS) {
 					if (!updateErrored || Date.now() - updateErrored >= ERROR_TIMEOUT /* 5min */) {
 						lastUpdate = event.timeStamp;
 						const currentTime = player?.currentTime;
-						updatingPosition = true;
-						fetch(`http://localhost:3040/v1/position/${torrent.id}`, {
-							method: 'POST',
-							credentials: 'include',
-							headers: {
-								'Content-Type': 'application/json'
-							},
-							body: JSON.stringify({
-								position: currentTime
+						if (currentTime && !isNaN(currentTime) && currentTime > 0) {
+							updatingPosition = true;
+							fetch(`http://localhost:3040/v1/position/${torrent.id}`, {
+								method: 'POST',
+								credentials: 'include',
+								headers: {
+									'Content-Type': 'application/json'
+								},
+								body: JSON.stringify({
+									position: currentTime
+								})
 							})
-						})
-							.then((response) => {
-								updatingPosition = false;
-								if (!response.ok || response.status >= 400) {
-									throw new Error('Response status is not ok');
-								}
-							})
-							.catch((error) => {
-								updatingPosition = false;
-								console.error(error);
-								updateErrored = Date.now();
-							});
+								.then((response) => {
+									updatingPosition = false;
+									if (!response.ok || response.status >= 400) {
+										throw new Error('Response status is not ok');
+									}
+								})
+								.catch((error) => {
+									updatingPosition = false;
+									console.error(error);
+									updateErrored = Date.now();
+								});
+						}
 					} else {
 						lastUpdate = event.timeStamp + Date.now() - updateErrored;
 					}
@@ -243,6 +283,7 @@
 
 	onDestroy(() => {
 		clearTimeout(statusTimeout);
+		clearTimeout(initialStatusTimeout);
 	});
 </script>
 
@@ -293,6 +334,13 @@
 				on:click={closePlayer}
 			>
 				Close
+			</button>
+			<button
+				class="p-1 border border-orange-400 text-sm hover:bg-orange-800 rounded-md transition-colors mr-2 disabled:opacity-50"
+				on:click={refreshPlayer}
+				disabled={loading}
+			>
+				Refresh
 			</button>
 			<button
 				class="p-2 border border-blue-400 bg-blue-500 hover:bg-blue-600 rounded-md transition-colors shadow-blue-400 hover:shadow-md"

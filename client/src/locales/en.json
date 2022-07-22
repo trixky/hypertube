@@ -20,7 +20,8 @@
       }
     },
     "no_results": "No results !",
-    "load_more": "Load More"
+    "load_more": "Load More",
+    "loading_more": "Loading..."
   },
   "asc": {
     "short": "Asc"
@@ -45,7 +46,8 @@
     "watched": "Watched",
     "resume": "Resume",
     "theatre_mode": "Theatre mode",
-    "disable_theatre_mode": "Disable Theatre mode"
+    "disable_theatre_mode": "Disable Theatre mode",
+    "low_seed": "This torrent has a low peer count and might not start"
   },
   "auth": {
     "email": "Email",

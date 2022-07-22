@@ -7,6 +7,7 @@
 	import type { MediaTorrent } from '../../../../src/types/Media';
 	import { createEventDispatcher } from 'svelte';
 	import Eye from '$components/icons/Eye.svelte';
+	import Warning from '$components/icons/Warning.svelte';
 
 	export let torrent: MediaTorrent;
 	export let selected: boolean | undefined = undefined;
@@ -64,11 +65,18 @@
 			Seed: <span class={`${seedColor(torrent.seed)}`}>{torrent.seed}</span> &#x2022; Leech:
 			<span class=" text-red-600">{torrent.leech}</span>
 		</div>
-		{#if typeof torrent.position === 'number'}
+		{#if typeof torrent.position === 'number' || torrent.seed < 10}
 			<div class="flex-grow" />
-			<span class="text-white" title={$_('media.watched')}>
-				<Eye />
-			</span>
+			{#if typeof torrent.position === 'number'}
+				<span class="text-white mr-2" title={$_('media.watched')}>
+					<Eye />
+				</span>
+			{/if}
+			{#if torrent.seed < 10}
+				<span class="text-orange-400" title={$_('media.low_seed')}>
+					<Warning />
+				</span>
+			{/if}
 		{/if}
 	</div>
 	<div class="hidden xl:block mx-4 flex-shrink-0 min-w-[3rem] text-center">
@@ -78,6 +86,11 @@
 	{#if typeof torrent.position === 'number'}
 		<span class=" hidden lg:flex items-center text-white mr-4" title={$_('media.watched')}>
 			<Eye />
+		</span>
+	{/if}
+	{#if torrent.seed < 10}
+		<span class=" hidden lg:flex items-center text-orange-400 mr-4" title={$_('media.low_seed')}>
+			<Warning />
 		</span>
 	{/if}
 	<button

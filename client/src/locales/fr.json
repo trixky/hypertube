@@ -20,7 +20,8 @@
       }
     },
     "no_results": "Aucun resultats !",
-    "load_more": "Charger Plus"
+    "load_more": "Charger Plus",
+    "loading_more": "Chargement..."
   },
   "asc": {
     "short": "Asc"
@@ -45,7 +46,8 @@
     "watched": "Visionne",
     "resume": "Reprendre",
     "theatre_mode": "Mode theatre",
-    "disable_theatre_mode": "Desactiver le Mode theatre"
+    "disable_theatre_mode": "Desactiver le Mode theatre",
+    "low_seed": "Il y a peu de pairs sur ce Torrent, et la video risque de ne pas se lancer"
   },
   "auth": {
     "email": "Email",
