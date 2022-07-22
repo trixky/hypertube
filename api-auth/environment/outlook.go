@@ -17,19 +17,20 @@ type OutlookConfig struct {
 	Addresse string
 }
 
+// GetAll read all needed enviornment variables
 func (o *OutlookConfig) GetAll() {
-	// --------- get Email
+	// --------- Get Email
 	if o.Email = os.Getenv(ENV_OUTLOOK_email); len(o.Email) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_OUTLOOK_email)
+		log.Fatalf("%s %s", ENV_OUTLOOK_email, environement_variable_missing)
 	}
 
-	// --------- get Password
+	// --------- Get Password
 	if o.Password = os.Getenv(ENV_OUTLOOK_password); len(o.Password) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_OUTLOOK_password)
+		log.Fatalf("%s %s", ENV_OUTLOOK_password, environement_variable_missing)
 	}
 
-	// --------- get Addresse
+	// --------- Get Addresse
 	if o.Addresse = os.Getenv(ENV_OUTLOOK_addresse); len(o.Addresse) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_OUTLOOK_addresse)
+		log.Fatalf("%s %s", ENV_OUTLOOK_addresse, environement_variable_missing)
 	}
 }

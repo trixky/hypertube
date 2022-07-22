@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// SanitizeHexa64 sanitizes hexa64
 func SanitizeHexa64(hexa64 string, label string) error {
 	// https://stackoverflow.com/questions/336210/regular-expression-for-alphanumeric-and-underscores
 	if len(hexa64) == 0 {

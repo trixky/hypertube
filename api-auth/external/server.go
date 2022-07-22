@@ -1,17 +1,17 @@
 package external
 
 import (
+	"log"
 	"net/http"
 )
 
-func NewHttpServer(http_addr string) error {
+// NewHttpServer create a new HTTP server
+func NewHttpServer(http_addr string) {
 	http.HandleFunc("/redirect_42", redirect42)
 	http.HandleFunc("/login_google", loginGoogle)
 	http.HandleFunc("/callback_google", callbackGoogle)
 
-	if err := http.ListenAndServe(http_addr, nil); err != nil {
-		return err
-	}
-
-	return nil
+	go func() {
+		log.Fatalf("failed to serve grpc-gateway: %v\n", http.ListenAndServe(http_addr, nil))
+	}()
 }
