@@ -3,8 +3,9 @@ import TailFile from '@logdna/tail-file';
 import fs from 'fs';
 import { download, DownloadInfo, localTorrents } from '../lib/downloader';
 import pump from 'pump';
-import { getTorrent, refreshTorrentLastAccess } from '../postgres/torrents';
+import { getTorrent, refreshTorrentLastAccess, updateTorrent } from '../postgres/torrents';
 import { Readable } from 'stream';
+import { stat } from 'fs/promises';
 
 const router = Router();
 
@@ -144,6 +145,16 @@ router.get('/torrent/:torrentId/stream', async function (req, res) {
 	// * File is completed already
 	// * Accept ranges on the file
 	else {
+		// Check if the completed file exists
+		try {
+			await stat(downloadResult.path);
+		} catch (error) {
+			// -- else delete the entry from the database and sadly return an error
+			console.error("Completed file doesn't exists");
+			await updateTorrent(torrentId, null, false, null);
+			return res.status(500).send({ error: 'Completed file was deleted, refresh the player' });
+		}
+
 		const size = downloadResult.length;
 
 		// Check and support ranges if the client supports them

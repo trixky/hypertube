@@ -27,6 +27,11 @@
 				status: 302,
 				redirect: '/login'
 			};
+		} else if (notFound) {
+			return {
+				status: 302,
+				redirect: '/search'
+			};
 		}
 		return {
 			status: response.status,

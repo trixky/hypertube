@@ -3,18 +3,18 @@
 	import Logo from './logo.svelte';
 	import * as cookies from '$utils/cookies';
 	import { locale, _ } from 'svelte-i18n';
-	import Logout from '$components/icons/Logout.svelte';
 	import { page, session } from '$app/stores';
 	import { scale } from 'svelte/transition';
 	import { goto } from '$app/navigation';
+	import Logout from '$components/icons/Logout.svelte';
 
 	$: user = $session.user;
 
 	const logout = () => {
-		$session.token = undefined;
-		$session.user = undefined;
 		cookies.del_a_cookie(cookies.labels.token);
 		cookies.del_a_cookie(cookies.labels.user_info);
+		$session.token = undefined;
+		$session.user = undefined;
 		goto('/login');
 	};
 </script>
@@ -29,7 +29,7 @@
 	<div
 		class="md:w-1/2 flex justify-center md:justify-start items-center text-white mt-2 px-4 md:pr-0"
 	>
-		{#if !($page.url.pathname == '/search')}
+		{#if user && !($page.url.pathname == '/search')}
 			<a class="border border-blue-400 rounded-md text-white p-2" href="/search" transition:scale>
 				{$_('navigation.search')}
 			</a>
