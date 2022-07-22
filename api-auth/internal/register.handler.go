@@ -40,7 +40,6 @@ func sanitizeInternalRegister(in *pb.InternalRegisterRequest) error {
 
 // InternalRegister Handles the "InternalRegister" route
 func (s *AuthServer) InternalRegister(ctx context.Context, in *pb.InternalRegisterRequest) (*pb.GenericConnectionResponse, error) {
-
 	// -------------------- Sanitize
 	if err := sanitizeInternalRegister(in); err != nil {
 		return nil, err
@@ -53,7 +52,7 @@ func (s *AuthServer) InternalRegister(ctx context.Context, in *pb.InternalRegist
 		Firstname: in.GetFirstname(),
 		Lastname:  in.GetLastname(),
 		Password: sql.NullString{
-			String: in.GetPassword(),
+			String: utils.EncryptPassword(in.GetPassword()),
 			Valid:  true,
 		},
 	})
