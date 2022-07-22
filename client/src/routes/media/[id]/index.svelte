@@ -128,8 +128,11 @@
 	async function playTorrent(torrent: MediaTorrent) {
 		selectedTorrent = torrent;
 		backgroundAnimation.stop();
+		scrollPlayerIntoView();
+	}
+	async function scrollPlayerIntoView() {
+		await tick();
 		if (infoContainer) {
-			await tick();
 			infoContainer.scrollIntoView(true);
 		}
 	}
@@ -209,9 +212,10 @@
 		<div
 			class="absolute top-0 left-0 m-2 px-2 py-1 text-stone-200 inline-block hover:text-blue-500 transition-colors"
 		>
-			<a href="/search" on:click={goBack} class="cursor-pointer"
-				><ArrowLeft /> {$_('media.go_back')}</a
-			>
+			<a href="/search" on:click={goBack} class="cursor-pointer">
+				<ArrowLeft />
+				{$_('media.go_back')}
+			</a>
 		</div>
 		<div
 			class="relative flex flex-col md:flex-row justify-center items-center w-11/12 md:w-4/5 lg:w-1/2 mx-auto py-10"
@@ -299,36 +303,36 @@
 			</div>
 		</div>
 	</div>
-	<div class="relative flex-grow">
+	<div bind:this={infoContainer} class="relative flex-grow">
 		<Background bind:this={backgroundAnimation} {palette} />
-		<div
-			bind:this={infoContainer}
-			class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4 flex-grow relative"
-		>
-			{#if selectedTorrent}
-				<Player torrent={selectedTorrent} on:close={onPlayerClose} />
+		{#if selectedTorrent}
+			<Player
+				torrent={selectedTorrent}
+				on:open={scrollPlayerIntoView}
+				on:focus={scrollPlayerIntoView}
+				on:close={onPlayerClose}
+			/>
+		{/if}
+		<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4 flex-grow relative z-10">
+			<h1 class="flex justify-between items-center text-2xl mb-4">
+				<span>Torrents</span>
+				<div class="inline-block relative opacity-80">
+					<RefreshPeers mediaId={media.id} on:refresh={onPeersRefresh} />
+				</div>
+			</h1>
+			{#if torrents.length > 0}
+				<div class="w-full">
+					{#each torrents as torrent (torrent.id)}
+						<Torrent
+							{torrent}
+							on:select={playTorrent.bind(null, torrent)}
+							selected={selectedTorrent ? selectedTorrent.id == torrent.id : undefined}
+						/>
+					{/each}
+				</div>
+			{:else}
+				<div>{$_('media.no_torrents')}</div>
 			{/if}
-			<div>
-				<h1 class="flex justify-between items-center text-2xl mb-4">
-					<span>Torrents</span>
-					<div class="inline-block relative opacity-80">
-						<RefreshPeers mediaId={media.id} on:refresh={onPeersRefresh} />
-					</div>
-				</h1>
-				{#if torrents.length > 0}
-					<div class="w-full">
-						{#each torrents as torrent (torrent.id)}
-							<Torrent
-								{torrent}
-								on:select={playTorrent.bind(null, torrent)}
-								selected={selectedTorrent ? selectedTorrent.id == torrent.id : undefined}
-							/>
-						{/each}
-					</div>
-				{:else}
-					<div>{$_('media.no_torrents')}</div>
-				{/if}
-			</div>
 			<Comments mediaId={media.id} list={comments} />
 		</div>
 	</div>

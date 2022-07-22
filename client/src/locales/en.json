@@ -44,7 +44,8 @@
     "watching": "Watching",
     "watched": "Watched",
     "resume": "Resume",
-    "theatre_mode": "Theatre mode"
+    "theatre_mode": "Theatre mode",
+    "disable_theatre_mode": "Disable Theatre mode"
   },
   "auth": {
     "email": "Email",

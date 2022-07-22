@@ -1,30 +1,35 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
 	import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
 	import type { MediaTorrent } from 'src/types/Media';
 	import { session } from '$app/stores';
 	import { _ } from 'svelte-i18n';
+	import { readableFileSize } from '$utils/media';
+	import { cubicOut } from 'svelte/easing';
 
-	type StatusResponse = {
-		status: 'complete' | 'idle'
-	} | {
-		status: 'ongoing'; 
-		"download"?: {
-			"completed": number,
-			"total": number
-		},
-		"encoding"?: {
-			"completeDuration": string,
-			"fps"?: number,
-			"processed"?: string
-		}
-	}
+	type StatusResponse =
+		| {
+				status: 'complete' | 'idle';
+		  }
+		| {
+				status: 'ongoing';
+				download?: {
+					completed: number;
+					total: number;
+				};
+				encoding?: {
+					completeDuration: string;
+					fps?: number;
+					processed?: string;
+				};
+		  };
 
 	const POSITION_DELAY_MS = 15_000; /* 15sec */
 	const ERROR_TIMEOUT = 300_000; /* 5min */
 
 	export let torrent: MediaTorrent;
+	let theatre = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -69,6 +74,26 @@
 				subtitleMessage.visible = false;
 			}
 		}, 1000);
+	}
+
+	function toggleTheatreMode() {
+		theatre = !theatre;
+	}
+
+	let isPlayerOpen = false;
+	let focusTimeout = 0;
+	function playerOpened() {
+		isPlayerOpen = true;
+		dispatch('open');
+	}
+	function focusPlayer() {
+		clearTimeout(focusTimeout);
+		dispatch('focus');
+		if (!isPlayerOpen) {
+			setTimeout(() => {
+				focusPlayer();
+			}, 20);
+		}
 	}
 
 	let statusTimeout = 0;
@@ -131,32 +156,44 @@
 			}
 
 			// Check torrent status for some informations
-			let idledFor = 0
+			let idledFor = 0;
 			async function checkStatus() {
 				const response = await fetch(`http://localhost:3030/torrent/${torrent.id}/status`, {
 					method: 'GET',
 					credentials: 'include',
 					headers: {
-						'Accept': 'application/json'
+						Accept: 'application/json'
 					}
 				});
 				if (response.ok) {
-					const body = await response.json() as StatusResponse
-					if (body.status == "ongoing") {
-						setPlayMessage('info', `Video is still being processed. ${body.download?.completed} / ${body.download?.total} | ${body.encoding?.processed} / ${body.encoding?.completeDuration} (${body.encoding?.fps}fps)`)
-						statusTimeout = setTimeout(checkStatus, 5000)
-					} else if (body.status == "idle") {
-							idledFor += 1 ;
-							if (idledFor < 3) {
-								statusTimeout = setTimeout(checkStatus, 5000)
-								playMessage = undefined
-							} else {
-								setPlayMessage('error', `Failed to get torrent status: ${response.status}, close and re-open`)
-							}
+					const body = (await response.json()) as StatusResponse;
+					if (body.status == 'ongoing') {
+						let message = 'Video is still being processed.';
+						if (body.download && body.download.completed != body.download.total) {
+							message = `${message}\nDownload: ${readableFileSize(
+								body.download.completed
+							)} / ${readableFileSize(body.download.total)}`;
+						}
+						if (body.encoding) {
+							message = `${message}\nEncoding: ${body.encoding.processed} / ${body.encoding.completeDuration} (${body.encoding.fps}fps)`;
+						}
+						setPlayMessage('info', message);
+						statusTimeout = setTimeout(checkStatus, 5000);
+					} else if (body.status == 'idle') {
+						idledFor += 1;
+						if (idledFor < 3) {
+							statusTimeout = setTimeout(checkStatus, 5000);
+							playMessage = undefined;
+						} else {
+							setPlayMessage(
+								'error',
+								`Failed to get torrent status: ${response.status}, close and re-open`
+							);
+						}
 					}
 				} else {
-					setPlayMessage('error', `Failed to get torrent status: ${response.status}`)
-					statusTimeout = setTimeout(checkStatus, 5000)
+					setPlayMessage('error', `Failed to get torrent status: ${response.status}`);
+					statusTimeout = setTimeout(checkStatus, 5000);
 				}
 			}
 
@@ -166,7 +203,7 @@
 				if (torrent.position) {
 					seekToTime(player!, torrent.position);
 				}
-				checkStatus()
+				checkStatus();
 			});
 			let updatingPosition = false;
 			player.addEventListener('timeupdate', (event) => {
@@ -205,12 +242,27 @@
 	});
 
 	onDestroy(() => {
-		clearTimeout(statusTimeout)
-	})
+		clearTimeout(statusTimeout);
+	});
 </script>
 
 <!-- ========================= HTML -->
-<div class="mb-10" transition:fade>
+{#if theatre}
+	<div
+		class="absolute top-0 right-0 bottom-0 left-0 bg-black bg-opacity-80 select-none pointer-events-none z-20"
+		transition:fade
+	/>
+{/if}
+<div
+	class={`${
+		theatre ? 'w-full' : 'w-11/12 md:w-4/5 lg:w-1/2'
+	} mx-auto text-white my-4 flex-grow relative mb-10 transition-all z-30`}
+	transition:slide={{ duration: 1000, easing: cubicOut }}
+	on:introstart={focusPlayer}
+	on:introend={playerOpened}
+	on:transitionstart={() => dispatch('focus')}
+	on:transitionend={() => dispatch('focus')}
+>
 	<video
 		bind:this={player}
 		class="w-full"
@@ -222,10 +274,10 @@
 	>
 		Sorry, your browser doesn't support embedded videos.
 	</video>
-	<div class="mt-2 flex justify-between items-center">
-		<div class="flex flex-col">
+	<div class="mt-2 flex flex-col md:flex-row justify-between items-center">
+		<div class="flex flex-col w-full md:w-auto text-left pl-2">
 			{#if playMessage}
-				<span class={`message ${playMessage.type}`} transition:fade>
+				<span class={`message ${playMessage.type} whitespace-pre-line`} transition:fade>
 					{playMessage.content}
 				</span>
 			{/if}
@@ -235,7 +287,7 @@
 				</span>
 			{/if}
 		</div>
-		<div>
+		<div class="w-full md:w-auto text-right pr-2">
 			<button
 				class="p-1 border border-gray-400 text-sm hover:bg-gray-800 rounded-md transition-colors mr-2"
 				on:click={closePlayer}
@@ -243,10 +295,14 @@
 				Close
 			</button>
 			<button
-				class="p-2 border border-blue-400 hover:bg-blue-500 rounded-md transition-colors"
-				on:click={closePlayer}
+				class="p-2 border border-blue-400 bg-blue-500 hover:bg-blue-600 rounded-md transition-colors shadow-blue-400 hover:shadow-md"
+				on:click={toggleTheatreMode}
 			>
-				{$_('media.theatre_mode')}
+				{#if !theatre}
+					{$_('media.theatre_mode')}
+				{:else}
+					{$_('media.disable_theatre_mode')}
+				{/if}
 			</button>
 		</div>
 	</div>
