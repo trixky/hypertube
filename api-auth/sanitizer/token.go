@@ -11,8 +11,10 @@ const (
 	LABEL_token = "token"
 )
 
+// SanitizeToken sanitizes tokens
 func SanitizeToken(token string) error {
 	// https://ihateregex.io/expr/uuid/
+
 	if len(token) == 0 {
 		return status.Errorf(codes.InvalidArgument, LABEL_token+" missing")
 	}

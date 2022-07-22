@@ -35,6 +35,7 @@ type meGoogleResponse struct {
 	Lastname  string `json:"family_name"`
 }
 
+// setupGoogleConfig setups the google config from environment variables
 func setupGoogleConfig() {
 	config := &oauth2.Config{
 		ClientID:     environment.E.APIGoogle.ClientId,
@@ -50,6 +51,7 @@ func setupGoogleConfig() {
 	googleConfig = config
 }
 
+// generateGoogleLoginUrl generates the google login url from the config
 func generateGoogleLoginUrl() {
 	if googleConfig == nil {
 		setupGoogleConfig()
@@ -57,6 +59,7 @@ func generateGoogleLoginUrl() {
 	googleLoginUrl = googleConfig.AuthCodeURL(QUERY_VALUE_state_default)
 }
 
+// loginGoogle logs in to google from the google login url
 func loginGoogle(w http.ResponseWriter, r *http.Request) {
 	if googleLoginUrl == "" {
 		generateGoogleLoginUrl()
@@ -65,6 +68,7 @@ func loginGoogle(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, googleLoginUrl, http.StatusSeeOther)
 }
 
+// callbackGoogle Handles the "callbackGoogle" route
 func callbackGoogle(w http.ResponseWriter, r *http.Request) {
 	query_values := r.URL.Query()
 
@@ -75,6 +79,7 @@ func callbackGoogle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get the code from the url query
 	code := query_values.Get(QUERY_KEY_code)
 
 	if len(code) == 0 {
@@ -82,16 +87,20 @@ func callbackGoogle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Generates the google login url
 	if googleConfig == nil {
 		generateGoogleLoginUrl()
 	}
 
+	// Exchange the code to the google token
 	google_token, err := googleConfig.Exchange(context.Background(), code)
 
 	if err != nil {
 		http.Error(w, QUERY_KEY_code+" exchange failed", http.StatusForbidden)
 		return
 	}
+
+	// Exchange the google token to the google user info
 	google_r, err := http.Get(environment.E.APIGoogle.UserInfoURL + "?access_token=" + google_token.AccessToken)
 
 	if err != nil {
@@ -99,6 +108,7 @@ func callbackGoogle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Read the body of the response
 	user_data, err := ioutil.ReadAll(google_r.Body)
 
 	if err != nil {
@@ -108,11 +118,12 @@ func callbackGoogle(w http.ResponseWriter, r *http.Request) {
 
 	me_google_response := meGoogleResponse{}
 
+	// Extract JSON from the body
 	if err := json.Unmarshal(user_data, &me_google_response); err != nil {
 		http.Error(w, "user info reading failed 2", http.StatusInternalServerError)
 	}
 
-	// -------------------- db
+	// -------------------- DB
 	user, err := databases.DBs.SqlcQueries.CreateGoogleExternalUser(context.Background(), sqlc.CreateGoogleExternalUserParams{
 		Email:     me_google_response.Email,
 		Username:  me_google_response.Login,
@@ -141,10 +152,10 @@ func callbackGoogle(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// -------------------- cache
+	// -------------------- Cache
 	token := uuid.New().String() // token generation
 
-	if err := databases.AddToken(user.ID, token, databases.EXTERNAL_GOOGLE); err != nil {
+	if err := databases.DBs.RedisQueries.AddToken(user.ID, token, databases.EXTERNAL_GOOGLE); err != nil {
 		http.Error(w, "token generation failed", http.StatusInternalServerError)
 		return
 	}

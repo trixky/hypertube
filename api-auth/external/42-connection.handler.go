@@ -33,6 +33,7 @@ type me42Response struct {
 	Lastname  string `json:"last_name"`
 }
 
+// sanitizeExternal42Connection sanitizes inputs for "redirect42" route
 func sanitizeExternal42Connection(code string) error {
 	if err := sanitizer.Sanitize42Code(code); err != nil { // 42 code
 		return err
@@ -41,13 +42,14 @@ func sanitizeExternal42Connection(code string) error {
 	return nil
 }
 
+// getTokenFromCode get 42 API token from the code
 func getTokenFromCode(code string) (*code42Response, error) {
 	// https://profile.intra.42.fr/oauth/applications/9554
 	// https://api.intra.42.fr/apidoc/guides/web_application_flow
 	// https://api.intra.42.fr/apidoc/guides/getting_started
 	// https://api.intra.42.fr/apidoc
 
-	//Encode the data
+	// Encode the data for the 42 API
 	response, err := http.PostForm(environment.E.API42.RequestUrl, url.Values{
 		"grant_type":    {environment.E.API42.GrantType},
 		"client_id":     {environment.E.API42.ClientId},
@@ -56,13 +58,13 @@ func getTokenFromCode(code string) (*code42Response, error) {
 		"redirect_uri":  {environment.E.API42.RedirectionUri},
 	})
 
-	//okay, moving on...
 	if err != nil {
 		return nil, err
 	}
 
 	defer response.Body.Close()
 
+	// Read the body of the response
 	body, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
@@ -71,6 +73,7 @@ func getTokenFromCode(code string) (*code42Response, error) {
 
 	code_42_response := code42Response{}
 
+	// Extract JSON from the body
 	if err := json.Unmarshal(body, &code_42_response); err != nil {
 		return nil, err
 	}
@@ -78,6 +81,7 @@ func getTokenFromCode(code string) (*code42Response, error) {
 	return &code_42_response, nil
 }
 
+// getTokenFromCode get the 42 user information from his token
 func getUser42InfoFromToken(code_42_response *code42Response) (*me42Response, error) {
 	req, err := http.NewRequest("GET", environment.E.API42.RequestMe, nil)
 
@@ -85,17 +89,20 @@ func getUser42InfoFromToken(code_42_response *code42Response) (*me42Response, er
 		return nil, err
 	}
 
+	// Generates the authorization header from the 42 user token
 	authorization_header := code_42_response.Token_type + " " + code_42_response.Access_token
 
 	req.Header.Add("Authorization", authorization_header)
 
 	client := &http.Client{}
 
+	// Send th request
 	response, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
+	// Read the body of the response
 	body, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
@@ -104,6 +111,7 @@ func getUser42InfoFromToken(code_42_response *code42Response) (*me42Response, er
 
 	me_42_response := me42Response{}
 
+	// Extract JSON from the body
 	if err := json.Unmarshal(body, &me_42_response); err != nil {
 		return nil, err
 	}
@@ -111,8 +119,9 @@ func getUser42InfoFromToken(code_42_response *code42Response) (*me42Response, er
 	return &me_42_response, nil
 }
 
+// Redirect42 Handles the "redirect42" route
 func redirect42(w http.ResponseWriter, r *http.Request) {
-	// -------------------- sanitize
+	// -------------------- Sanitize
 	code := r.URL.Query().Get("code")
 	if err := sanitizeExternal42Connection(code); err != nil {
 		http.Error(w, "code missing", http.StatusBadRequest)
@@ -132,7 +141,7 @@ func redirect42(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// -------------------- db
+	// -------------------- DB
 	user, err := databases.DBs.SqlcQueries.Create42ExternalUser(context.Background(), sqlc.Create42ExternalUserParams{
 		Email:     me_42_response.Email,
 		Username:  me_42_response.Login,
@@ -161,10 +170,11 @@ func redirect42(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// -------------------- cache
-	token := uuid.New().String() // token generation
+	// -------------------- Cache
+	// Generates the token
+	token := uuid.New().String()
 
-	if err := databases.AddToken(user.ID, token, databases.EXTERNAL_42); err != nil {
+	if err := databases.DBs.RedisQueries.AddToken(user.ID, token, databases.EXTERNAL_42); err != nil {
 		http.Error(w, "token generation failed", http.StatusInternalServerError)
 		return
 	}

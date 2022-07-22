@@ -149,7 +149,7 @@ services:
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
       # access to the redis CLI:
-      # $> docker exec -it <container> /bin/sh -c 'redis-cli -h redis'
+      # $> dc exec -it redis /bin/sh -c 'redis-cli -h redis'
 
   adminer:
     image: adminer:4.8.1-standalone

@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// sanitizeInternalLogin sanitizes inputs for "InternalLogin" route
 func sanitizeInternalLogin(in *pb.InternalLoginRequest) error {
 	if err := sanitizer.SanitizeEmail(in.GetEmail()); err != nil { // email
 		return err
@@ -27,13 +28,14 @@ func sanitizeInternalLogin(in *pb.InternalLoginRequest) error {
 	return nil
 }
 
+// InternalLogin Handles the "InternalLogin" route
 func (s *AuthServer) InternalLogin(ctx context.Context, in *pb.InternalLoginRequest) (*pb.GenericConnectionResponse, error) {
-	// -------------------- sanitize
+	// -------------------- Sanitize
 	if err := sanitizeInternalLogin(in); err != nil {
 		return nil, err
 	}
 
-	// -------------------- db
+	// -------------------- DB
 	user, err := databases.DBs.SqlcQueries.GetInternalUserByCredentials(context.Background(), sqlc.GetInternalUserByCredentialsParams{
 		Email: in.GetEmail(),
 		Password: sql.NullString{
@@ -49,10 +51,11 @@ func (s *AuthServer) InternalLogin(ctx context.Context, in *pb.InternalLoginRequ
 		return nil, status.Errorf(codes.Internal, "connection failed")
 	}
 
-	// -------------------- cache
-	token := uuid.New().String() // token generation
+	// -------------------- Cache
+	// Generates the token
+	token := uuid.New().String()
 
-	if err := databases.AddToken(user.ID, token, databases.EXTERNAL_none); err != nil {
+	if err := databases.DBs.RedisQueries.AddToken(user.ID, token, databases.EXTERNAL_none); err != nil {
 		return nil, status.Errorf(codes.Internal, "token generation failed")
 	}
 

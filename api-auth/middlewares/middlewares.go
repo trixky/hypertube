@@ -8,13 +8,17 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func basic_middleware(ctx context.Context, r *http.Request) metadata.MD {
+func BasicGrpcMiddleware(ctx context.Context, r *http.Request) metadata.MD {
 	md := make(map[string]string)
+
+	// Extracts and saves in metatada the method of the request
 	if method, ok := runtime.RPCMethod(ctx); ok {
-		md["method"] = method // /grpc.gateway.examples.internal.proto.examplepb.LoginService/Login
+		md["method"] = method
 	}
+	// Extracts and saves in metatada the method of the request
 	if pattern, ok := runtime.HTTPPathPattern(ctx); ok {
-		md["pattern"] = pattern // /v1/example/login
+		md["pattern"] = pattern
 	}
+
 	return metadata.New(md)
 }
