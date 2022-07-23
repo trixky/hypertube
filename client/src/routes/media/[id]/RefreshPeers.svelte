@@ -21,7 +21,7 @@
 			headers: { accept: 'application/json' }
 		});
 		if (response.ok) {
-			const lines = await await response.text();
+			const lines = await response.text();
 			let results: RefreshResult[] = [];
 			for (const line of lines.trim().split('\n')) {
 				try {
@@ -55,7 +55,7 @@
 		class="absolute inline-block -translate-x-full transition-all duration-[0.35s] opacity-50"
 		style={`--tw-translate-x: calc(-100% - 4px);`}
 	>
-		<Spinner size={16} />
+		<Spinner size={16} inversed={true} />
 	</div>
 {/if}
 <button

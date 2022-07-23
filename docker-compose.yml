@@ -133,7 +133,7 @@ services:
       - redis
 
   postgres:
-    image: postgres
+    image: postgres:14.4-alpine
     restart: always
     env_file:
       - ./postgres/.env
