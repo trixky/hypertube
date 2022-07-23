@@ -2,10 +2,50 @@
 <script lang="ts" context="module">
 	import type { Load } from '@sveltejs/kit';
 
-	export const load: Load = async ({ params, fetch, session }) => {
-		await genres.load();
+	// Preload search results and genres
+	// -- and insert them on startup in the client
+	export const load: Load = async ({ fetch, session }) => {
+		const { response: genresResponse, genres } = await getGenres(fetch, session);
+		let notFound = genresResponse.status == 404;
+		let forbidden = genresResponse.status >= 400 && genresResponse.status < 500 && !notFound;
+
+		if (forbidden) {
+			return {
+				status: 302,
+				redirect: '/login'
+			};
+		} else if (notFound) {
+			return {
+				status: 404
+			};
+		}
+
+		const {
+			response: searchResponse,
+			results,
+			totalResults
+		} = await executeSearch(baseUrl, fetch, session);
+		notFound = searchResponse.status == 404;
+		forbidden = searchResponse.status >= 400 && searchResponse.status < 500 && !notFound;
+
+		if (forbidden) {
+			return {
+				status: 302,
+				redirect: '/login'
+			};
+		} else if (notFound) {
+			return {
+				status: 404
+			};
+		}
+
 		return {
-			status: 200
+			status: 200,
+			props: {
+				ssrGenres: genres,
+				ssrResults: results,
+				ssrTotalResults: totalResults
+			}
 		};
 	};
 </script>
@@ -16,7 +56,15 @@
 	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import Spinner from '$components/animations/spinner.svelte';
-	import { searching, loadingMore, results, totalResults, search } from '$stores/search';
+	import {
+		searching,
+		loadingMore,
+		results,
+		totalResults,
+		search,
+		executeSearch,
+		baseUrl
+	} from '$stores/search';
 	import SortAsc from '$components/icons/SortAsc.svelte';
 	import SortDesc from '$components/icons/SortDesc.svelte';
 	import LazyLoad from '$components/lazy/LazyLoad.svelte';
@@ -24,9 +72,19 @@
 	import Eye from '$components/icons/Eye.svelte';
 	import ChevronDown from '$components/icons/ChevronDown.svelte';
 	import ChevronUp from '$components/icons/ChevronUp.svelte';
-	import { genres } from '$stores/genres';
+	import { genres, getGenres, type Genre } from '$stores/genres';
 	import Times from '$components/icons/Times.svelte';
 	import { accordion } from '$directives/accordion';
+	import type { Result } from '$types/Media';
+
+	export let ssrGenres: Genre[];
+	genres.set(ssrGenres);
+	export let ssrResults: Result[];
+	results.setResults(ssrResults);
+	search.setHasResults(ssrResults.length > 0);
+	searching.set(false);
+	export let ssrTotalResults: number;
+	totalResults.set(ssrTotalResults);
 
 	let sortColumns: string[] = ['year', 'name', 'duration', 'id'];
 
@@ -102,7 +160,6 @@
 			await search.loadMore();
 			onScroll();
 		} catch (error) {
-			console.log('loadMore', error);
 			loadMoreError = true;
 		}
 	}
@@ -134,6 +191,7 @@
 	onMount(async () => {
 		if (!$search.hasResults) {
 			await search.execute();
+		} else {
 			onScroll();
 		}
 		if (browser) {
@@ -154,11 +212,11 @@
 <svelte:head>
 	{#if !$search.query?.length}
 		<title>
-			{$_('title.search_empty')}
+			{$_('title.search_empty', { values: { query: $search.query } })}
 		</title>
 	{:else}
 		<title>
-			{$_('title.search')}
+			{$_('title.search', { values: { query: $search.query } })}
 		</title>
 	{/if}
 </svelte:head>
@@ -288,7 +346,7 @@
 				<LazyLoad
 					tag="a"
 					href={`/media/${result.id}`}
-					class="relative result overflow-hidden w-40 min-h-[220px] mx-auto"
+					class="relative result overflow-hidden h-[268px] w-40 min-h-[268px] mx-auto"
 				>
 					<div
 						class="cover"

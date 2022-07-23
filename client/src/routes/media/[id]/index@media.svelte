@@ -44,7 +44,6 @@
 	import { onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { browser } from '$app/env';
-	import { goto } from '$app/navigation';
 	import { _ } from 'svelte-i18n';
 	import { addUserTitle } from '$utils/media';
 	import ArrowLeft from '$components/icons/ArrowLeft.svelte';

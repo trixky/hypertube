@@ -1,8 +1,9 @@
 import { writable } from 'svelte/store';
-import type { Result } from '$types/Media';
 import { addUserTitle } from '$utils/media';
+import type { Result } from 'src/types/Media';
+import { browser } from '$app/env';
 
-export const searching = writable(true);
+export const searching = writable(false);
 export const loadingMore = writable(false);
 function resultsStore() {
 	let list: Result[] = [];
@@ -43,6 +44,41 @@ type SearchStore = {
 	sortBy: SortColumns;
 	sortOrder: SortOrder;
 };
+
+export const baseUrl = `http://localhost:7072/v1/media/search`;
+
+export async function executeSearch(
+	url: string,
+	sender: (info: RequestInfo, init?: RequestInit | undefined) => Promise<Response> = fetch,
+	session?: App.Session
+) {
+	const res = await sender(url.toString(), {
+		method: 'GET',
+		credentials: 'include',
+		headers: {
+			accept: 'application/json',
+			cookie: !browser ? `token=${session?.token}; locale=${session?.locale}` : ''
+		}
+	});
+	if (res.ok) {
+		const body = (await res.json()) as {
+			page: number;
+			results: number;
+			totalResults: number;
+			medias: Result[];
+		};
+		return {
+			response: res,
+			results: body.medias.map(addUserTitle),
+			totalResults: body.totalResults
+		};
+	}
+	return {
+		response: res,
+		results: [],
+		totalResults: 0
+	};
+}
 
 function buildParams(store: SearchStore): string {
 	const params = new URLSearchParams([
@@ -87,6 +123,10 @@ export function searchStore() {
 		subscribe,
 		set,
 		update,
+		setHasResults(value: boolean) {
+			store.hasResults = value;
+			return set(store);
+		},
 		setGenres(genres: number[]) {
 			store.genres = genres;
 			return set(store);
@@ -99,9 +139,7 @@ export function searchStore() {
 			}
 			return set(store);
 		},
-		async execute(
-			sender: (info: RequestInfo, init?: RequestInit | undefined) => Promise<Response> = fetch
-		) {
+		async execute() {
 			searching.set(true);
 			loadingMore.set(false);
 
@@ -112,26 +150,18 @@ export function searchStore() {
 			results.setResults([]);
 
 			// Send request
-			const url = `http://localhost:7072/v1/media/search`;
-			const res = await sender(buildURL(url).toString(), {
-				method: 'GET',
-				credentials: 'include',
-				headers: { accept: 'application/json' }
-			});
-			if (res.ok) {
-				const body = (await res.json()) as {
-					page: number;
-					results: number;
-					totalResults: number;
-					medias: Result[];
-				};
-				results.setResults(body.medias.map(addUserTitle));
-				totalResults.set(body.totalResults);
-				store.hasResults = true;
-				set(store);
+			const {
+				response,
+				results: searchResults,
+				totalResults: searchTotalResults
+			} = await executeSearch(buildURL(baseUrl).toString());
+			if (response.ok) {
+				results.setResults(searchResults);
+				totalResults.set(searchTotalResults);
 			}
 
 			searching.set(false);
+			return response.status;
 		},
 		async loadMore() {
 			loadingMore.set(true);
