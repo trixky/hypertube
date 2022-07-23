@@ -1,5 +1,5 @@
 import { locale } from 'svelte-i18n';
-import type { Result } from '../../src/types/Media';
+import type { Result } from '$types/Media';
 
 let userLang: string | undefined = undefined;
 let userRegion: string | undefined = undefined;

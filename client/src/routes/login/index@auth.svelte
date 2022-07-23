@@ -140,6 +140,9 @@
 </script>
 
 <!-- ========================= HTML -->
+<svelte:head>
+	<title>{$_('title.login')}</title>
+</svelte:head>
 <BlackBox title={$_('auth.login_header')}>
 	<Logo alone />
 	<External disabled={loading} />

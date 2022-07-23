@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { Result } from '../../src/types/Media';
+import type { Result } from '$types/Media';
 import { addUserTitle } from '$utils/media';
 
 export const searching = writable(true);

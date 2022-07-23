@@ -15,7 +15,8 @@ const config = {
 			$components: 'src/components',
 			$directives: 'src/directives',
 			$utils: 'src/utils',
-			$stores: 'src/stores'
+			$stores: 'src/stores',
+			$types: 'src/types'
 		}
 	}
 };

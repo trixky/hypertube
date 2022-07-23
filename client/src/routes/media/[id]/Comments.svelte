@@ -3,7 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { session } from '$app/stores';
 	import { fly } from 'svelte/transition';
-	import type { MediaComment } from '../../../../src/types/Media';
+	import type { MediaComment } from '$types/Media';
 	import Warning from '$components/inputs/warning.svelte';
 
 	$: self = $session.user!;
@@ -106,14 +106,14 @@
 		</div>
 	</form>
 	{#each cleanComments as comment (comment.id)}
-		<div class="comment" class:self={comment.user.id == self.id} in:fly>
+		<div id="comment-{comment.id}" class="comment" class:self={comment.user.id == self.id} in:fly>
 			{#if comment.user.id == self.id}
 				<div class="bordered" />
 			{/if}
 			<div class="comment-header">
 				<div>
-					<span class="opacity-60 text-sm mr-2">#{comment.id}</span>
-					<span class="font-bold">{comment.user.name}</span>
+					<a href="#comment-{comment.id}" class="opacity-60 text-sm mr-2">#{comment.id}</a>
+					<a href="/users/{comment.user.id}" class="font-bold">{comment.user.name}</a>
 				</div>
 				<div class="text-sm">{comment.date.toLocaleString()}</div>
 			</div>

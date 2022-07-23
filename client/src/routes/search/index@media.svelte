@@ -151,6 +151,17 @@
 </script>
 
 <!-- ========================= HTML -->
+<svelte:head>
+	{#if !$search.query?.length}
+		<title>
+			{$_('title.search_empty')}
+		</title>
+	{:else}
+		<title>
+			{$_('title.search')}
+		</title>
+	{/if}
+</svelte:head>
 <div class="bg-black min-h-[90%] w-full flex-grow">
 	<div class="w-full sticky top-0 z-10 border-b-2 border-blue-500">
 		<div class="flex flex-col md:flex-row items-center p-4">

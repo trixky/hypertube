@@ -34,6 +34,9 @@
 </script>
 
 <!-- ========================= HTML -->
+<svelte:head>
+	<title>hypertube :: {status}</title>
+</svelte:head>
 <div class="relative w-full h-auto pb-4 bg-black text-white">
 	<Background bind:this={background} palette={['rgb(147, 197, 253)', 'red', 'white	']} />
 	<div class="relative flex flex-col justify-center items-center w-full h-full">

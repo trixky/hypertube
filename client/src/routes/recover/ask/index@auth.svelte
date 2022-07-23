@@ -87,6 +87,9 @@
 </script>
 
 <!-- ========================= HTML -->
+<svelte:head>
+	<title>{$_('title.recover_password')}</title>
+</svelte:head>
 <BlackBox title={$_('auth.forgot_password_header')}>
 	<Logo alone />
 	<form action="" class="pt-1 w-full">
