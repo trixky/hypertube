@@ -5,6 +5,7 @@ services:
     env_file:
       - ./api-auth/.env
       - ./postgres/.env
+      - ./redis/.env
     volumes:
       - ./api-auth:/app
     depends_on:
