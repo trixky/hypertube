@@ -104,5 +104,10 @@
   "navigation": {
     "search": "Search"
   },
-  "language": "Language"
+  "language": "Language",
+  "error": {
+    "not_found": "Not Found",
+    "back_to_search": "Back to Search",
+    "login_or_register": "Login/Register"
+  }
 }
