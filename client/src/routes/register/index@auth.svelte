@@ -174,6 +174,9 @@
 </script>
 
 <!-- ========================= HTML -->
+<svelte:head>
+	<title>{$_('title.register')}</title>
+</svelte:head>
 <BlackBox title={$_('auth.register_header')}>
 	<Logo alone />
 	<form action="" class="pt-1 w-full">

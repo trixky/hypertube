@@ -109,5 +109,13 @@
     "not_found": "Page Non Trouvé ",
     "back_to_search": "Retour a la Recherche",
     "login_or_register": "Connexion/Inscription"
+  },
+  "title": {
+    "media": "Regardez {title} sur hypertube",
+    "recover_password": "hypertube :: Retrouver son Mot de Passe",
+    "register": "hypertube :: Inscription",
+    "login": "hypertube :: Connexion",
+    "search": "Resultats pour {query} sur hypertube",
+    "search_empty": "hypertube :: Recherche"
   }
 }

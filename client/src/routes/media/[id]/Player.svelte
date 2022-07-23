@@ -2,7 +2,7 @@
 <script lang="ts">
 	import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
-	import type { MediaTorrent } from 'src/types/Media';
+	import type { MediaTorrent } from '$types/Media';
 	import { session } from '$app/stores';
 	import { _ } from 'svelte-i18n';
 	import { readableFileSize } from '$utils/media';
@@ -33,8 +33,10 @@
 
 	const dispatch = createEventDispatcher();
 
+	let loading = true;
 	function closePlayer() {
 		dispatch('close');
+		loading = false;
 	}
 
 	// @source https://stackoverflow.com/a/41776483
@@ -87,18 +89,28 @@
 		dispatch('open');
 	}
 
-	function focusPlayer() {
+	function focusPlayer(
+		transition?:
+			| TransitionEvent
+			| (CustomEvent<null> & { currentTarget: EventTarget & HTMLDivElement })
+	) {
+		if (
+			transition &&
+			'propertyName' in transition &&
+			transition.propertyName == 'background-color'
+		) {
+			return;
+		}
 		clearTimeout(focusTimeout);
 		dispatch('focus');
 		if (!isPlayerOpen) {
-			setTimeout(() => {
+			focusTimeout = setTimeout(() => {
 				focusPlayer();
 			}, 20);
 		}
 	}
 
 	let statusTimeout = 0;
-	let loading = true;
 	function refreshPlayer() {
 		clearTimeout(statusTimeout);
 		loading = true;
@@ -224,7 +236,7 @@
 				await checkStatus();
 
 				if (!bind) {
-					let retryCount = 0;
+					/*let retryCount = 0;
 					player.addEventListener('stalled', () => {
 						if (retryCount <= 3) {
 							refreshPlayer();
@@ -235,7 +247,7 @@
 								'The player is having some problems, you need to refresh it.'
 							);
 						}
-					});
+					});*/
 					bind = true;
 				}
 			});
@@ -251,6 +263,7 @@
 						const currentTime = player?.currentTime;
 						if (currentTime && !isNaN(currentTime) && currentTime > 0) {
 							updatingPosition = true;
+							dispatch('timeUpdate', currentTime);
 							fetch(`http://localhost:3040/v1/position/${torrent.id}`, {
 								method: 'POST',
 								credentials: 'include',
@@ -301,8 +314,8 @@
 	transition:slide={{ duration: 1000, easing: cubicOut }}
 	on:introstart={focusPlayer}
 	on:introend={playerOpened}
-	on:transitionstart={() => dispatch('focus')}
-	on:transitionend={() => dispatch('focus')}
+	on:transitionstart={focusPlayer}
+	on:transitionend={focusPlayer}
 >
 	<video
 		bind:this={player}

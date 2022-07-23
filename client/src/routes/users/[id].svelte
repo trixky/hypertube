@@ -341,6 +341,9 @@
 <svelte:window on:keydown={handle_keydown} />
 
 <!-- ========================= HTML -->
+<svelte:head>
+	<title>hypertube :: User Profile</title>
+</svelte:head>
 <BlackBox title={its_me ? $_('auth.my_profile') : $_('auth.profile')}>
 	{#if !user_does_not_exist}
 		{#if its_me}

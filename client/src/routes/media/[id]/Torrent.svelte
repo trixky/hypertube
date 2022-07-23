@@ -4,7 +4,7 @@
 	import { fade } from 'svelte/transition';
 	import QualityIcon from './QualityIcon.svelte';
 	import Play from '$components/icons/Play.svelte';
-	import type { MediaTorrent } from '../../../../src/types/Media';
+	import type { MediaTorrent } from '$types/Media';
 	import { createEventDispatcher } from 'svelte';
 	import Eye from '$components/icons/Eye.svelte';
 	import Warning from '$components/icons/Warning.svelte';

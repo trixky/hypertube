@@ -109,5 +109,13 @@
     "not_found": "Not Found",
     "back_to_search": "Back to Search",
     "login_or_register": "Login/Register"
+  },
+  "title": {
+    "media": "Watch {title} on hypertube",
+    "recover_password": "hypertube :: Recover Password",
+    "register": "hypertube :: Register",
+    "login": "hypertube :: Login",
+    "search": "Results for {query} on hypertube",
+    "search_empty": "hypertube :: Search"
   }
 }

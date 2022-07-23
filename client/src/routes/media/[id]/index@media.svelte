@@ -1,7 +1,7 @@
 <!-- ========================= SCRIPT -->
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
-	import type { MediaProps, MediaTorrent } from '../../../../src/types/Media';
+	import type { MediaProps, MediaTorrent } from '$types/Media';
 
 	export const load: Load = async ({ params, fetch, session }) => {
 		const url = `http://localhost:7072/v1/media/${params.id}/get`;
@@ -103,7 +103,7 @@
 	let palette: string[] = [];
 
 	// Utility
-	function goBack(event: Event) {
+	/*function goBack(event: Event) {
 		event.preventDefault();
 		// TODO Avoid exit when opening the media page directly
 		if (history.length > 1) {
@@ -111,7 +111,7 @@
 		} else {
 			goto('/search');
 		}
-	}
+	}*/
 
 	// Peers refresh
 	function onPeersRefresh(event: CustomEvent<RefreshResult[]>) {
@@ -131,6 +131,11 @@
 	let selectedTorrent: MediaTorrent | undefined;
 	async function playTorrent(torrent: MediaTorrent) {
 		selectedTorrent = torrent;
+		// Add watched icon
+		if (typeof selectedTorrent.position != 'number') {
+			selectedTorrent.position = 0.0;
+			torrents = torrents;
+		}
 		backgroundAnimation.stop();
 		scrollPlayerIntoView();
 	}
@@ -144,6 +149,12 @@
 	function onPlayerClose() {
 		selectedTorrent = undefined;
 		backgroundAnimation.restart();
+	}
+
+	function onPlayerTimeUpdate(event: CustomEvent<number | undefined | null>) {
+		if (selectedTorrent) {
+			selectedTorrent.position = event.detail;
+		}
 	}
 
 	// Background gradient
@@ -194,6 +205,11 @@
 </script>
 
 <!-- ========================= HTML -->
+<svelte:head>
+	<title>
+		{$_('title.media', { values: { title: media.userTitle ? media.userTitle : media.title } })}
+	</title>
+</svelte:head>
 <div class="flex flex-col w-full h-auto pb-4 bg-black">
 	<div class="header min-h-[30rem] flex-grow-0 border-b-stone-200 border-b">
 		{#if !loadingGradient}
@@ -216,7 +232,7 @@
 		<div
 			class="absolute top-0 left-0 m-2 px-2 py-1 text-stone-200 inline-block hover:text-blue-500 transition-colors"
 		>
-			<a href="/search" on:click={goBack} class="cursor-pointer">
+			<a href="/search" class="cursor-pointer">
 				<ArrowLeft />
 				{$_('media.go_back')}
 			</a>
@@ -315,6 +331,7 @@
 				on:open={scrollPlayerIntoView}
 				on:focus={scrollPlayerIntoView}
 				on:close={onPlayerClose}
+				on:timeUpdate={onPlayerTimeUpdate}
 			/>
 		{/if}
 		<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4 flex-grow relative z-10">

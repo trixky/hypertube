@@ -130,18 +130,17 @@ async function transcodeMovieFile(
 		// .outputFormat("mp4")
 		// * webm
 		.audioCodec('libvorbis')
-		.videoCodec('libvpx')
+		.videoCodec('libvpx-vp9')
 		.outputOptions('-movflags +frag_keyframe+separate_moof+omit_tfhd_offset+empty_moov')
 		.outputFormat('webm')
 		// *
 		// .outputOptions("-vf scale=-1:101")
 		// .outputOptions("-qp 0")
-		.outputOptions('-crf 18')
-		.outputOptions('-b:v 4000K')
-		// .videoBitrate(1)
-		// .outputOptions('-preset veryfast')
-		// .outputOptions('-crf 50')
-		.outputOptions('-threads 4')
+		.outputOptions('-crf 40')
+		.outputOptions('-b:v 2500K')
+		.outputOptions('-deadline realtime')
+		.outputOptions('-cpu-used 6')
+		.outputOptions('-threads 3')
 		.outputOptions('-flags low_delay')
 		.on('ffmpeg: start', () => {
 			console.log('start');
