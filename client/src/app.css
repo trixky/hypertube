@@ -8,23 +8,19 @@ html {
 	@apply scroll-smooth;
 }
 
-main:not(.media-page) {
-	@apply relative flex content-center justify-center;
+main > div:not(.media-page) input {
+	@apply w-full p-2 rounded-sm duration-[0.35s] bg-white text-black;
 }
 
-main:not(.media-page) input {
-	@apply w-full p-2 rounded-sm duration-[0.35s] bg-white;
-}
-
-main:not(.media-page) hr {
+main > div:not(.media-page) hr {
 	@apply border-white/60 inline-block w-28 -translate-y-1 mx-1;
 }
 
-main:not(.media-page) label {
+main > div:not(.media-page) label {
 	@apply block p-2 text-white;
 }
 
-main:not(.media-page) label.required::after {
+main > div:not(.media-page) label.required::after {
 	@apply content-['*'] text-blue-300;
 }
 

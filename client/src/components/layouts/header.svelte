@@ -10,6 +10,10 @@
 
 	$: user = $session.user;
 
+	function setLocale(event: Event & { currentTarget: EventTarget & HTMLSelectElement }) {
+		locale.set(event.currentTarget.value);
+	}
+
 	const logout = () => {
 		cookies.del_a_cookie(cookies.labels.token);
 		cookies.del_a_cookie(cookies.labels.user_info);
@@ -42,11 +46,15 @@
 		{#if user}
 			<div class="flex flex-col">
 				<div title={$_('language')}>
-					{#if $locale == 'fr'}
-						<button on:click={() => locale.set('en')} class="text-white">English</button>
-					{:else}
-						<button on:click={() => locale.set('fr')} class="text-white">Francais</button>
-					{/if}
+					<select
+						name="language"
+						id="language"
+						class="p-1 bg-transparent rounded-md text-white border border-gray-400"
+						on:change={setLocale}
+					>
+						<option value="en">English</option>
+						<option value="fr">Francais</option>
+					</select>
 				</div>
 
 				<div>
