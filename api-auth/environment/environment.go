@@ -1,14 +1,14 @@
 package environment
 
+// https://github.com/grpc-ecosystem/grpc-gateway/blob/f046a4ebdc9be76e11c6239eaeba4e30e9e2444e/docs/docs/faq.md
+// https://github.com/grpc-ecosystem/grpc-gateway/blob/master/examples/internal/gateway/main.go
+// https://github.com/grpc-ecosystem/grpc-gateway/blob/0ebdfba80649c56b0da0777376c970d17c3c9540/examples/internal/gateway/handlers.go#L32
+
 import (
 	"fmt"
 	"os"
 	"strconv"
 )
-
-// https://github.com/grpc-ecosystem/grpc-gateway/blob/f046a4ebdc9be76e11c6239eaeba4e30e9e2444e/docs/docs/faq.md
-// https://github.com/grpc-ecosystem/grpc-gateway/blob/master/examples/internal/gateway/main.go
-// https://github.com/grpc-ecosystem/grpc-gateway/blob/0ebdfba80649c56b0da0777376c970d17c3c9540/examples/internal/gateway/handlers.go#L32
 
 const (
 	ENV_grpc_port         = "API_AUTH_GRPC_PORT"
@@ -19,6 +19,8 @@ const (
 	ENV_postgres_user     = "POSTGRES_USER"
 	ENV_postgres_password = "POSTGRES_PASSWORD"
 	ENV_postgres_db       = "POSTGRES_DB"
+
+	environement_variable_missing = "environement variable missing"
 )
 
 type Env struct {
@@ -37,6 +39,7 @@ type Env struct {
 
 var E = Env{}
 
+// read_port convert and sanitize string port to integer
 func read_port(name string) (int, error) {
 	const (
 		port_max = 65535

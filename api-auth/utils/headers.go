@@ -20,6 +20,7 @@ const (
 	COOKIE_KEY_token     = "token"
 )
 
+// HeaderCookieTokenGeneration generates/insert the token in cookie header
 func HeaderCookieTokenGeneration(token string) *http.Cookie {
 	return &http.Cookie{
 		Name:  COOKIE_KEY_token,
@@ -27,7 +28,9 @@ func HeaderCookieTokenGeneration(token string) *http.Cookie {
 	}
 }
 
+// HeaderCookieTokenGeneration generates/insert the user infos in cookie header
 func HeaderCookieMeGeneration(cookie_user User, base_64 bool) (*http.Cookie, error) {
+	// JSON the user infos
 	json_value, err := json.Marshal(cookie_user)
 
 	if err != nil {
@@ -36,6 +39,7 @@ func HeaderCookieMeGeneration(cookie_user User, base_64 bool) (*http.Cookie, err
 
 	value := string(json_value)
 
+	// Convert JSON to BASE 64
 	if base_64 {
 		value = base64.StdEncoding.EncodeToString([]byte(value))
 	}

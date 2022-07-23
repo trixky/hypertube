@@ -23,34 +23,35 @@ type Api42 struct {
 	RequestMe      string
 }
 
+// GetAll read all needed enviornment variables
 func (a *Api42) GetAll() {
-	// --------- get RequestUrl
+	// --------- Get RequestUrl
 	if a.RequestUrl = os.Getenv(ENV_42_redirection_request_url); len(a.RequestUrl) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_42_redirection_request_url)
+		log.Fatalf("%s %s", ENV_42_redirection_request_url, environement_variable_missing)
 	}
 
-	// --------- get GrantType
+	// --------- Get GrantType
 	if a.GrantType = os.Getenv(ENV_42_redirection_grant_type); len(a.GrantType) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_42_redirection_grant_type)
+		log.Fatalf("%s %s", ENV_42_redirection_grant_type, environement_variable_missing)
 	}
 
-	// --------- get ClientId
+	// --------- Get ClientId
 	if a.ClientId = os.Getenv(ENV_42_redirection_client_id); len(a.ClientId) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_42_redirection_client_id)
+		log.Fatalf("%s %s", ENV_42_redirection_client_id, environement_variable_missing)
 	}
 
-	// --------- get ClientSecret
+	// --------- Get ClientSecret
 	if a.ClientSecret = os.Getenv(ENV_42_redirection_client_secret); len(a.ClientSecret) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_42_redirection_client_secret)
+		log.Fatalf("%s %s", ENV_42_redirection_client_secret, environement_variable_missing)
 	}
 
-	// --------- get RedirectionUri
+	// --------- Get RedirectionUri
 	if a.RedirectionUri = os.Getenv(ENV_42_redirection_redirection_uri); len(a.RedirectionUri) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_42_redirection_redirection_uri)
+		log.Fatalf("%s %s", ENV_42_redirection_redirection_uri, environement_variable_missing)
 	}
 
-	// --------- get RequestMe
+	// --------- Get RequestMe
 	if a.RequestMe = os.Getenv(ENV_42_request_me); len(a.RequestMe) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_42_request_me)
+		log.Fatalf("%s %s", ENV_42_request_me, environement_variable_missing)
 	}
 }
