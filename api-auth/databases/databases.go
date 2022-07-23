@@ -3,9 +3,15 @@ package databases
 import (
 	"context"
 	"database/sql"
+	"log"
 
 	"github.com/go-redis/redis"
+	"github.com/trixky/hypertube/api-auth/environment"
 	"github.com/trixky/hypertube/api-auth/sqlc"
+)
+
+const (
+	postgres_driver = "postgres"
 )
 
 type SQLQueries interface {
@@ -47,3 +53,25 @@ const (
 )
 
 var DBs Databases
+
+func InitDBs() {
+	// ------------- POSTGRES
+	log.Printf("start connection to postgres on %s:%d\n", environment.E.PostgresHost, environment.E.PostgresPort)
+
+	if err := InitPostgres(PostgresConfig{
+		Driver:   postgres_driver,
+		Host:     environment.E.PostgresHost,
+		Port:     environment.E.PostgresPort,
+		User:     environment.E.PostgresUser,
+		Password: environment.E.PostgresPassword,
+		Dbname:   environment.E.PostgresDB,
+	}); err != nil {
+		log.Fatalf("failed to connect to postgres: %v", err)
+	}
+
+	// ------------- REDIS
+	log.Println("start connection to redis on default address")
+	if err := InitRedis(); err != nil {
+		log.Fatalf("failed to connect to redis: %v", err)
+	}
+}

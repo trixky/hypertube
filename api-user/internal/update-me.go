@@ -95,14 +95,16 @@ func (s *UserServer) UpdateMe(ctx context.Context, in *pb.UpdateMeRequest) (*pb.
 		// -------------------- update password
 
 		new_password := in.GetNewPassword()
+		new_password_encrypted := utils.EncryptPassword(in.GetNewPassword())
 
 		if len(new_password) > 0 {
 			if err := sanitizer.SanitizeSHA256Password(new_password); err != nil { // password
 				return nil, err
 			}
 			current_password := in.GetCurrentPassword()
+			current_password_encrypted := utils.EncryptPassword(current_password)
 
-			if current_password != user.Password.String {
+			if current_password_encrypted != user.Password.String {
 				return nil, status.Errorf(codes.PermissionDenied, "invalid current password")
 			}
 
@@ -112,7 +114,7 @@ func (s *UserServer) UpdateMe(ctx context.Context, in *pb.UpdateMeRequest) (*pb.
 
 			need_update = true
 			user.Password = sql.NullString{
-				String: new_password,
+				String: new_password_encrypted,
 				Valid:  true,
 			}
 		}

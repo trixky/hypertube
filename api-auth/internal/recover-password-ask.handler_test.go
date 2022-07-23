@@ -2,17 +2,14 @@ package internal
 
 import (
 	"context"
-	"log"
 	"testing"
 
-	databases "github.com/trixky/hypertube/api-auth/databases/mock"
+	initializer "github.com/trixky/hypertube/api-auth/databases"
 	"github.com/trixky/hypertube/api-auth/environment"
-	initializer "github.com/trixky/hypertube/api-auth/initializer/mock"
 	"github.com/trixky/hypertube/api-auth/proto"
 )
 
 func init() {
-	log.Println("------------------------- INIT api-auth (TEST)")
 	environment.E.GetAll() // Get environment variables
 	initializer.InitDBs()  // Init DBs
 }
@@ -74,13 +71,25 @@ func TestInternalRecoverPassword(t *testing.T) {
 		// ------------------------- Success expected
 		{
 			input: &proto.InternalRecoverPasswordRequest{
-				Email: databases.InitialsSqlMockUsers[0].Email,
+				Email: "email.test_1@test.com",
 			},
 			error_expected: false,
 		},
 		{
 			input: &proto.InternalRecoverPasswordRequest{
-				Email: databases.InitialsSqlMockUsers[1].Email,
+				Email: "email.test_2@test.com",
+			},
+			error_expected: false,
+		},
+		{
+			input: &proto.InternalRecoverPasswordRequest{
+				Email: "email.test_3@test.com",
+			},
+			error_expected: false,
+		},
+		{
+			input: &proto.InternalRecoverPasswordRequest{
+				Email: "email.test_4@test.com",
 			},
 			error_expected: false,
 		},
