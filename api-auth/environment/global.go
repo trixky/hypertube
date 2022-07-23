@@ -5,57 +5,57 @@ import (
 	"os"
 )
 
+// GetAll read all needed enviornment variables
 func (e *Env) GetAll() {
-
-	// --------- get GrpcPort
+	// --------- Get GrpcPort
 	if grpc_port, err := read_port(ENV_grpc_port); err != nil {
 		log.Fatal(err)
 	} else {
 		e.GrpcPort = grpc_port
 	}
 
-	// --------- get GrpcGatewayPort
+	// --------- Get GrpcGatewayPort
 	if http_port, err := read_port(ENV_grpc_gateway_port); err != nil {
 		log.Fatal(err)
 	} else {
 		e.GrpcGatewayPort = http_port
 	}
 
-	// --------- get HttpPort
+	// --------- Get HttpPort
 	if redirect_port, err := read_port(ENV_http_port); err != nil {
 		log.Fatal(err)
 	} else {
 		e.HttpPort = redirect_port
 	}
 
-	// --------- get PostgresPort
+	// --------- Get PostgresPort
 	if postgres_port, err := read_port(ENV_postgres_port); err != nil {
 		log.Fatal(err)
 	} else {
 		e.PostgresPort = postgres_port
 	}
 
-	// --------- get PostgresHost
+	// --------- Get PostgresHost
 	if e.PostgresHost = os.Getenv(ENV_postgres_host); len(e.PostgresHost) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_postgres_host)
+		log.Fatalf("%s %s", ENV_postgres_host, environement_variable_missing)
 	}
 
-	// --------- get PostgresUser
+	// --------- Get PostgresUser
 	if e.PostgresUser = os.Getenv(ENV_postgres_user); len(e.PostgresUser) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_postgres_user)
+		log.Fatalf("%s %s", ENV_postgres_user, environement_variable_missing)
 	}
 
-	// --------- get PostgresPassword
+	// --------- Get PostgresPassword
 	if e.PostgresPassword = os.Getenv(ENV_postgres_password); len(e.PostgresPassword) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_postgres_password)
+		log.Fatalf("%s %s", ENV_postgres_password, environement_variable_missing)
 	}
 
-	// --------- get PostgresDB
+	// --------- Get PostgresDB
 	if e.PostgresDB = os.Getenv(ENV_postgres_db); len(e.PostgresDB) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_postgres_db)
+		log.Fatalf("%s %s", ENV_postgres_db, environement_variable_missing)
 	}
 
-	e.API42.GetAll()
-	e.APIGoogle.GetAll()
-	e.OUTLOOKConfig.GetAll()
+	e.API42.GetAll()         // Get 42 environment variables
+	e.APIGoogle.GetAll()     // Get google environment variables
+	e.OUTLOOKConfig.GetAll() // Get outlook environment variables
 }

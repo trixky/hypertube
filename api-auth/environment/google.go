@@ -23,34 +23,35 @@ type ApiGoogle struct {
 	UserInfoURL    string
 }
 
+// GetAll read all needed enviornment variables
 func (a *ApiGoogle) GetAll() {
-	// --------- get ClientId
+	// --------- Get ClientId
 	if a.ClientId = os.Getenv(ENV_GOOGLE_client_id); len(a.ClientId) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_GOOGLE_client_id)
+		log.Fatalf("%s %s", ENV_GOOGLE_client_id, environement_variable_missing)
 	}
 
-	// --------- get ClientSecret
+	// --------- Get ClientSecret
 	if a.ClientSecret = os.Getenv(ENV_GOOGLE_client_sercret); len(a.ClientSecret) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_GOOGLE_client_sercret)
+		log.Fatalf("%s %s", ENV_GOOGLE_client_sercret, environement_variable_missing)
 	}
 
-	// --------- get RedirectURL
+	// --------- Get RedirectURL
 	if a.RedirectURL = os.Getenv(ENV_GOOGLE_redirect_url); len(a.RedirectURL) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_GOOGLE_redirect_url)
+		log.Fatalf("%s %s", ENV_GOOGLE_redirect_url, environement_variable_missing)
 	}
 
-	// --------- get ScopeEmail
+	// --------- Get ScopeEmail
 	if a.ScopeEmail = os.Getenv(ENV_GOOGLE_scope_email); len(a.ScopeEmail) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_GOOGLE_scope_email)
+		log.Fatalf("%s %s", ENV_GOOGLE_scope_email, environement_variable_missing)
 	}
 
-	// --------- get ScopesUserinfo
+	// --------- Get ScopesUserinfo
 	if a.ScopesUserinfo = os.Getenv(ENV_GOOGLE_scope_userinfo); len(a.ScopesUserinfo) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_GOOGLE_scope_userinfo)
+		log.Fatalf("%s %s", ENV_GOOGLE_scope_userinfo, environement_variable_missing)
 	}
 
-	// --------- get UserInfoURL
+	// --------- Get UserInfoURL
 	if a.UserInfoURL = os.Getenv(ENV_GOOGLE_userinfo_url); len(a.UserInfoURL) == 0 {
-		log.Fatalf("%s environement variable missing", ENV_GOOGLE_userinfo_url)
+		log.Fatalf("%s %s", ENV_GOOGLE_userinfo_url, environement_variable_missing)
 	}
 }

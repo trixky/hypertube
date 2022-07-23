@@ -11,6 +11,7 @@ const (
 	LABEL_lastname  = "lastname"
 )
 
+// sanitizeName sanitizes names
 func sanitizeName(name string, label string) error {
 	if len(name) == 0 {
 		return status.Errorf(codes.InvalidArgument, label+" missing")
@@ -25,14 +26,17 @@ func sanitizeName(name string, label string) error {
 	return nil
 }
 
+// SanitizeUsername sanitizes username
 func SanitizeUsername(username string) error {
 	return sanitizeName(username, LABEL_username)
 }
 
-func SanitizeFirstname(username string) error {
-	return sanitizeName(username, LABEL_firstname)
+// SanitizeFirstname sanitizes firstname
+func SanitizeFirstname(firstname string) error {
+	return sanitizeName(firstname, LABEL_firstname)
 }
 
-func SanitizeLastname(username string) error {
-	return sanitizeName(username, LABEL_lastname)
+// SanitizeLastname sanitizes lastname
+func SanitizeLastname(lastname string) error {
+	return sanitizeName(lastname, LABEL_lastname)
 }
