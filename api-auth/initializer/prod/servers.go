@@ -10,6 +10,8 @@ import (
 	"google.golang.org/grpc"
 )
 
+const host = "0.0.0.0"
+
 func InitServers() *grpc.Server {
 	// ------------- GRPC
 	grpc_port := ":" + strconv.Itoa(environment.E.GrpcPort)

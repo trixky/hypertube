@@ -25,8 +25,8 @@ export function DESCRIBE_TEST_client() {
 		CLIENT_request.get('/nothing').expect(404).end(done);
 	});
 	// ---------------------------------------- GET 302 /
-	it('GET 302 /', (done) => {
-		CLIENT_request.get('/').expect(302).expect('Location', '/login').end(done);
+	it('GET 301 /', (done) => {
+		CLIENT_request.get('/').expect(301).expect('Location', '/search').end(done);
 	});
 	// ----------------------------------------  GET 302 /search
 	it('GET 302 /search', (done) => {

@@ -2,16 +2,14 @@ package internal
 
 import (
 	"context"
-	"log"
 	"testing"
 
+	initializer "github.com/trixky/hypertube/api-auth/databases"
 	"github.com/trixky/hypertube/api-auth/environment"
-	initializer "github.com/trixky/hypertube/api-auth/initializer/mock"
 	"github.com/trixky/hypertube/api-auth/proto"
 )
 
 func init() {
-	log.Println("------------------------- INIT api-auth (TEST)")
 	environment.E.GetAll() // Get environment variables
 	initializer.InitDBs()  // Init DBs
 }
