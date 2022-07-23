@@ -3,7 +3,12 @@ import TailFile from '@logdna/tail-file';
 import fs from 'fs';
 import { download, DownloadInfo, localTorrents } from '../lib/downloader';
 import pump from 'pump';
-import { getTorrent, refreshTorrentLastAccess, updateTorrent } from '../postgres/torrents';
+import {
+	deleteTorrent,
+	getTorrent,
+	refreshTorrentLastAccess,
+	updateTorrent
+} from '../postgres/torrents';
 import { Readable } from 'stream';
 import { stat } from 'fs/promises';
 
@@ -40,8 +45,18 @@ router.get('/torrent/:torrentId/stream', async function (req, res) {
 		downloadResult = await download(torrent, acceptMkv);
 	} catch (error) {
 		console.error('Failed to download torrent', error);
-		res.status(500).send({ error: 'Failed to download torrent' });
-		return;
+		const corruptedMessages = [
+			'Magnet or torrent corrupted',
+			'No movie found in the torrent',
+			'Failed to parse torrent',
+			'No magnet or torrent url available for this torrent'
+		];
+		// ! If the torrent is corrupted or invalid, delete it to avoid it being displayed for the users
+		if (error instanceof Error && corruptedMessages.indexOf(error.message) >= 0) {
+			console.log(`Deleting corrupt Torrent #${torrent.id}`);
+			await deleteTorrent(torrent.id);
+		}
+		return res.status(500).send({ error: 'Failed to download torrent' });
 	}
 	if (downloadResult.path == null) {
 		return res.status(500).send();
@@ -58,7 +73,7 @@ router.get('/torrent/:torrentId/stream', async function (req, res) {
 		!torrent.name.match(/hevc|x\s?265/i) &&
 		downloadResult.length > 0;
 
-	console.log(
+	/*console.log(
 		'acceptMkv',
 		acceptMkv,
 		'extension',
@@ -73,7 +88,7 @@ router.get('/torrent/:torrentId/stream', async function (req, res) {
 		downloadResult.path,
 		'has stream ?',
 		downloadResult.stream ? 'yes' : 'no'
-	);
+	);*/
 
 	// * Downloading
 	// * This can either be the original file if the torrent has an accepted file for the client

@@ -74,7 +74,7 @@ async function getMagnet(torrent: Torrent): Promise<string> {
 	// extract or generate the magnet
 	if (magnet == null) {
 		if (torrent.torrent_url === null)
-			throw new Error('no magnet or torrent url available for this torrent');
+			throw new Error('No magnet or torrent url available for this torrent');
 		magnet = await convertTorrentToMagnet(torrent.torrent_url);
 	}
 
@@ -287,7 +287,7 @@ export async function download(torrent: Torrent, acceptMkv: boolean): Promise<Do
 			console.log('Magnet or torrent corrupted');
 			// If the torrent is corrupted
 			localTorrents[torrent.id].corrupted = true;
-			reject(new Error('magnet/torrent corrupted'));
+			reject(new Error('Magnet or torrent corrupted'));
 			return;
 		}
 

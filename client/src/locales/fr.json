@@ -108,7 +108,8 @@
   "error": {
     "not_found": "Page Non Trouvé ",
     "back_to_search": "Retour a la Recherche",
-    "login_or_register": "Connexion/Inscription"
+    "login_or_register": "Connexion/Inscription",
+    "server_error": "Erreur interne du serveur"
   },
   "title": {
     "media": "Regardez {title} sur hypertube",

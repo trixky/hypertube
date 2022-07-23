@@ -108,7 +108,8 @@
   "error": {
     "not_found": "Not Found",
     "back_to_search": "Back to Search",
-    "login_or_register": "Login/Register"
+    "login_or_register": "Login/Register",
+    "server_error": "Internal Server Error"
   },
   "title": {
     "media": "Watch {title} on hypertube",

@@ -18,6 +18,10 @@
 			return {
 				status: 404
 			};
+		} else if (genresResponse.status >= 500) {
+			return {
+				status: 500
+			};
 		}
 
 		const {
@@ -36,6 +40,10 @@
 		} else if (notFound) {
 			return {
 				status: 404
+			};
+		} else if (searchResponse.status >= 500) {
+			return {
+				status: 500
 			};
 		}
 

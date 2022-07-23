@@ -31,6 +31,10 @@
 			return {
 				status: 404
 			};
+		} else if (response.status >= 500) {
+			return {
+				status: 500
+			};
 		}
 		return {
 			status: response.status,
@@ -154,6 +158,13 @@
 		if (selectedTorrent) {
 			selectedTorrent.position = event.detail;
 		}
+	}
+
+	// If there was un unrecoverable error, delete the torrent from the list and close the player
+	function onPlayerError() {
+		torrents = torrents.filter((torrent) => torrent.id != selectedTorrent?.id);
+		selectedTorrent = undefined;
+		backgroundAnimation.restart();
 	}
 
 	// Background gradient
@@ -331,6 +342,7 @@
 				on:focus={scrollPlayerIntoView}
 				on:close={onPlayerClose}
 				on:timeUpdate={onPlayerTimeUpdate}
+				on:error={onPlayerError}
 			/>
 		{/if}
 		<div class="w-11/12 md:w-4/5 lg:w-1/2 mx-auto text-white my-4 flex-grow relative z-10">
