@@ -13,14 +13,23 @@ CREATE TABLE users (
     password VARCHAR (65)
 );
 
-INSERT INTO users (username, firstname, lastname, email, password)
-VALUES (
-        'admin',
-        'mathis',
-        'bois',
-        'mathis@email.com',
-        'c54b18a947c806a48d7fd825ec6aea73'
-    );
+-- (used for tests)
+-- unencrypted from server side password: 1e8392fcefc860ef9714dcf4ad2249a995118c7a3bdbf4a96e8ffd7fe354c2e6
+-- user test 1
+INSERT INTO users (id, username, firstname, lastname, email, password)
+VALUES (101, 'username_test_1', 'firstname_test_1', 'lastname_test_1', 'email.test_1@test.com', '1eba53d83fcffd42a3e3113fe52e68b8e9bbf478e29a12eb840557942386b482');
+-- user test 2
+INSERT INTO users (id, username, firstname, lastname, email, password)
+VALUES (102, 'username_test_2', 'firstname_test_2', 'lastname_test_2', 'email.test_2@test.com', '1eba53d83fcffd42a3e3113fe52e68b8e9bbf478e29a12eb840557942386b482');
+-- user test 3
+INSERT INTO users (id, username, firstname, lastname, email, password)
+VALUES (103, 'username_test_3', 'firstname_test_3', 'lastname_test_3', 'email.test_3@test.com', '1eba53d83fcffd42a3e3113fe52e68b8e9bbf478e29a12eb840557942386b482');
+-- user test 4
+INSERT INTO users (id, username, firstname, lastname, email, password)
+VALUES (104, 'username_test_4', 'firstname_test_4', 'lastname_test_4', 'email.test_4@test.com', '1eba53d83fcffd42a3e3113fe52e68b8e9bbf478e29a12eb840557942386b482');
+-- user test 5 (reserved for recover password apply)
+INSERT INTO users (id, username, firstname, lastname, email, password)
+VALUES (105, 'username_test_5', 'firstname_test_5', 'lastname_test_5', 'email.test_5@test.com', '1eba53d83fcffd42a3e3113fe52e68b8e9bbf478e29a12eb840557942386b482');
 
 -- Person Informations
 

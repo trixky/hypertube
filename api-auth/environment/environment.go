@@ -14,6 +14,7 @@ const (
 	ENV_grpc_port         = "API_AUTH_GRPC_PORT"
 	ENV_grpc_gateway_port = "API_AUTH_GRPC_GATEWAY_PORT"
 	ENV_http_port         = "API_AUTH_HTTP_PORT"
+	ENV_redis_host        = "REDIS_HOST"
 	ENV_postgres_host     = "POSTGRES_HOST"
 	ENV_postgres_port     = "POSTGRES_PORT"
 	ENV_postgres_user     = "POSTGRES_USER"
@@ -27,6 +28,7 @@ type Env struct {
 	GrpcPort         int
 	GrpcGatewayPort  int
 	HttpPort         int
+	RedisHost        string
 	PostgresHost     string
 	PostgresPort     int
 	PostgresUser     string

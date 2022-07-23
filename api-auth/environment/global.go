@@ -28,6 +28,11 @@ func (e *Env) GetAll() {
 		e.HttpPort = redirect_port
 	}
 
+	// --------- Get RedisHost
+	if e.RedisHost = os.Getenv(ENV_redis_host); len(e.RedisHost) == 0 {
+		log.Fatalf("%s %s", ENV_redis_host, environement_variable_missing)
+	}
+
 	// --------- Get PostgresPort
 	if postgres_port, err := read_port(ENV_postgres_port); err != nil {
 		log.Fatal(err)
