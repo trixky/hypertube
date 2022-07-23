@@ -228,7 +228,7 @@
 		</title>
 	{/if}
 </svelte:head>
-<div class="bg-black min-h-[90%] w-full flex-grow">
+<div class="media-page bg-black min-h-[90%] w-full flex-grow">
 	<div class="w-full sticky top-0 z-10 border-b-2 border-blue-500">
 		<div class="flex flex-col md:flex-row items-center p-4">
 			<div class="search-bar-bg" />

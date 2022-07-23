@@ -220,7 +220,7 @@
 		{$_('title.media', { values: { title: media.userTitle ? media.userTitle : media.title } })}
 	</title>
 </svelte:head>
-<div class="flex flex-col w-full h-auto pb-4 bg-black">
+<div class="media-page flex flex-col w-full h-auto pb-4 bg-black">
 	<div class="header min-h-[30rem] flex-grow-0 border-b-stone-200 border-b">
 		{#if !loadingGradient}
 			{#if background}
