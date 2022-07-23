@@ -1,6 +1,6 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
-import { onDestroy } from 'svelte';
+	import { onDestroy } from 'svelte';
 
 	import { linear } from 'svelte/easing';
 	import { fade, fly } from 'svelte/transition';
@@ -9,7 +9,7 @@ import { onDestroy } from 'svelte';
 
 	export let palette: string[];
 	$: paletteLength = palette.length;
-	export let enabled = true;
+	export let enabled = false;
 
 	// * Logic
 
@@ -18,8 +18,8 @@ import { onDestroy } from 'svelte';
 	function randomNumber(minInc: number, maxExcl: number) {
 		return Math.random() * (maxExcl - minInc) + minInc;
 	}
-	
-	const nbLines = 5;
+
+	export let nbLines = 5;
 	let lines: {
 		id: number;
 		visible: boolean;
@@ -27,13 +27,22 @@ import { onDestroy } from 'svelte';
 		height: number;
 		color: string;
 		duration: number;
-		timeout: number
-	}[] = []; 
-	let restartTimeouts: number[] = new Array(nbLines).fill(0)
+		timeout: number;
+	}[] = [];
+	let restartTimeouts: number[] = new Array(nbLines).fill(0);
 
 	export function start() {
+		enabled = true;
 		for (let index = 0; index < nbLines; index++) {
-			let line = { id: index, visible: false, left: 0, height: 0, color: '', duration: 0,timeout:0 }
+			let line = {
+				id: index,
+				visible: false,
+				left: 0,
+				height: 0,
+				color: '',
+				duration: 0,
+				timeout: 0
+			};
 			lines.push(line);
 			line.timeout = setTimeout(() => {
 				resetLine(index);
@@ -76,12 +85,12 @@ import { onDestroy } from 'svelte';
 
 	onDestroy(() => {
 		for (const line of lines) {
-			clearTimeout(line.timeout)
+			clearTimeout(line.timeout);
 		}
 		for (const restartTimeout of restartTimeouts) {
-			clearTimeout(restartTimeout)
+			clearTimeout(restartTimeout);
 		}
-	})
+	});
 </script>
 
 <!-- ========================= HTML -->
@@ -92,7 +101,7 @@ import { onDestroy } from 'svelte';
 	{#each lines as line (line.id)}
 		{#if line.visible}
 			<div
-				class="absolute top-0 w-1 rounded-sm"
+				class="absolute top-0 w-1 rounded-sm will-change-transform"
 				style={`left: ${line.left}px; height: ${line.height}px; background-color: ${line.color}`}
 				in:fade={{ duration: 0 }}
 				out:fly={{ y: backgroundHeight, duration: line.duration, delay: 0, easing: linear }}

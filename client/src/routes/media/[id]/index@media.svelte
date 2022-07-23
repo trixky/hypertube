@@ -29,8 +29,7 @@
 			};
 		} else if (notFound) {
 			return {
-				status: 302,
-				redirect: '/search'
+				status: 404
 			};
 		}
 		return {
