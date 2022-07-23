@@ -1,4 +1,15 @@
 <!-- ========================= SCRIPT -->
+<script lang="ts" context="module">
+	import type { Load } from '@sveltejs/kit';
+
+	export const load: Load = async ({ params, fetch, session }) => {
+		await genres.load();
+		return {
+			status: 200
+		};
+	};
+</script>
+
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
@@ -6,12 +17,16 @@
 	import { _ } from 'svelte-i18n';
 	import Spinner from '$components/animations/spinner.svelte';
 	import { searching, loadingMore, results, totalResults, search } from '$stores/search';
-	import Genres from './genres.svelte';
 	import SortAsc from '$components/icons/SortAsc.svelte';
 	import SortDesc from '$components/icons/SortDesc.svelte';
 	import LazyLoad from '$components/lazy/LazyLoad.svelte';
 	import { imageUrl } from '$utils/image';
 	import Eye from '$components/icons/Eye.svelte';
+	import ChevronDown from '$components/icons/ChevronDown.svelte';
+	import ChevronUp from '$components/icons/ChevronUp.svelte';
+	import { genres } from '$stores/genres';
+	import Times from '$components/icons/Times.svelte';
+	import { accordion } from '$directives/accordion';
 
 	let sortColumns: string[] = ['year', 'name', 'duration', 'id'];
 
@@ -44,6 +59,24 @@
 			observer.unobserve(observing);
 			observing = undefined;
 		}
+	}
+
+	// Genres
+	let genresOpen = false;
+	function toggleGenres() {
+		genresOpen = !genresOpen;
+	}
+
+	let selected: number[] = [];
+	async function onGenresChange() {
+		search.setGenres(selected);
+		search.execute();
+	}
+
+	function clearGenres() {
+		toggleGenres();
+		selected = [];
+		onGenresChange();
 	}
 
 	// Store wrapper to update UI
@@ -119,71 +152,113 @@
 
 <!-- ========================= HTML -->
 <div class="bg-black min-h-[90%] w-full flex-grow">
-	<div
-		class="flex flex-col md:flex-row items-center w-full sticky top-0 p-4  z-10 border-b-2 border-blue-500"
-	>
-		<div class="search-bar-bg" />
-		<div class="relative">
-			<input
-				type="text"
-				class="input block w-full mb-2 lg:inline-block lg:w-auto lg:mb-0"
-				placeholder={$_('search.form.query_placeholder')}
-				disabled={loading}
-				bind:value={$search.query}
-				on:input={debounceSearch}
-			/>
-			<label for="year" class="lg:ml-4">{$_('search.form.year')}</label>
-			<input
-				type="number"
-				class="input w-20 mb-2 lg:mb-0"
-				placeholder={$_('search.form.year')}
-				name="year"
-				min="0"
-				max="9999"
-				step="1"
-				disabled={loading}
-				bind:value={$search.year}
-				on:input={debounceSearch}
-			/>
-			<label for="rating">{$_('search.form.rating')}</label>
-			<input
-				type="number"
-				class="input w-20"
-				placeholder={$_('search.form.rating_placeholder')}
-				name="rating"
-				min="0"
-				max="10"
-				step="0.1"
-				disabled={loading}
-				bind:value={$search.rating}
-				on:input={debounceSearch}
-			/>
-			<Genres disabled={loading} class="lg:ml-2" />
+	<div class="w-full sticky top-0 z-10 border-b-2 border-blue-500">
+		<div class="flex flex-col md:flex-row items-center p-4">
+			<div class="search-bar-bg" />
+			<div class="relative">
+				<input
+					type="text"
+					class="input block w-full mb-2 lg:inline-block lg:w-auto lg:mb-0"
+					placeholder={$_('search.form.query_placeholder')}
+					disabled={loading}
+					bind:value={$search.query}
+					on:input={debounceSearch}
+				/>
+				<label for="year" class="lg:ml-4">{$_('search.form.year')}</label>
+				<input
+					type="number"
+					class="input w-20 mb-2 lg:mb-0"
+					placeholder={$_('search.form.year')}
+					name="year"
+					min="0"
+					max="9999"
+					step="1"
+					disabled={loading}
+					bind:value={$search.year}
+					on:input={debounceSearch}
+				/>
+				<label for="rating">{$_('search.form.rating')}</label>
+				<input
+					type="number"
+					class="input w-20"
+					placeholder={$_('search.form.rating_placeholder')}
+					name="rating"
+					min="0"
+					max="10"
+					step="0.1"
+					disabled={loading}
+					bind:value={$search.rating}
+					on:input={debounceSearch}
+				/>
+				<button class="input w-full lg:w-auto lg:ml-4" on:click={toggleGenres}>
+					<span>
+						{$_('search.form.genres.name')}
+						{#if $search.genres.length > 0}
+							({$search.genres.length})
+						{/if}
+					</span>
+					{#if genresOpen}
+						<ChevronDown />
+					{:else}
+						<ChevronUp />
+					{/if}
+				</button>
+			</div>
+			<div class="relative flex-grow" />
+			<div class="relative mt-2 lg:mt-0">
+				<label for="sort">{$_('search.form.sort_by')}</label>
+				<select
+					class="input"
+					name="sort"
+					disabled={loading}
+					bind:value={$search.sortBy}
+					on:input={debounceSearch}
+				>
+					{#each sortColumns as column (column)}
+						<option value={column}>{$_(`search.form.sort_columns.${column}`)}</option>
+					{/each}
+				</select>
+				<div
+					class="input inline-block ml-2 cursor-pointer"
+					class:opacity-80={loading}
+					on:click={toggleSort}
+				>
+					{#if $search.sortOrder == 'ASC'}
+						{$_('asc.short')} <SortAsc />
+					{:else}
+						{$_('desc.short')} <SortDesc />
+					{/if}
+				</div>
+			</div>
 		</div>
-		<div class="relative flex-grow" />
-		<div class="relative mt-2 lg:mt-0">
-			<label for="sort">{$_('search.form.sort_by')}</label>
-			<select
-				class="input"
-				name="sort"
-				disabled={loading}
-				bind:value={$search.sortBy}
-				on:input={debounceSearch}
-			>
-				{#each sortColumns as column (column)}
-					<option value={column}>{$_(`search.form.sort_columns.${column}`)}</option>
+		<div class="relative text-white border-t border-blue-500" use:accordion={genresOpen}>
+			<div class="flex items-center flex-wrap p-4 pb-0">
+				<button
+					class="inline-flex items-center text-red-500 border border-red-100 py-1 px-2 mb-2 mr-2 rounded-md hover:bg-red-700 transition-all hover:shadow-md shadow-red-900 hover:text-white"
+					on:click={clearGenres}
+				>
+					<Times />
+					{$_('search.form.genres.clear')}
+				</button>
+				{#each $genres as genre}
+					<div class="inline-block px-2 mr-2 mb-2">
+						<input
+							type="checkbox"
+							class="hidden peer"
+							name="genres"
+							id={genre.name}
+							bind:group={selected}
+							value={genre.id}
+							on:change={onGenresChange}
+						/>
+						<label
+							for={genre.name}
+							class="inline-block flex-grow px-2 py-1 peer-checked:bg-green-700 bg-slate-600 rounded-md border border-gray-400 peer-checked:border-green-600 transition-colors cursor-pointer"
+						>
+							{genre.name}
+						</label>
+					</div>
 				{/each}
-			</select>
-			<div
-				class="input inline-block ml-2 cursor-pointer"
-				class:opacity-80={loading}
-				on:click={toggleSort}
-			>
-				{#if $search.sortOrder == 'ASC'}
-					{$_('asc.short')} <SortAsc />
-				{:else}
-					{$_('desc.short')} <SortDesc />
-				{/if}
 			</div>
 		</div>
 	</div>
@@ -266,7 +341,7 @@
 	}
 
 	label {
-		@apply p-2 text-white;
+		@apply px-2 text-white;
 	}
 
 	.result-wrapper {
