@@ -43,6 +43,8 @@
 		<h1 class="text-6xl block">
 			{#if status == 404}
 				{$_('error.not_found')}
+			{:else if status >= 500}
+				{$_('error.server_error')}
 			{:else}
 				{status}
 			{/if}

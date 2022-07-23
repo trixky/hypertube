@@ -291,12 +291,21 @@
 					}
 				}
 			});
+
+			// Handle torrent errors
+			player.addEventListener('error', (event) => {
+				clearTimeout(initialStatusTimeout);
+				clearTimeout(statusTimeout);
+				clearTimeout(focusTimeout);
+				dispatch('error');
+			});
 		}
 	});
 
 	onDestroy(() => {
-		clearTimeout(statusTimeout);
 		clearTimeout(initialStatusTimeout);
+		clearTimeout(statusTimeout);
+		clearTimeout(focusTimeout);
 	});
 </script>
 

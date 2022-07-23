@@ -59,6 +59,10 @@ export async function updateTorrent(
 	return res.rowCount > 0;
 }
 
+export function deleteTorrent(id: number | string) {
+	return client.query<Torrent>('DELETE FROM torrents WHERE id = $1', [id]);
+}
+
 export function refreshTorrentLastAccess(id: number) {
 	return client.query(`UPDATE torrents SET last_access = NOW() WHERE id = $1`, [id]);
 }
