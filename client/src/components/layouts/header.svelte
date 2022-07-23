@@ -23,11 +23,11 @@
 <header
 	class="relative z-10 w-full bg-black flex flex-col md:flex-row flex-nowrap items-stretch md:h-[7rem] border-b-stone-200 border-b pb-4 md:pb-0"
 >
-	<div class="md:hidden w-full p-4 text-center">
+	<div class="relative md:hidden w-full p-4 text-center">
 		<Logo />
 	</div>
 	<div
-		class="md:w-1/2 flex justify-center md:justify-start items-center text-white mt-2 px-4 md:pr-0"
+		class="relative md:w-1/2 flex justify-center md:justify-start items-center text-white mt-2 px-4 md:pr-0"
 	>
 		{#if user && !($page.url.pathname == '/search')}
 			<a class="border border-blue-400 rounded-md text-white p-2" href="/search" transition:scale>
@@ -38,7 +38,7 @@
 	<div class="hidden md:block absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2">
 		<Logo />
 	</div>
-	<div class="md:w-1/2 md:flex justify-end items-center px-4 md:pl-0">
+	<div class="relative md:w-1/2 md:flex justify-end items-center px-4 md:pl-0">
 		{#if user}
 			<div class="flex flex-col">
 				<div title={$_('language')}>

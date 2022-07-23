@@ -120,9 +120,10 @@
 <!-- ========================= HTML -->
 <div class="bg-black min-h-[90%] w-full flex-grow">
 	<div
-		class="flex flex-col md:flex-row items-center w-full sticky top-0 p-4 bg-black z-10 border-b-2 border-blue-500"
+		class="flex flex-col md:flex-row items-center w-full sticky top-0 p-4  z-10 border-b-2 border-blue-500"
 	>
-		<div>
+		<div class="search-bar-bg" />
+		<div class="relative">
 			<input
 				type="text"
 				class="input block w-full mb-2 lg:inline-block lg:w-auto lg:mb-0"
@@ -159,8 +160,8 @@
 			/>
 			<Genres disabled={loading} class="lg:ml-2" />
 		</div>
-		<div class="flex-grow" />
-		<div class="mt-2 lg:mt-0">
+		<div class="relative flex-grow" />
+		<div class="relative mt-2 lg:mt-0">
 			<label for="sort">{$_('search.form.sort_by')}</label>
 			<select
 				class="input"
@@ -274,5 +275,15 @@
 
 	.cover {
 		@apply h-56 w-40 rounded-md overflow-hidden cursor-pointer transition-all bg-center bg-cover relative;
+	}
+
+	.search-bar-bg {
+		@apply absolute inset-0 bg-black bg-opacity-60 backdrop-blur-xl;
+	}
+
+	@-moz-document url-prefix() {
+		.search-bar-bg {
+			@apply bg-opacity-90;
+		}
 	}
 </style>
