@@ -11,35 +11,20 @@ import (
 )
 
 const (
-	ENV_grpc_port         = "API_AUTH_GRPC_PORT"
-	ENV_grpc_gateway_port = "API_AUTH_GRPC_GATEWAY_PORT"
-	ENV_http_port         = "API_AUTH_HTTP_PORT"
-	ENV_redis_host        = "REDIS_HOST"
-	ENV_postgres_host     = "POSTGRES_HOST"
-	ENV_postgres_port     = "POSTGRES_PORT"
-	ENV_postgres_user     = "POSTGRES_USER"
-	ENV_postgres_password = "POSTGRES_PASSWORD"
-	ENV_postgres_db       = "POSTGRES_DB"
-
 	environement_variable_missing = "environement variable missing"
 )
 
-type Env struct {
-	GrpcPort         int
-	GrpcGatewayPort  int
-	HttpPort         int
-	RedisHost        string
-	PostgresHost     string
-	PostgresPort     int
-	PostgresUser     string
-	PostgresPassword string
-	PostgresDB       string
-	API42            Api42
-	APIGoogle        ApiGoogle
-	OUTLOOKConfig    OutlookConfig
-}
+// type Env struct {
+// 	GRPC          Grpc
+// 	HTTP          Http
+// 	PG            Postgres
+// 	RD            Redis
+// 	API42         Api42
+// 	APIGoogle     ApiGoogle
+// 	OUTLOOKConfig OutlookConfig
+// }
 
-var E = Env{}
+// var ENV = Env{}
 
 // read_port convert and sanitize string port to integer
 func read_port(name string) (int, error) {
@@ -58,3 +43,23 @@ func read_port(name string) (int, error) {
 
 	return port, nil
 }
+
+func ReadAll() {
+	Api42.GetAll()
+	ApiGoogle.GetAll()
+	Grpc.GetAll()
+	Http.GetAll()
+	Outlook.GetAll()
+	Postgres.GetAll()
+	Redis.GetAll()
+}
+
+// func (e *Env) GetAll() {
+// 	e.GRPC.GetAll()          // Get http environment variables
+// 	e.HTTP.GetAll()          // Get http environment variables
+// 	e.PG.GetAll()            // Get postgres environment variables
+// 	e.RD.GetAll()            // Get redis environment variables
+// 	e.API42.GetAll()         // Get 42 environment variables
+// 	e.APIGoogle.GetAll()     // Get google environment variables
+// 	e.OUTLOOKConfig.GetAll() // Get outlook environment variables
+// }

@@ -4,14 +4,14 @@ import (
 	"context"
 	"testing"
 
+	"github.com/trixky/hypertube/.shared/environment"
 	initializer "github.com/trixky/hypertube/api-auth/databases"
-	"github.com/trixky/hypertube/api-auth/environment"
 	"github.com/trixky/hypertube/api-auth/proto"
 )
 
 func init() {
-	environment.E.GetAll() // Get environment variables
-	initializer.InitDBs()  // Init DBs
+	environment.ReadAll() // Get environment variables
+	initializer.InitDBs() // Init DBs
 }
 
 func TestInternalRegister(t *testing.T) {

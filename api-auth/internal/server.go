@@ -7,9 +7,9 @@ import (
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	md "github.com/trixky/hypertube/api-auth/middlewares"
+	md "github.com/trixky/hypertube/.shared/middlewares"
+	"github.com/trixky/hypertube/.shared/utils"
 	pb "github.com/trixky/hypertube/api-auth/proto"
-	"github.com/trixky/hypertube/api-auth/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -51,7 +51,7 @@ func NewGrpcGatewayServer(grpc_gateway_addr string, grpc_addr string) {
 
 	// Create mux
 	gwmux := runtime.NewServeMux(runtime.WithMetadata(
-		md.BasicGrpcMiddleware,
+		md.GrpcMiddleware,
 	))
 
 	// Register the authentification service

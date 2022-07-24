@@ -5,7 +5,7 @@ package email
 import (
 	"net/smtp"
 
-	"github.com/trixky/hypertube/api-auth/environment"
+	"github.com/trixky/hypertube/.shared/environment"
 )
 
 // SendRegistrationConfirmation sends a registration confirmation email after an account creation
@@ -15,16 +15,16 @@ func SendRegistrationConfirmation(user_email string) error {
 	// Generates the body of the email
 	body := "We confirm your registration on our platform! Welcome and good viewing"
 	// Generates the msg of the email from all these parts
-	msg := []byte("From: " + environment.E.OUTLOOKConfig.Email + "\r\n" +
+	msg := []byte("From: " + environment.Outlook.Email + "\r\n" +
 		"To: " + user_email + "\r\n" +
 		"Subject: " + subject + "\r\n\r\n" +
 		body + "\r\n")
 
 	// Generates the authentification part of the request
-	auth := loginAuthOutlook(environment.E.OUTLOOKConfig.Email, environment.E.OUTLOOKConfig.Password)
+	auth := loginAuthOutlook(environment.Outlook.Email, environment.Outlook.Password)
 
 	// Send the email
-	err := smtp.SendMail(environment.E.OUTLOOKConfig.Addresse, auth, environment.E.OUTLOOKConfig.Email, []string{user_email}, msg)
+	err := smtp.SendMail(environment.Outlook.Addresse, auth, environment.Outlook.Email, []string{user_email}, msg)
 
 	return err
 }
@@ -38,16 +38,16 @@ func SendPasswordToken(user_email string, password_token string) error {
 	// Generates the body of the email
 	body := "You asked to recover your password.\r\nDon't wait, the link is temporary!\r\n\n" + redirect_url + "\r\n"
 	// Generates the msg of the email from all these parts
-	msg := []byte("From: " + environment.E.OUTLOOKConfig.Email + "\r\n" +
+	msg := []byte("From: " + environment.Outlook.Email + "\r\n" +
 		"To: " + user_email + "\r\n" +
 		"Subject: " + subject + "\r\n\r\n" +
 		body + "\r\n")
 
 	// Generates the authentification part of the request
-	auth := loginAuthOutlook(environment.E.OUTLOOKConfig.Email, environment.E.OUTLOOKConfig.Password)
+	auth := loginAuthOutlook(environment.Outlook.Email, environment.Outlook.Password)
 
 	// Send the email
-	err := smtp.SendMail(environment.E.OUTLOOKConfig.Addresse, auth, environment.E.OUTLOOKConfig.Email, []string{user_email}, msg)
+	err := smtp.SendMail(environment.Outlook.Addresse, auth, environment.Outlook.Email, []string{user_email}, msg)
 
 	return err
 }

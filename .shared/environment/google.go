@@ -14,7 +14,7 @@ const (
 	ENV_GOOGLE_userinfo_url   = "API_GOOGLE_userinfo_url"
 )
 
-type ApiGoogle struct {
+type env_api_google struct {
 	ClientId       string
 	ClientSecret   string
 	RedirectURL    string
@@ -24,34 +24,36 @@ type ApiGoogle struct {
 }
 
 // GetAll read all needed enviornment variables
-func (a *ApiGoogle) GetAll() {
+func (e *env_api_google) GetAll() {
 	// --------- Get ClientId
-	if a.ClientId = os.Getenv(ENV_GOOGLE_client_id); len(a.ClientId) == 0 {
+	if e.ClientId = os.Getenv(ENV_GOOGLE_client_id); len(e.ClientId) == 0 {
 		log.Fatalf("%s %s", ENV_GOOGLE_client_id, environement_variable_missing)
 	}
 
 	// --------- Get ClientSecret
-	if a.ClientSecret = os.Getenv(ENV_GOOGLE_client_sercret); len(a.ClientSecret) == 0 {
+	if e.ClientSecret = os.Getenv(ENV_GOOGLE_client_sercret); len(e.ClientSecret) == 0 {
 		log.Fatalf("%s %s", ENV_GOOGLE_client_sercret, environement_variable_missing)
 	}
 
 	// --------- Get RedirectURL
-	if a.RedirectURL = os.Getenv(ENV_GOOGLE_redirect_url); len(a.RedirectURL) == 0 {
+	if e.RedirectURL = os.Getenv(ENV_GOOGLE_redirect_url); len(e.RedirectURL) == 0 {
 		log.Fatalf("%s %s", ENV_GOOGLE_redirect_url, environement_variable_missing)
 	}
 
 	// --------- Get ScopeEmail
-	if a.ScopeEmail = os.Getenv(ENV_GOOGLE_scope_email); len(a.ScopeEmail) == 0 {
+	if e.ScopeEmail = os.Getenv(ENV_GOOGLE_scope_email); len(e.ScopeEmail) == 0 {
 		log.Fatalf("%s %s", ENV_GOOGLE_scope_email, environement_variable_missing)
 	}
 
 	// --------- Get ScopesUserinfo
-	if a.ScopesUserinfo = os.Getenv(ENV_GOOGLE_scope_userinfo); len(a.ScopesUserinfo) == 0 {
+	if e.ScopesUserinfo = os.Getenv(ENV_GOOGLE_scope_userinfo); len(e.ScopesUserinfo) == 0 {
 		log.Fatalf("%s %s", ENV_GOOGLE_scope_userinfo, environement_variable_missing)
 	}
 
 	// --------- Get UserInfoURL
-	if a.UserInfoURL = os.Getenv(ENV_GOOGLE_userinfo_url); len(a.UserInfoURL) == 0 {
+	if e.UserInfoURL = os.Getenv(ENV_GOOGLE_userinfo_url); len(e.UserInfoURL) == 0 {
 		log.Fatalf("%s %s", ENV_GOOGLE_userinfo_url, environement_variable_missing)
 	}
 }
+
+var ApiGoogle = env_api_google{}
