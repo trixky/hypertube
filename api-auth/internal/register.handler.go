@@ -7,12 +7,12 @@ import (
 	"log"
 
 	"github.com/google/uuid"
+	"github.com/trixky/hypertube/.shared/sanitizer"
+	"github.com/trixky/hypertube/.shared/utils"
 	"github.com/trixky/hypertube/api-auth/databases"
 	"github.com/trixky/hypertube/api-auth/email"
 	pb "github.com/trixky/hypertube/api-auth/proto"
-	"github.com/trixky/hypertube/api-auth/sanitizer"
 	"github.com/trixky/hypertube/api-auth/sqlc"
-	"github.com/trixky/hypertube/api-auth/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -72,7 +72,7 @@ func (s *AuthServer) InternalRegister(ctx context.Context, in *pb.InternalRegist
 		return nil, status.Errorf(codes.Internal, "token generation failed")
 	}
 
-	me, err := utils.HeaderCookieMeGeneration(utils.User{
+	me, err := utils.HeaderCookieUserGeneration(utils.User{
 		Id:        int(new_user.ID),
 		Username:  new_user.Username,
 		Firstname: new_user.Firstname,

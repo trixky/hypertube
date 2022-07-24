@@ -23,7 +23,9 @@ services:
       - "${API_AUTH_HTTP_PORT}:${API_AUTH_HTTP_PORT}"
 
   api-user:
-    build: ./api-user
+    build:
+      dockerfile: ./api-user/Dockerfile
+      context: ./
     env_file:
       - ./api-user/.env
       - ./postgres/.env

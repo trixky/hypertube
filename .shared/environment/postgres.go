@@ -5,34 +5,24 @@ import (
 	"os"
 )
 
+const (
+	ENV_postgres_host     = "POSTGRES_HOST"
+	ENV_postgres_port     = "POSTGRES_PORT"
+	ENV_postgres_user     = "POSTGRES_USER"
+	ENV_postgres_password = "POSTGRES_PASSWORD"
+	ENV_postgres_db       = "POSTGRES_DB"
+)
+
+type env_postgres struct {
+	PostgresHost     string
+	PostgresPort     int
+	PostgresUser     string
+	PostgresPassword string
+	PostgresDB       string
+}
+
 // GetAll read all needed enviornment variables
-func (e *Env) GetAll() {
-	// --------- Get GrpcPort
-	if grpc_port, err := read_port(ENV_grpc_port); err != nil {
-		log.Fatal(err)
-	} else {
-		e.GrpcPort = grpc_port
-	}
-
-	// --------- Get GrpcGatewayPort
-	if http_port, err := read_port(ENV_grpc_gateway_port); err != nil {
-		log.Fatal(err)
-	} else {
-		e.GrpcGatewayPort = http_port
-	}
-
-	// --------- Get HttpPort
-	if redirect_port, err := read_port(ENV_http_port); err != nil {
-		log.Fatal(err)
-	} else {
-		e.HttpPort = redirect_port
-	}
-
-	// --------- Get RedisHost
-	if e.RedisHost = os.Getenv(ENV_redis_host); len(e.RedisHost) == 0 {
-		log.Fatalf("%s %s", ENV_redis_host, environement_variable_missing)
-	}
-
+func (e *env_postgres) GetAll() {
 	// --------- Get PostgresPort
 	if postgres_port, err := read_port(ENV_postgres_port); err != nil {
 		log.Fatal(err)
@@ -59,8 +49,6 @@ func (e *Env) GetAll() {
 	if e.PostgresDB = os.Getenv(ENV_postgres_db); len(e.PostgresDB) == 0 {
 		log.Fatalf("%s %s", ENV_postgres_db, environement_variable_missing)
 	}
-
-	e.API42.GetAll()         // Get 42 environment variables
-	e.APIGoogle.GetAll()     // Get google environment variables
-	e.OUTLOOKConfig.GetAll() // Get outlook environment variables
 }
+
+var Postgres = env_postgres{}

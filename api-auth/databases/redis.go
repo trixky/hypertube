@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
-	"github.com/trixky/hypertube/api-auth/environment"
+	"github.com/trixky/hypertube/.shared/environment"
 )
 
 type RedisDatabase struct{}
@@ -30,7 +30,7 @@ func ErrorIsDuplication(err error) bool {
 // InitRedis intisalizes the redis connection
 func InitRedis() error {
 	DBs.RedisDatabase = redis.NewClient(&redis.Options{
-		Addr:     environment.E.RedisHost + ":6379",
+		Addr:     environment.Redis.RedisHost + ":6379",
 		Password: "",
 		DB:       0,
 	})

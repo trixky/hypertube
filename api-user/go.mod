@@ -2,6 +2,8 @@ module github.com/trixky/hypertube/api-user
 
 go 1.18
 
+require github.com/trixky/hypertube/.shared v0.0.0
+
 require (
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/golang/protobuf v1.5.2
@@ -20,3 +22,5 @@ require (
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
+
+replace github.com/trixky/hypertube/.shared v0.0.0 => ../.shared

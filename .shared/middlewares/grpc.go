@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func BasicGrpcMiddleware(ctx context.Context, r *http.Request) metadata.MD {
+func GrpcMiddleware(ctx context.Context, r *http.Request) metadata.MD {
 	md := make(map[string]string)
 
 	// Extracts and saves in metatada the method of the request
