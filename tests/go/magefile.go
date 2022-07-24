@@ -24,13 +24,13 @@ func Build() error {
 }
 
 func Run() error {
-	fmt.Println("Building...")
+	fmt.Println("Run...")
 	cmd := exec.Command("go", "run", "main.go")
 
 	return cmd.Run()
 }
 
-func Test() error {
+func TestApiAuth() error {
 	// --------------------- REDIS
 	if redis_ctx, redis_container, err := createRedisContainer(); err != nil {
 		return err
@@ -46,6 +46,7 @@ func Test() error {
 	}
 
 	cmd := exec.Command("go", "test", "./...")
+	cmd.Dir = "../../api-auth"
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -72,9 +73,16 @@ func createRedisContainer() (context.Context, testcontainers.Container, error) {
 		Started:          true,
 	})
 
+	if err != nil {
+		return ctx, nil, err
+	}
+
 	// Give the container ip to the tests
-	container_ip, err := container.ContainerIP(ctx)
-	os.Setenv("REDIS_HOST", container_ip)
+	if container_ip, err := container.ContainerIP(ctx); err != nil {
+		return ctx, nil, err
+	} else {
+		os.Setenv("REDIS_HOST", container_ip)
+	}
 
 	return ctx, container, err
 }
@@ -101,7 +109,7 @@ func createPostgresContainer() (context.Context, testcontainers.Container, error
 		os.Setenv(key, value)
 	}
 
-	abs_init_path, err := filepath.Abs("../postgres/init.sql")
+	abs_init_path, err := filepath.Abs("../../postgres/init.sql")
 	if err != nil {
 		return ctx, nil, err
 	}
@@ -121,9 +129,16 @@ func createPostgresContainer() (context.Context, testcontainers.Container, error
 		Started:          true,
 	})
 
+	if err != nil {
+		return ctx, nil, err
+	}
+
 	// Give the container ip to the tests
-	container_ip, err := container.ContainerIP(ctx)
-	os.Setenv("POSTGRES_HOST", container_ip)
+	if container_ip, err := container.ContainerIP(ctx); err != nil {
+		return ctx, nil, err
+	} else {
+		os.Setenv("POSTGRES_HOST", container_ip)
+	}
 
 	return ctx, container, err
 }
