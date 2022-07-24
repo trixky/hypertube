@@ -147,14 +147,15 @@ services:
 
   redis:
     image: redis:7.0.2-alpine
+    command: --port ${REDIS_PORT}
     env_file:
       - ./redis/.env
     volumes:
       - redis-data:/data
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
-      # access to the redis CLI:
-      # $> dc exec -it redis /bin/sh -c 'redis-cli -h redis'
+    # access to the redis CLI:
+    # $> dc exec -it redis /bin/sh -c 'redis-cli -h redis'
 
   adminer:
     image: adminer:4.8.1-standalone
