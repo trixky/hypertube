@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	asdf "github.com/trixky/hypertube/.shared"
 	"github.com/trixky/hypertube/api-auth/databases"
 	"github.com/trixky/hypertube/api-auth/environment"
 	initializer "github.com/trixky/hypertube/api-auth/initializer"
@@ -17,5 +18,6 @@ func init() {
 
 func main() {
 	log.Println("------------------------- START api-auth")
+	asdf.Shared()
 	select {} // Keep alive
 }
