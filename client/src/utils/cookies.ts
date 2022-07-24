@@ -63,3 +63,8 @@ export function get_me_from_cookie(): User | undefined {
 	}
 	return undefined;
 }
+
+export function deleteUserCookies() {
+	del_a_cookie(labels.token);
+	del_a_cookie(labels.user_info);
+}

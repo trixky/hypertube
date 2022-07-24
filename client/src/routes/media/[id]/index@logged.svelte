@@ -24,8 +24,7 @@
 
 		if (forbidden) {
 			return {
-				status: 302,
-				redirect: '/login'
+				status: 403
 			};
 		} else if (notFound) {
 			return {

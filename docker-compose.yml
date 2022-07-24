@@ -131,6 +131,8 @@ services:
       - api-user
       - api-position
       - redis
+    profiles:
+      - test
 
   postgres:
     image: postgres:14.4-alpine
