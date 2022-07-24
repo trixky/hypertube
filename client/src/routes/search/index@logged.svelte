@@ -11,8 +11,7 @@
 
 		if (forbidden) {
 			return {
-				status: 302,
-				redirect: '/login'
+				status: 403
 			};
 		} else if (notFound) {
 			return {
@@ -34,8 +33,7 @@
 
 		if (forbidden) {
 			return {
-				status: 302,
-				redirect: '/login'
+				status: 403
 			};
 		} else if (notFound) {
 			return {
@@ -63,6 +61,7 @@
 	import { browser } from '$app/env';
 	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
+	import { goto } from '$app/navigation';
 	import Spinner from '$components/animations/spinner.svelte';
 	import {
 		searching,

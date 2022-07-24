@@ -15,8 +15,7 @@
 	}
 
 	const logout = () => {
-		cookies.del_a_cookie(cookies.labels.token);
-		cookies.del_a_cookie(cookies.labels.user_info);
+		cookies.deleteUserCookies();
 		$session.token = undefined;
 		$session.user = undefined;
 		goto('/login');

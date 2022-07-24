@@ -17,13 +17,27 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { session } from '$app/stores';
+	import { page, session } from '$app/stores';
 	import { waitLocale, _ } from 'svelte-i18n';
 	import { browser } from '$app/env';
+	import { goto } from '$app/navigation';
 	import Background from '$components/animations/Background.svelte';
+	import { deleteUserCookies } from '$utils/cookies';
+	import Logout from '$components/icons/Logout.svelte';
 
 	export let status: number;
 	// export let error: Error | null;
+
+	const refresh = () => {
+		location.reload();
+	};
+
+	const logout = () => {
+		deleteUserCookies();
+		$session.token = undefined;
+		$session.user = undefined;
+		goto('/login');
+	};
 
 	let background: Background;
 	onMount(() => {
@@ -49,15 +63,34 @@
 				{status}
 			{/if}
 		</h1>
-		<a
-			href={$session.user ? '/search' : '/login'}
-			class="text-md p-2 mt-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 hover:shadow-blue-600 hover:shadow-sm transition-all"
-		>
-			{#if $session.user}
-				{$_('error.back_to_search')}
+		<div class="flex mt-4">
+			{#if status == 403 && $session.user && $page.routeId == 'search@logged'}
+				<button
+					class="flex items-center text-md p-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 hover:shadow-blue-600 hover:shadow-sm transition-all"
+					on:click|preventDefault={refresh}
+				>
+					Refresh
+				</button>
 			{:else}
-				{$_('error.login_or_register')}
+				<a
+					href={$session.user ? '/search' : '/login'}
+					class="flex items-center text-md p-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 hover:shadow-blue-600 hover:shadow-sm transition-all"
+				>
+					{#if $session.user}
+						{$_('error.back_to_search')}
+					{:else}
+						{$_('error.login_or_register')}
+					{/if}
+				</a>
 			{/if}
-		</a>
+			{#if status == 403}
+				<button
+					class="flex items-center text-white border border-red-600 p-2 ml-2 rounded-md bg-red-700 hover:bg-red-500 transition-all hover:shadow-md shadow-red-900 hover:text-white"
+					on:click|preventDefault={logout}
+				>
+					<Logout /> <span class="hover:text-white transition-all">{$_('logout')}</span>
+				</button>
+			{/if}
+		</div>
 	</div>
 </div>
