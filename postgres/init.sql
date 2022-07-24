@@ -15,6 +15,9 @@ CREATE TABLE users (
 
 -- (used for tests)
 -- unencrypted from server side password: 1e8392fcefc860ef9714dcf4ad2249a995118c7a3bdbf4a96e8ffd7fe354c2e6
+-- user test 0 (for api-tester)
+INSERT INTO users (id, username, firstname, lastname, email, password)
+VALUES (0, 'username_test_0', 'firstname_test_0', 'lastname_test_0', 'email.test_0@test.com', '1eba53d83fcffd42a3e3113fe52e68b8e9bbf478e29a12eb840557942386b482');
 -- user test 1
 INSERT INTO users (id, username, firstname, lastname, email, password)
 VALUES (101, 'username_test_1', 'firstname_test_1', 'lastname_test_1', 'email.test_1@test.com', '1eba53d83fcffd42a3e3113fe52e68b8e9bbf478e29a12eb840557942386b482');
