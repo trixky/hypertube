@@ -9,16 +9,16 @@ const (
 )
 
 type env_http struct {
-	HttpPort int
+	Port int
 }
 
 // GetAll read all needed enviornment variables
 func (e *env_http) GetAll() {
-	// --------- Get HttpPort
+	// --------- Get Port
 	if redirect_port, err := read_port(ENV_http_port); err != nil {
 		log.Fatal(err)
 	} else {
-		e.HttpPort = redirect_port
+		e.Port = redirect_port
 	}
 }
 

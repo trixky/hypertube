@@ -10,24 +10,24 @@ const (
 )
 
 type env_grpc struct {
-	GrpcPort        int
-	GrpcGatewayPort int
+	Port        int
+	GatewayPort int
 }
 
 // GetAll read all needed enviornment variables
 func (e *env_grpc) GetAll() {
-	// --------- Get GrpcPort
+	// --------- Get Port
 	if grpc_port, err := read_port(ENV_grpc_port); err != nil {
 		log.Fatal(err)
 	} else {
-		e.GrpcPort = grpc_port
+		e.Port = grpc_port
 	}
 
-	// --------- Get GrpcGatewayPort
+	// --------- Get GatewayPort
 	if http_port, err := read_port(ENV_grpc_gateway_port); err != nil {
 		log.Fatal(err)
 	} else {
-		e.GrpcGatewayPort = http_port
+		e.GatewayPort = http_port
 	}
 }
 
