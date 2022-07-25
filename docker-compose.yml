@@ -84,12 +84,14 @@ services:
       - api-scrapper
       - redis
     ports:
-      - "${API_SEARCH_GRPC_PORT}:${API_SEARCH_GRPC_PORT}"
-      - "${API_SEARCH_GRPC_GATEWAY_PORT}:${API_SEARCH_GRPC_GATEWAY_PORT}"
+      - "${API_MEDIA_GRPC_PORT}:${API_MEDIA_GRPC_PORT}"
+      - "${API_MEDIA_GRPC_GATEWAY_PORT}:${API_MEDIA_GRPC_GATEWAY_PORT}"
 
   api-streaming:
     build: ./api-streaming
     env_file:
+      - ./postgres/.env
+      - ./redis/.env
       - ./api-streaming/.env
     volumes:
       - ./api-streaming:/app
@@ -106,6 +108,8 @@ services:
   api-position:
     build: ./api-position
     env_file:
+      - ./postgres/.env
+      - ./redis/.env
       - ./api-position/.env
     volumes:
       - ./api-position:/app
@@ -197,6 +201,7 @@ services:
   client:
     build: ./client
     env_file:
+      - ./.env
       - ./api-auth/.env
       - ./api-user/.env
       - ./api-media/.env

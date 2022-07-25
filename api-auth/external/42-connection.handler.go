@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -200,5 +201,5 @@ func redirect42(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, me)
 
-	http.Redirect(w, r, "http://localhost:4040/", http.StatusFound)
+	http.Redirect(w, r, "http://"+environment.Client.Domain+":"+fmt.Sprint(environment.Client.Port)+"/", http.StatusFound)
 }

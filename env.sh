@@ -1,3 +1,4 @@
+grep -v '^#' .env | xargs
 for FOLDER in postgres redis api-auth api-user api-scrapper api-media tmdb-proxy api-streaming api-position client
 do
     echo "source $FOLDER"
