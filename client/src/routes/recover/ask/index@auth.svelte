@@ -7,6 +7,7 @@
 	import * as sanitizer from '$utils/sanitizer';
 	import { uppercase_first_character } from '$utils/str';
 	import { _ } from 'svelte-i18n';
+	import { apiAuth } from '$utils/api';
 
 	let loading = false;
 
@@ -32,7 +33,7 @@
 			if (inputs_corrupted) return resolve(false);
 
 			setTimeout(async () => {
-				const res = await fetch('http://localhost:7070/v1/internal/recover-password', {
+				const res = await fetch(apiAuth('/v1/internal/recover-password'), {
 					method: 'POST',
 					headers: {
 						'content-type': 'application/json',

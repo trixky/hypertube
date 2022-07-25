@@ -2,6 +2,7 @@ import { writable } from 'svelte/store';
 import { addUserTitle } from '$utils/media';
 import type { Result } from 'src/types/Media';
 import { browser } from '$app/env';
+import { apiMedia } from '$utils/api';
 
 export const searching = writable(false);
 export const loadingMore = writable(false);
@@ -45,7 +46,7 @@ type SearchStore = {
 	sortOrder: SortOrder;
 };
 
-export const baseUrl = `http://localhost:7072/v1/media/search`;
+export const baseUrl = apiMedia(`/v1/media/search`);
 
 export async function executeSearch(
 	url: string,
@@ -172,7 +173,7 @@ export function searchStore() {
 			set(store);
 
 			// Send request
-			const res = await fetch(buildURL('http://localhost:7072/v1/media/search'), {
+			const res = await fetch(buildURL(baseUrl), {
 				method: 'GET',
 				credentials: 'include',
 				headers: { accept: 'application/json' }

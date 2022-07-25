@@ -12,6 +12,7 @@
 	import { encrypt_password } from '$utils/password';
 	import { page, session } from '$app/stores';
 	import InfoLine from './info-line.svelte';
+	import { apiAuth } from '$utils/api';
 
 	$: its_me = $session.user?.id.toString() === $page.params.id;
 	let modification_mode = false;
@@ -121,8 +122,7 @@
 
 				url_search_params.append('id', $page.params.id);
 
-				let url = 'http://localhost:7170/v1/user' + '?' + url_search_params.toString();
-
+				const url = apiAuth('/v1/user?' + url_search_params.toString());
 				const res = await fetch(url, {
 					method: 'GET',
 					credentials: 'include',
@@ -189,8 +189,7 @@
 				url_search_params.append('current_password', await encrypt_password(current_password));
 				url_search_params.append('new_password', await encrypt_password(new_password));
 
-				let url = 'http://localhost:7170/v1/me' + '?' + url_search_params.toString();
-
+				const url = apiAuth('/v1/me?' + url_search_params.toString());
 				const res = await fetch(url, {
 					method: 'PATCH',
 					credentials: 'include',

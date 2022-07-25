@@ -12,6 +12,7 @@
 	import { page } from '$app/stores';
 	import { browser } from '$app/env';
 	import { _ } from 'svelte-i18n';
+	import { apiAuth } from '$utils/api';
 
 	let loading = false;
 
@@ -57,7 +58,7 @@
 			show_password = false;
 
 			setTimeout(async () => {
-				const res = await fetch('http://localhost:7070/v1/internal/apply-token-password', {
+				const res = await fetch(apiAuth('/v1/internal/apply-token-password'), {
 					method: 'POST',
 					headers: {
 						'content-type': 'application/json',

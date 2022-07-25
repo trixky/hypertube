@@ -11,6 +11,7 @@
 	import { encrypt_password } from '$utils/password';
 	import { goto } from '$app/navigation';
 	import { _ } from 'svelte-i18n';
+	import { apiAuth } from '$utils/api';
 
 	let loading = false;
 
@@ -76,7 +77,7 @@
 			show_password = false;
 
 			setTimeout(async () => {
-				const res = await fetch('http://localhost:7070/v1/internal/register', {
+				const res = await fetch(apiAuth('/v1/internal/register'), {
 					method: 'POST',
 					headers: {
 						'content-type': 'application/json',

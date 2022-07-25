@@ -61,7 +61,6 @@
 	import { browser } from '$app/env';
 	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
-	import { goto } from '$app/navigation';
 	import Spinner from '$components/animations/spinner.svelte';
 	import {
 		searching,
@@ -75,7 +74,6 @@
 	import SortAsc from '$components/icons/SortAsc.svelte';
 	import SortDesc from '$components/icons/SortDesc.svelte';
 	import LazyLoad from '$components/lazy/LazyLoad.svelte';
-	import { imageUrl } from '$utils/image';
 	import Eye from '$components/icons/Eye.svelte';
 	import ChevronDown from '$components/icons/ChevronDown.svelte';
 	import ChevronUp from '$components/icons/ChevronUp.svelte';
@@ -83,6 +81,7 @@
 	import Times from '$components/icons/Times.svelte';
 	import { accordion } from '$directives/accordion';
 	import type { Result } from '$types/Media';
+	import { imageProxy } from '$utils/api';
 
 	export let ssrGenres: Genre[];
 	genres.set(ssrGenres);
@@ -349,7 +348,7 @@
 	{:else}
 		<div class="result-wrapper p-4">
 			{#each $results as result, index (result.id)}
-				{@const cover = result.thumbnail ? imageUrl(result.thumbnail) : '/no_cover.png'}
+				{@const cover = result.thumbnail ? imageProxy(result.thumbnail) : '/no_cover.png'}
 				<LazyLoad
 					tag="a"
 					href={`/media/${result.id}`}
