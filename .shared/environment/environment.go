@@ -11,8 +11,16 @@ import (
 )
 
 const (
+	DEFAULT_HOST = "0.0.0.0"
+
 	environement_variable_missing = "environement variable missing"
 )
+
+type Config struct {
+	ENV_grpc_port         string
+	ENV_grpc_gateway_port string
+	ENV_http_port         string
+}
 
 // read_port convert and sanitize string port to integer
 func read_port(name string) (int, error) {
@@ -30,14 +38,4 @@ func read_port(name string) (int, error) {
 	}
 
 	return port, nil
-}
-
-func ReadAll() {
-	Api42.GetAll()
-	ApiGoogle.GetAll()
-	Grpc.GetAll()
-	Http.GetAll()
-	Outlook.GetAll()
-	Postgres.GetAll()
-	Redis.GetAll()
 }

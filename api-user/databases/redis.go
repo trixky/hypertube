@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis"
+	"github.com/trixky/hypertube/.shared/environment"
 )
 
 const (
@@ -64,7 +65,7 @@ func RetrieveToken(token string) (*Token_info, error) {
 
 func InitRedis() error {
 	DBs.Redis = redis.NewClient(&redis.Options{
-		Addr:     "redis:6379",
+		Addr:     environment.Redis.Host + ":" + environment.Redis.Port,
 		Password: "",
 		DB:       0,
 	})

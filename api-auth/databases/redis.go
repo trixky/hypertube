@@ -30,7 +30,7 @@ func ErrorIsDuplication(err error) bool {
 // InitRedis intisalizes the redis connection
 func InitRedis() error {
 	DBs.RedisDatabase = redis.NewClient(&redis.Options{
-		Addr:     environment.Redis.Host + ":6379",
+		Addr:     environment.Redis.Host + ":" + environment.Redis.Port,
 		Password: "",
 		DB:       0,
 	})

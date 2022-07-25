@@ -29,8 +29,10 @@ services:
     env_file:
       - ./api-user/.env
       - ./postgres/.env
+      - ./redis/.env
     volumes:
-      - ./api-user:/app
+      - ./api-user:/hypertube/app
+      - ./.shared:/hypertube/.shared
     depends_on:
       - postgres
       - redis

@@ -4,18 +4,16 @@ import (
 	"log"
 )
 
-const (
-	ENV_http_port = "API_AUTH_HTTP_PORT"
-)
+const ()
 
 type env_http struct {
 	Port int
 }
 
 // GetAll read all needed enviornment variables
-func (e *env_http) GetAll() {
+func (e *env_http) GetAll(config *Config) {
 	// --------- Get Port
-	if redirect_port, err := read_port(ENV_http_port); err != nil {
+	if redirect_port, err := read_port(config.ENV_http_port); err != nil {
 		log.Fatal(err)
 	} else {
 		e.Port = redirect_port
