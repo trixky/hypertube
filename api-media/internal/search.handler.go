@@ -7,8 +7,8 @@ import (
 	"log"
 	"strings"
 
+	sutils "github.com/trixky/hypertube/.shared/utils"
 	"github.com/trixky/hypertube/api-media/databases"
-	"github.com/trixky/hypertube/api-media/finder"
 	pb "github.com/trixky/hypertube/api-media/proto"
 	"github.com/trixky/hypertube/api-media/sqlc"
 	"github.com/trixky/hypertube/api-media/utils"
@@ -24,14 +24,14 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 	user_locale := utils.GetLocale(ctx)
 
 	// Check and set arguments for the query
-	params := finder.FindMediasParams{
+	params := utils.FindMediasParams{
 		SortColumn: "id",
-		SortOrder:  "ASC",
+		SortOrder:  "DESC",
 	}
 	page := int32(1)
 	if in.Page != nil && *in.Page > 1 {
 		page = int32(*in.Page)
-		params.Offset = (page - 1) * finder.PerPage
+		params.Offset = (page - 1) * utils.PerPage
 	}
 	if in.Query != nil && *in.Query != "" {
 		params.SearchQuery = true
@@ -78,7 +78,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 	}
 
 	// Count the Medias first
-	medias_count, err := finder.CountMedias(ctx, params)
+	medias_count, err := utils.CountMedias(ctx, params)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.Println(err)
 		return nil, err
@@ -94,7 +94,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 	}
 
 	// Find all Medias
-	medias, err := finder.FindMedias(ctx, params)
+	medias, err := utils.FindMedias(ctx, params)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response := pb.SearchResponse{}
@@ -129,7 +129,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 		// -- at least one torrent has a position
 		_, err := databases.DBs.SqlcQueries.WatcheMedia(ctx, sqlc.WatcheMediaParams{
 			UserID:  int32(user.ID),
-			MediaID: utils.MakeNullInt32(&media_id),
+			MediaID: sutils.MakeNullInt32(&media_id),
 		})
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {

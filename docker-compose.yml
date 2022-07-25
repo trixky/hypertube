@@ -47,12 +47,15 @@ services:
     # $> docker-compose exec server sh
 
   api-scrapper:
-    build: ./api-scrapper
+    build:
+      dockerfile: ./api-scrapper/Dockerfile
+      context: ./
     env_file:
       - ./api-scrapper/.env
       - ./postgres/.env
     volumes:
-      - ./api-scrapper:/app
+      - ./api-scrapper:/hypertube/app
+      - ./.shared:/hypertube/.shared
     depends_on:
       - postgres
     links:
@@ -61,13 +64,17 @@ services:
       - "${API_SCRAPPER_GRPC_PORT}:${API_SCRAPPER_GRPC_PORT}"
 
   api-media:
-    build: ./api-media
+    build:
+      dockerfile: ./api-media/Dockerfile
+      context: ./
     env_file:
       - ./api-scrapper/.env
       - ./api-media/.env
       - ./postgres/.env
+      - ./redis/.env
     volumes:
-      - ./api-media:/app
+      - ./api-media:/hypertube/app
+      - ./.shared:/hypertube/.shared
     depends_on:
       - postgres
       - api-scrapper

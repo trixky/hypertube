@@ -24,7 +24,7 @@ type env_postgres struct {
 // GetAll read all needed enviornment variables
 func (e *env_postgres) GetAll() {
 	// --------- Get PostgresPort
-	if postgres_port, err := read_port(ENV_postgres_port); err != nil {
+	if postgres_port, err := ReadPort(ENV_postgres_port); err != nil {
 		log.Fatal(err)
 	} else {
 		e.Port = postgres_port
