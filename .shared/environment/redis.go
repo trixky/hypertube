@@ -10,13 +10,13 @@ const (
 )
 
 type env_redis struct {
-	RedisHost string
+	Host string
 }
 
 // GetAll read all needed enviornment variables
 func (e *env_redis) GetAll() {
-	// --------- Get RedisHost
-	if e.RedisHost = os.Getenv(ENV_redis_host); len(e.RedisHost) == 0 {
+	// --------- Get Host
+	if e.Host = os.Getenv(ENV_redis_host); len(e.Host) == 0 {
 		log.Fatalf("%s %s", ENV_redis_host, environement_variable_missing)
 	}
 }

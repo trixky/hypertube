@@ -14,11 +14,11 @@ const (
 )
 
 type env_postgres struct {
-	PostgresHost     string
-	PostgresPort     int
-	PostgresUser     string
-	PostgresPassword string
-	PostgresDB       string
+	Host     string
+	Port     int
+	User     string
+	Password string
+	DBname   string
 }
 
 // GetAll read all needed enviornment variables
@@ -27,26 +27,26 @@ func (e *env_postgres) GetAll() {
 	if postgres_port, err := read_port(ENV_postgres_port); err != nil {
 		log.Fatal(err)
 	} else {
-		e.PostgresPort = postgres_port
+		e.Port = postgres_port
 	}
 
-	// --------- Get PostgresHost
-	if e.PostgresHost = os.Getenv(ENV_postgres_host); len(e.PostgresHost) == 0 {
+	// --------- Get Host
+	if e.Host = os.Getenv(ENV_postgres_host); len(e.Host) == 0 {
 		log.Fatalf("%s %s", ENV_postgres_host, environement_variable_missing)
 	}
 
-	// --------- Get PostgresUser
-	if e.PostgresUser = os.Getenv(ENV_postgres_user); len(e.PostgresUser) == 0 {
+	// --------- Get User
+	if e.User = os.Getenv(ENV_postgres_user); len(e.User) == 0 {
 		log.Fatalf("%s %s", ENV_postgres_user, environement_variable_missing)
 	}
 
-	// --------- Get PostgresPassword
-	if e.PostgresPassword = os.Getenv(ENV_postgres_password); len(e.PostgresPassword) == 0 {
+	// --------- Get Password
+	if e.Password = os.Getenv(ENV_postgres_password); len(e.Password) == 0 {
 		log.Fatalf("%s %s", ENV_postgres_password, environement_variable_missing)
 	}
 
-	// --------- Get PostgresDB
-	if e.PostgresDB = os.Getenv(ENV_postgres_db); len(e.PostgresDB) == 0 {
+	// --------- Get DBname
+	if e.DBname = os.Getenv(ENV_postgres_db); len(e.DBname) == 0 {
 		log.Fatalf("%s %s", ENV_postgres_db, environement_variable_missing)
 	}
 }

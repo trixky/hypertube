@@ -14,18 +14,6 @@ const (
 	environement_variable_missing = "environement variable missing"
 )
 
-// type Env struct {
-// 	GRPC          Grpc
-// 	HTTP          Http
-// 	PG            Postgres
-// 	RD            Redis
-// 	API42         Api42
-// 	APIGoogle     ApiGoogle
-// 	OUTLOOKConfig OutlookConfig
-// }
-
-// var ENV = Env{}
-
 // read_port convert and sanitize string port to integer
 func read_port(name string) (int, error) {
 	const (
@@ -53,13 +41,3 @@ func ReadAll() {
 	Postgres.GetAll()
 	Redis.GetAll()
 }
-
-// func (e *Env) GetAll() {
-// 	e.GRPC.GetAll()          // Get http environment variables
-// 	e.HTTP.GetAll()          // Get http environment variables
-// 	e.PG.GetAll()            // Get postgres environment variables
-// 	e.RD.GetAll()            // Get redis environment variables
-// 	e.API42.GetAll()         // Get 42 environment variables
-// 	e.APIGoogle.GetAll()     // Get google environment variables
-// 	e.OUTLOOKConfig.GetAll() // Get outlook environment variables
-// }
