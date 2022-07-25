@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/ptypes"
+	ut "github.com/trixky/hypertube/.shared/utils"
 	"github.com/trixky/hypertube/api-scrapper/databases"
 	pb "github.com/trixky/hypertube/api-scrapper/proto"
 	"github.com/trixky/hypertube/api-scrapper/scrapper"
 	st "github.com/trixky/hypertube/api-scrapper/sites"
 	"github.com/trixky/hypertube/api-scrapper/sqlc"
-	ut "github.com/trixky/hypertube/api-scrapper/utils"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

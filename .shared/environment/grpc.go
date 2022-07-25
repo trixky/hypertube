@@ -19,10 +19,12 @@ func (e *env_grpc) GetAll(config *Config) {
 	}
 
 	// --------- Get GatewayPort
-	if grpc_gateway_port, err := ReadPort(config.ENV_grpc_gateway_port); err != nil {
-		log.Fatal(err)
-	} else {
-		e.GatewayPort = grpc_gateway_port
+	if config.ENV_grpc_gateway_port != "" {
+		if grpc_gateway_port, err := ReadPort(config.ENV_grpc_gateway_port); err != nil {
+			log.Fatal(err)
+		} else {
+			e.GatewayPort = grpc_gateway_port
+		}
 	}
 }
 

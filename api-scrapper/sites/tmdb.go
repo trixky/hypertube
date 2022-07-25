@@ -16,9 +16,9 @@ import (
 	"strings"
 	"time"
 
+	ut "github.com/trixky/hypertube/.shared/utils"
 	"github.com/trixky/hypertube/api-scrapper/databases"
 	"github.com/trixky/hypertube/api-scrapper/sqlc"
-	ut "github.com/trixky/hypertube/api-scrapper/utils"
 )
 
 type TMDBMovieResult struct {
