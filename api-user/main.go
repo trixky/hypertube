@@ -4,8 +4,8 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/trixky/hypertube/.shared/environment"
 	"github.com/trixky/hypertube/api-user/databases"
-	"github.com/trixky/hypertube/api-user/environment"
 	"github.com/trixky/hypertube/api-user/internal"
 )
 
@@ -15,16 +15,16 @@ const (
 )
 
 func main() {
-	environment.E.GetAll()
+	environment.ReadAll()
 	// ------------- postgres
-	log.Printf("start connection to postgres on %s:%d\n", environment.E.PostgresHost, environment.E.PostgresPort)
+	log.Printf("start connection to postgres on %s:%d\n", environment.Postgres.PostgresHost, environment.Postgres.PostgresPort)
 	if err := databases.InitPosgres(databases.PostgresConfig{
 		Driver:   postgres_driver,
-		Host:     environment.E.PostgresHost,
-		Port:     environment.E.PostgresPort,
-		User:     environment.E.PostgresUser,
-		Password: environment.E.PostgresPassword,
-		Dbname:   environment.E.PostgresDB,
+		Host:     environment.Postgres.PostgresHost,
+		Port:     environment.Postgres.PostgresPort,
+		User:     environment.Postgres.PostgresUser,
+		Password: environment.Postgres.PostgresPassword,
+		Dbname:   environment.Postgres.PostgresDB,
 	}); err != nil {
 		log.Fatalf("failed to connect to postgres: %v", err)
 	}
@@ -36,14 +36,14 @@ func main() {
 	}
 
 	// ------------- grpc
-	grpc_addr := host + ":" + strconv.Itoa(environment.E.GrpcPort)
+	grpc_addr := host + ":" + strconv.Itoa(environment.Grpc.GrpcPort)
 
 	go func() {
 		log.Fatalf("failed to serve grpc on: %v\n", internal.NewGrpcServer(grpc_addr))
 	}()
 
 	// ------------- grpc-gateway
-	grpc_gateway_addr := ":" + strconv.Itoa(environment.E.GrpcGatewayPort)
+	grpc_gateway_addr := ":" + strconv.Itoa(environment.Grpc.GrpcGatewayPort)
 
 	log.Fatalf("failed to serve grpc-gateway on: %v\n", internal.NewGrpcGatewayServer(grpc_gateway_addr, grpc_addr))
 }
