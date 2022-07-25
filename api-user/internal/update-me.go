@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"encoding/base64"
 
+	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/sanitizer"
 	"github.com/trixky/hypertube/.shared/utils"
-	"github.com/trixky/hypertube/api-user/databases"
 	pb "github.com/trixky/hypertube/api-user/proto"
+	"github.com/trixky/hypertube/api-user/queries"
 	"github.com/trixky/hypertube/api-user/sqlc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -38,7 +39,7 @@ func (s *UserServer) UpdateMe(ctx context.Context, in *pb.UpdateMeRequest) (*pb.
 	}
 
 	// -------------------- db get
-	user, err := databases.DBs.SqlcQueries.GetUserById(context.Background(), token_info.Id)
+	user, err := queries.SqlcQueries.GetUserById(context.Background(), token_info.Id)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "user infos retrieving failed")
@@ -81,7 +82,7 @@ func (s *UserServer) UpdateMe(ctx context.Context, in *pb.UpdateMeRequest) (*pb.
 	}
 
 	// -------------------- update credentials
-	if token_info.External == databases.EXTERNAL_none {
+	if token_info.External == databases.REDIS_EXTERNAL_none {
 		// -------------------- update email
 		email := in.GetEmail()
 
@@ -122,7 +123,7 @@ func (s *UserServer) UpdateMe(ctx context.Context, in *pb.UpdateMeRequest) (*pb.
 
 	// -------------------- db update
 	if need_update {
-		if err := databases.DBs.SqlcQueries.UpdateUser(context.Background(), sqlc.UpdateUserParams{
+		if err := queries.SqlcQueries.UpdateUser(context.Background(), sqlc.UpdateUserParams{
 			ID:        user.ID,
 			Username:  user.Username,
 			Firstname: user.Firstname,

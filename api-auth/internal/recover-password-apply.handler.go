@@ -7,8 +7,8 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/trixky/hypertube/.shared/sanitizer"
 	"github.com/trixky/hypertube/.shared/utils"
-	"github.com/trixky/hypertube/api-auth/databases"
 	pb "github.com/trixky/hypertube/api-auth/proto"
+	"github.com/trixky/hypertube/api-auth/queries"
 	"github.com/trixky/hypertube/api-auth/sqlc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -36,13 +36,13 @@ func (s *AuthServer) InternalApplyRecoverPassword(ctx context.Context, in *pb.In
 	}
 
 	// -------------------- Cache
-	password_token_info, err := databases.DBs.RedisQueries.RetrievePasswordToken(in.GetPasswordToken(), true)
+	password_token_info, err := queries.RetrievePasswordToken(in.GetPasswordToken(), true)
 	if err != nil {
 		return _empty, status.Errorf(codes.Internal, "password token generation failed")
 	}
 
 	// -------------------- DB
-	if err := databases.DBs.SqlcQueries.UpdateUserPassword(context.Background(), sqlc.UpdateUserPasswordParams{
+	if err := queries.SqlcQueries.UpdateUserPassword(context.Background(), sqlc.UpdateUserPasswordParams{
 		ID: password_token_info.Id,
 		Password: sql.NullString{
 			String: utils.EncryptPassword(in.GetNewPassword()),

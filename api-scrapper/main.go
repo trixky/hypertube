@@ -5,9 +5,10 @@ import (
 	"time"
 
 	"github.com/go-co-op/gocron"
+	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/environment"
-	"github.com/trixky/hypertube/api-scrapper/databases"
 	"github.com/trixky/hypertube/api-scrapper/internal"
+	"github.com/trixky/hypertube/api-scrapper/queries"
 )
 
 func init() {
@@ -22,7 +23,8 @@ func init() {
 	environment.Grpc.GetAll(&environment_config) // Get grpc environment
 	environment.TMDB.GetAll()                    // Get TMDB API key
 
-	databases.InitDBs()      // Init DBs
+	databases.InitPostgres() // Init DBs
+	queries.InitSqlc()       // Init Sqlc queries
 	internal.NewGrpcServer() // Init internal servers
 }
 

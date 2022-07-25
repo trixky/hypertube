@@ -9,10 +9,11 @@ import (
 	"net/url"
 
 	"github.com/google/uuid"
+	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/environment"
 	"github.com/trixky/hypertube/.shared/sanitizer"
 	"github.com/trixky/hypertube/.shared/utils"
-	"github.com/trixky/hypertube/api-auth/databases"
+	"github.com/trixky/hypertube/api-auth/queries"
 	"github.com/trixky/hypertube/api-auth/sqlc"
 )
 
@@ -142,7 +143,7 @@ func redirect42(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// -------------------- DB
-	user, err := databases.DBs.SqlcQueries.Create42ExternalUser(context.Background(), sqlc.Create42ExternalUserParams{
+	user, err := queries.SqlcQueries.Create42ExternalUser(context.Background(), sqlc.Create42ExternalUserParams{
 		Email:     me_42_response.Email,
 		Username:  me_42_response.Login,
 		Firstname: me_42_response.Firstname,
@@ -155,7 +156,7 @@ func redirect42(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if databases.ErrorIsDuplication(err) {
-			user, err = databases.DBs.SqlcQueries.GetUserBy42Id(context.Background(), sql.NullInt32{
+			user, err = queries.SqlcQueries.GetUserBy42Id(context.Background(), sql.NullInt32{
 				Int32: int32(me_42_response.Id),
 				Valid: true,
 			})
@@ -174,7 +175,7 @@ func redirect42(w http.ResponseWriter, r *http.Request) {
 	// Generates the token
 	token := uuid.New().String()
 
-	if err := databases.DBs.RedisQueries.AddToken(user.ID, token, databases.EXTERNAL_42); err != nil {
+	if err := queries.AddToken(user.ID, token, databases.REDIS_EXTERNAL_42); err != nil {
 		http.Error(w, "token generation failed", http.StatusInternalServerError)
 		return
 	}
@@ -189,7 +190,7 @@ func redirect42(w http.ResponseWriter, r *http.Request) {
 		Firstname: user.Firstname,
 		Lastname:  user.Lastname,
 		Email:     user.Email,
-		External:  databases.EXTERNAL_42,
+		External:  databases.REDIS_EXTERNAL_42,
 	}, true)
 
 	if err != nil {

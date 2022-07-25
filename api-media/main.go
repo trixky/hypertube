@@ -27,8 +27,8 @@ func init() {
 	external.NewApiScrapperClient() // Init Scrapper client
 	databases.InitPostgres()        // Init DBs
 	databases.InitRedis()
-	queries.InitSqlc(databases.SqlDatabase) // Init Sqlc queries
-	internal.NewGrpcServers()               // Init internal servers
+	queries.InitSqlc()        // Init Sqlc queries
+	internal.NewGrpcServers() // Init internal servers
 }
 
 func main() {

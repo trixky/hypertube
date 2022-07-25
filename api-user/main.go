@@ -3,9 +3,10 @@ package main
 import (
 	"log"
 
+	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/environment"
-	"github.com/trixky/hypertube/api-user/databases"
 	"github.com/trixky/hypertube/api-user/internal"
+	"github.com/trixky/hypertube/api-user/queries"
 )
 
 func init() {
@@ -21,7 +22,9 @@ func init() {
 	environment.Redis.GetAll()                   // Get redis environment
 	environment.Grpc.GetAll(&environment_config) // Get grpc environment
 
-	databases.InitDBs()       // Init DBs
+	databases.InitPostgres() // Init DBs
+	databases.InitRedis()
+	queries.InitSqlc()        // Init Sqlc queries
 	internal.NewGrpcServers() // Init internal servers
 }
 

@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
+	initializer "github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/environment"
-	"github.com/trixky/hypertube/api-auth/databases"
-	initializer "github.com/trixky/hypertube/api-auth/databases"
 	"github.com/trixky/hypertube/api-auth/proto"
+	"github.com/trixky/hypertube/api-auth/queries"
 )
 
 func init() {
@@ -26,7 +26,8 @@ func init() {
 	environment.ApiGoogle.GetAll()               // Get google api environment
 	environment.Outlook.GetAll()                 // Get outlook environment
 
-	initializer.InitDBs() // Init DBs
+	initializer.InitPostgres() // Init DBs
+	initializer.InitRedis()
 }
 func TestInternalApplyRecoverPassword(t *testing.T) {
 	server := &AuthServer{}
@@ -137,7 +138,7 @@ func TestInternalApplyRecoverPassword(t *testing.T) {
 		},
 	}
 
-	databases.DBs.RedisQueries.AddPasswordToken(105, "c57a31ea-0125-4a9e-b602-fb9faf7e3f45")
+	queries.AddPasswordToken(105, "c57a31ea-0125-4a9e-b602-fb9faf7e3f45")
 
 	for _, test := range tests {
 		if _, err := server.InternalApplyRecoverPassword(context.Background(), test.input); (err != nil) != test.error_expected {

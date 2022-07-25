@@ -3,10 +3,11 @@ package main
 import (
 	"log"
 
+	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/environment"
-	"github.com/trixky/hypertube/api-auth/databases"
 	"github.com/trixky/hypertube/api-auth/external"
 	"github.com/trixky/hypertube/api-auth/internal"
+	"github.com/trixky/hypertube/api-auth/queries"
 )
 
 func init() {
@@ -27,7 +28,9 @@ func init() {
 	environment.ApiGoogle.GetAll()               // Get google api environment
 	environment.Outlook.GetAll()                 // Get outlook environment
 
-	databases.InitDBs()       // Init DBs
+	databases.InitPostgres() // Init DBs
+	databases.InitRedis()
+	queries.InitSqlc()        // Init Sqlc queries
 	internal.NewGrpcServers() // Init internal servers
 	external.NewHttpServer()  // Init external servers
 }
