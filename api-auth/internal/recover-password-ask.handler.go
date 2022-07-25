@@ -8,10 +8,10 @@ import (
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
+	"github.com/trixky/hypertube/.shared/sanitizer"
 	"github.com/trixky/hypertube/api-auth/databases"
 	"github.com/trixky/hypertube/api-auth/email"
 	pb "github.com/trixky/hypertube/api-auth/proto"
-	"github.com/trixky/hypertube/api-auth/sanitizer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

@@ -2,20 +2,32 @@ package internal
 
 import (
 	"context"
-	"log"
 	"testing"
 
-	"github.com/trixky/hypertube/api-auth/environment"
-	initializer "github.com/trixky/hypertube/api-auth/initializer/mock"
+	"github.com/trixky/hypertube/.shared/environment"
+	"github.com/trixky/hypertube/api-auth/databases"
+	initializer "github.com/trixky/hypertube/api-auth/databases"
 	"github.com/trixky/hypertube/api-auth/proto"
 )
 
 func init() {
-	log.Println("------------------------- INIT api-auth (TEST)")
-	environment.E.GetAll() // Get environment variables
-	initializer.InitDBs()  // Init DBs
-}
+	// Set environment config
+	environment_config := environment.Config{
+		ENV_grpc_port:         "API_AUTH_GRPC_PORT",
+		ENV_grpc_gateway_port: "API_AUTH_GRPC_GATEWAY_PORT",
+		ENV_http_port:         "API_AUTH_HTTP_PORT",
+	}
 
+	environment.Postgres.GetAll()                // Get postgres environment
+	environment.Redis.GetAll()                   // Get redis environment
+	environment.Grpc.GetAll(&environment_config) // Get grpc environment
+	environment.Http.GetAll(&environment_config) // Get http environment
+	environment.Api42.GetAll()                   // Get 42 api environment
+	environment.ApiGoogle.GetAll()               // Get google api environment
+	environment.Outlook.GetAll()                 // Get outlook environment
+
+	initializer.InitDBs() // Init DBs
+}
 func TestInternalApplyRecoverPassword(t *testing.T) {
 	server := &AuthServer{}
 
@@ -119,18 +131,13 @@ func TestInternalApplyRecoverPassword(t *testing.T) {
 		{
 			input: &proto.InternalApplyRecoverPasswordRequest{
 				PasswordToken: "c57a31ea-0125-4a9e-b602-fb9faf7e3f45",
-				NewPassword:   "22280755e9747a2b40ec92502dbb76f612049fb0f7a2926216e2bdcfa849f368",
-			},
-			error_expected: false,
-		},
-		{
-			input: &proto.InternalApplyRecoverPasswordRequest{
-				PasswordToken: "eeee318f-1b68-49f8-9ad7-e8695ad114a9",
-				NewPassword:   "cd180755e9747a2b40ec92502dbb76f612049fb0f7a2926216e2bdcfa849f368",
+				NewPassword:   "eee392fcefc860ef9714dcf4ad2249a995118c7a3bdbf4a96e8ffd7fe354ceee",
 			},
 			error_expected: false,
 		},
 	}
+
+	databases.DBs.RedisQueries.AddPasswordToken(105, "c57a31ea-0125-4a9e-b602-fb9faf7e3f45")
 
 	for _, test := range tests {
 		if _, err := server.InternalApplyRecoverPassword(context.Background(), test.input); (err != nil) != test.error_expected {

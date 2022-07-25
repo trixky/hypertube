@@ -5,11 +5,13 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strconv"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	md "github.com/trixky/hypertube/api-auth/middlewares"
+	"github.com/trixky/hypertube/.shared/environment"
+	md "github.com/trixky/hypertube/.shared/middlewares"
+	"github.com/trixky/hypertube/.shared/utils"
 	pb "github.com/trixky/hypertube/api-auth/proto"
-	"github.com/trixky/hypertube/api-auth/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -19,7 +21,12 @@ type AuthServer struct {
 }
 
 // NewGrpcServer create a new GRPC server
-func NewGrpcServer(grpc_addr string) *grpc.Server {
+func NewGrpcServer() (string, *grpc.Server) {
+	grpc_port := ":" + strconv.Itoa(environment.Grpc.Port)
+	grpc_addr := environment.DEFAULT_HOST + grpc_port
+
+	log.Printf("start to serve grpc services on \t\t%s\n", grpc_addr)
+
 	listen, err := net.Listen("tcp", grpc_addr)
 	if err != nil {
 		log.Fatalf("failed to serve grpc: %v\n", err)
@@ -34,11 +41,15 @@ func NewGrpcServer(grpc_addr string) *grpc.Server {
 		log.Fatalf("failed to serve grpc: %v\n", s.Serve(listen))
 	}()
 
-	return s
+	return grpc_addr, s
 }
 
 // NewGrpcGatewayServer create a new GRPC gateway server
-func NewGrpcGatewayServer(grpc_gateway_addr string, grpc_addr string) {
+func NewGrpcGatewayServer(grpc_addr string) {
+	grpc_gateway_addr := ":" + strconv.Itoa(environment.Grpc.GatewayPort)
+
+	log.Printf("start to serve grpc gateway services on \t%s\n", grpc_gateway_addr)
+
 	conn, err := grpc.DialContext(
 		context.Background(),
 		grpc_addr,
@@ -51,7 +62,7 @@ func NewGrpcGatewayServer(grpc_gateway_addr string, grpc_addr string) {
 
 	// Create mux
 	gwmux := runtime.NewServeMux(runtime.WithMetadata(
-		md.BasicGrpcMiddleware,
+		md.GrpcMiddleware,
 	))
 
 	// Register the authentification service
@@ -69,4 +80,12 @@ func NewGrpcGatewayServer(grpc_gateway_addr string, grpc_addr string) {
 	go func() {
 		log.Fatalf("failed to serve grpc-gateway: %v\n", gwServer.ListenAndServe())
 	}()
+}
+
+// NewGrpcServers create all GRPC servers
+func NewGrpcServers() *grpc.Server {
+	grpc_addr, grpc_server := NewGrpcServer() // GRPC
+	NewGrpcGatewayServer(grpc_addr)           // GRPC GATEWAY
+
+	return grpc_server
 }

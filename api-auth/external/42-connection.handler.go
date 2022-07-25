@@ -9,11 +9,11 @@ import (
 	"net/url"
 
 	"github.com/google/uuid"
+	"github.com/trixky/hypertube/.shared/environment"
+	"github.com/trixky/hypertube/.shared/sanitizer"
+	"github.com/trixky/hypertube/.shared/utils"
 	"github.com/trixky/hypertube/api-auth/databases"
-	"github.com/trixky/hypertube/api-auth/environment"
-	"github.com/trixky/hypertube/api-auth/sanitizer"
 	"github.com/trixky/hypertube/api-auth/sqlc"
-	"github.com/trixky/hypertube/api-auth/utils"
 )
 
 type code42Response struct {
@@ -50,12 +50,12 @@ func getTokenFromCode(code string) (*code42Response, error) {
 	// https://api.intra.42.fr/apidoc
 
 	// Encode the data for the 42 API
-	response, err := http.PostForm(environment.E.API42.RequestUrl, url.Values{
-		"grant_type":    {environment.E.API42.GrantType},
-		"client_id":     {environment.E.API42.ClientId},
-		"client_secret": {environment.E.API42.ClientSecret},
+	response, err := http.PostForm(environment.Api42.RequestUrl, url.Values{
+		"grant_type":    {environment.Api42.GrantType},
+		"client_id":     {environment.Api42.ClientId},
+		"client_secret": {environment.Api42.ClientSecret},
 		"code":          {code},
-		"redirect_uri":  {environment.E.API42.RedirectionUri},
+		"redirect_uri":  {environment.Api42.RedirectionUri},
 	})
 
 	if err != nil {
@@ -83,7 +83,7 @@ func getTokenFromCode(code string) (*code42Response, error) {
 
 // getTokenFromCode get the 42 user information from his token
 func getUser42InfoFromToken(code_42_response *code42Response) (*me42Response, error) {
-	req, err := http.NewRequest("GET", environment.E.API42.RequestMe, nil)
+	req, err := http.NewRequest("GET", environment.Api42.RequestMe, nil)
 
 	if err != nil {
 		return nil, err
@@ -183,7 +183,7 @@ func redirect42(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, token_cookie)
 
-	me, err := utils.HeaderCookieMeGeneration(utils.User{
+	me, err := utils.HeaderCookieUserGeneration(utils.User{
 		Id:        int(user.ID),
 		Username:  user.Username,
 		Firstname: user.Firstname,

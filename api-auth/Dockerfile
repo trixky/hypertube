@@ -3,8 +3,9 @@ FROM golang:1.18.3-alpine3.16
 # https://levelup.gitconnected.com/docker-for-go-development-a27141f36ba9
 
 # copy api files
-WORKDIR /app
-COPY ./ /app
+WORKDIR /hypertube/app
+COPY ./api-auth /hypertube/app
+COPY ./.shared /hypertube/.shared
 
 # install api dependencies
 RUN go mod download

@@ -26,7 +26,7 @@ func (d *PostgresConfig) Compile_config() string {
 	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", d.Host, d.Port, d.User, d.Password, d.Dbname)
 }
 
-func InitPosgres(config PostgresConfig) error {
+func InitPostgres(config PostgresConfig) error {
 	sql_database, err := sql.Open(config.Driver, config.Compile_config())
 
 	if err != nil {

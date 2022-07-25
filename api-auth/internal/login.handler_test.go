@@ -2,19 +2,30 @@ package internal
 
 import (
 	"context"
-	"log"
 	"testing"
 
-	databases "github.com/trixky/hypertube/api-auth/databases/mock"
-	"github.com/trixky/hypertube/api-auth/environment"
-	initializer "github.com/trixky/hypertube/api-auth/initializer/mock"
+	"github.com/trixky/hypertube/.shared/environment"
+	initializer "github.com/trixky/hypertube/api-auth/databases"
 	"github.com/trixky/hypertube/api-auth/proto"
 )
 
 func init() {
-	log.Println("------------------------- INIT api-auth (TEST)")
-	environment.E.GetAll() // Get environment variables
-	initializer.InitDBs()  // Init DBs
+	// Set environment config
+	environment_config := environment.Config{
+		ENV_grpc_port:         "API_AUTH_GRPC_PORT",
+		ENV_grpc_gateway_port: "API_AUTH_GRPC_GATEWAY_PORT",
+		ENV_http_port:         "API_AUTH_HTTP_PORT",
+	}
+
+	environment.Postgres.GetAll()                // Get postgres environment
+	environment.Redis.GetAll()                   // Get redis environment
+	environment.Grpc.GetAll(&environment_config) // Get grpc environment
+	environment.Http.GetAll(&environment_config) // Get http environment
+	environment.Api42.GetAll()                   // Get 42 api environment
+	environment.ApiGoogle.GetAll()               // Get google api environment
+	environment.Outlook.GetAll()                 // Get outlook environment
+
+	initializer.InitDBs() // Init DBs
 }
 
 func TestInternalLogin(t *testing.T) {
@@ -43,56 +54,70 @@ func TestInternalLogin(t *testing.T) {
 		},
 		{ // Email missing
 			input: &proto.InternalLoginRequest{
-				Password: databases.InitialsSqlMockUsers[0].Password.String,
+				Password: "1e8392fcefc860ef9714dcf4ad2249a995118c7a3bdbf4a96e8ffd7fe354c2e6",
 			},
 			error_expected: true,
 		},
 		{ // Email corrupted
 			input: &proto.InternalLoginRequest{
 				Email:    "x",
-				Password: databases.InitialsSqlMockUsers[0].Password.String,
+				Password: "1e8392fcefc860ef9714dcf4ad2249a995118c7a3bdbf4a96e8ffd7fe354c2e6",
 			},
 			error_expected: true,
 		},
 		{ // Email invalid
 			input: &proto.InternalLoginRequest{
-				Email:    databases.InitialsSqlMockUsers[0].Email + "x",
-				Password: databases.InitialsSqlMockUsers[0].Password.String,
+				Email:    "a@b.c",
+				Password: "1e8392fcefc860ef9714dcf4ad2249a995118c7a3bdbf4a96e8ffd7fe354c2e6",
 			},
 			error_expected: true,
 		},
 		{ // Password missing
 			input: &proto.InternalLoginRequest{
-				Email: databases.InitialsSqlMockUsers[0].Email,
+				Email: "a@b.c",
 			},
 			error_expected: true,
 		},
 		{ // Password corrupted
 			input: &proto.InternalLoginRequest{
-				Email:    databases.InitialsSqlMockUsers[0].Email,
+				Email:    "a@b.c",
 				Password: "x",
 			},
 			error_expected: true,
 		},
 		{ // Password invalid
 			input: &proto.InternalLoginRequest{
-				Email:    databases.InitialsSqlMockUsers[0].Email,
-				Password: databases.InitialsSqlMockUsers[0].Password.String[1:] + "0",
+				Email:    "a@b.c",
+				Password: "aa8392fcefc860ef9714dcf4ad2249a995118c7a3bdbf4a96e8ffd7fe354c2e6",
 			},
 			error_expected: true,
 		},
 		// ------------------------- Success expected
 		{
 			input: &proto.InternalLoginRequest{
-				Email:    databases.InitialsSqlMockUsers[0].Email,
-				Password: "22280755e9747a2b40ec92502dbb76f612049fb0f7a2926216e2bdcfa849f368",
+				Email:    "email.test_1@test.com",
+				Password: "1e8392fcefc860ef9714dcf4ad2249a995118c7a3bdbf4a96e8ffd7fe354c2e6",
 			},
 			error_expected: false,
 		},
 		{
 			input: &proto.InternalLoginRequest{
-				Email:    databases.InitialsSqlMockUsers[1].Email,
-				Password: "cd180755e9747a2b40ec92502dbb76f612049fb0f7a2926216e2bdcfa849f368",
+				Email:    "email.test_2@test.com",
+				Password: "1e8392fcefc860ef9714dcf4ad2249a995118c7a3bdbf4a96e8ffd7fe354c2e6",
+			},
+			error_expected: false,
+		},
+		{
+			input: &proto.InternalLoginRequest{
+				Email:    "email.test_3@test.com",
+				Password: "1e8392fcefc860ef9714dcf4ad2249a995118c7a3bdbf4a96e8ffd7fe354c2e6",
+			},
+			error_expected: false,
+		},
+		{
+			input: &proto.InternalLoginRequest{
+				Email:    "email.test_4@test.com",
+				Password: "1e8392fcefc860ef9714dcf4ad2249a995118c7a3bdbf4a96e8ffd7fe354c2e6",
 			},
 			error_expected: false,
 		},
