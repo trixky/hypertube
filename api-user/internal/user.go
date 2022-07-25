@@ -6,9 +6,10 @@ import (
 	"encoding/base64"
 	"errors"
 
+	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/utils"
-	"github.com/trixky/hypertube/api-user/databases"
 	pb "github.com/trixky/hypertube/api-user/proto"
+	"github.com/trixky/hypertube/api-user/queries"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -27,7 +28,7 @@ func (s *UserServer) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.Us
 	}
 
 	// -------------------- db
-	user, err := databases.DBs.SqlcQueries.GetUserById(context.Background(), in.GetId())
+	user, err := queries.SqlcQueries.GetUserById(context.Background(), in.GetId())
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

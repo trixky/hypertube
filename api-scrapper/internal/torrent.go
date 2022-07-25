@@ -9,8 +9,8 @@ import (
 
 	"github.com/golang/protobuf/ptypes"
 	ut "github.com/trixky/hypertube/.shared/utils"
-	"github.com/trixky/hypertube/api-scrapper/databases"
 	pb "github.com/trixky/hypertube/api-scrapper/proto"
+	"github.com/trixky/hypertube/api-scrapper/queries"
 	"github.com/trixky/hypertube/api-scrapper/scrapper"
 	st "github.com/trixky/hypertube/api-scrapper/sites"
 	"github.com/trixky/hypertube/api-scrapper/sqlc"
@@ -105,7 +105,7 @@ func TorrentToProto(creation_result *TorrentCreationResult) (converted_torrent p
 }
 
 func UpdateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, torrent *pb.UnprocessedTorrent) (created bool, creation_result TorrentCreationResult, err error) {
-	db_torrent, err := databases.DBs.SqlcQueries.GetTorrentByURL(ctx, torrent.FullUrl)
+	db_torrent, err := queries.SqlcQueries.GetTorrentByURL(ctx, torrent.FullUrl)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return
@@ -122,7 +122,7 @@ func UpdateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 			imdb_id = *torrent.ImdbId
 		}
 
-		created_torrent, err_creation := databases.DBs.SqlcQueries.CreateTorrent(ctx, TorrenToSQL(torrent))
+		created_torrent, err_creation := queries.SqlcQueries.CreateTorrent(ctx, TorrenToSQL(torrent))
 		if err_creation != nil {
 			err = err_creation
 			return
@@ -141,7 +141,7 @@ func UpdateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 		if !db_torrent.TorrentUrl.Valid && !db_torrent.Magnet.Valid {
 			scrapper.ScrapeSingle(torrent)
 
-			databases.DBs.SqlcQueries.SetTorrentInformations(ctx, sqlc.SetTorrentInformationsParams{
+			queries.SqlcQueries.SetTorrentInformations(ctx, sqlc.SetTorrentInformationsParams{
 				ID:              db_torrent.ID,
 				DescriptionHtml: ut.MakeNullString(torrent.DescriptionHtml),
 				Magnet:          ut.MakeNullString(torrent.Magnet),
@@ -156,7 +156,7 @@ func UpdateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 		}
 
 		// Always update peers
-		err = databases.DBs.SqlcQueries.SetTorrentPeers(ctx, sqlc.SetTorrentPeersParams{
+		err = queries.SqlcQueries.SetTorrentPeers(ctx, sqlc.SetTorrentPeersParams{
 			ID:    db_torrent.ID,
 			Seed:  ut.MakeNullInt32(&torrent.Seed),
 			Leech: ut.MakeNullInt32(&torrent.Leech),
@@ -179,7 +179,7 @@ func UpdateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 			return
 		}
 		if media_id > 0 {
-			err = databases.DBs.SqlcQueries.AddTorrentMediaId(ctx, sqlc.AddTorrentMediaIdParams{
+			err = queries.SqlcQueries.AddTorrentMediaId(ctx, sqlc.AddTorrentMediaIdParams{
 				ID:      db_torrent.ID,
 				MediaID: ut.MakeNullInt32(&media_id),
 			})
@@ -200,7 +200,7 @@ func UpdateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 				return
 			}
 			if media_id > 0 {
-				err = databases.DBs.SqlcQueries.AddTorrentMediaId(ctx, sqlc.AddTorrentMediaIdParams{
+				err = queries.SqlcQueries.AddTorrentMediaId(ctx, sqlc.AddTorrentMediaIdParams{
 					ID:      db_torrent.ID,
 					MediaID: ut.MakeNullInt32(&media_id),
 				})
@@ -214,7 +214,7 @@ func UpdateOrCreateTorrent(ctx context.Context, scrapper *scrapper.Scrapper, tor
 
 		// Create associated files
 		for _, file := range torrent.Files {
-			created_file, err_file := databases.DBs.SqlcQueries.AddTorrentFile(ctx, sqlc.AddTorrentFileParams{
+			created_file, err_file := queries.SqlcQueries.AddTorrentFile(ctx, sqlc.AddTorrentFileParams{
 				TorrentID: int32(creation_result.torrent.ID),
 				Name:      file.Name,
 				Path:      ut.MakeNullString(file.Path),

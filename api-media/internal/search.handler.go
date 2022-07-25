@@ -4,12 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"log"
 	"strings"
-	"time"
 
-	"github.com/go-redis/redis"
 	"github.com/trixky/hypertube/.shared/databases"
 	sutils "github.com/trixky/hypertube/.shared/utils"
 	pb "github.com/trixky/hypertube/api-media/proto"
@@ -18,35 +15,6 @@ import (
 	"github.com/trixky/hypertube/api-media/utils"
 	"google.golang.org/protobuf/encoding/protojson"
 )
-
-const (
-	REDIS_SEPARATOR          = "."
-	REDIS_PATTERN_KEY_search = "search"
-)
-
-func CacheSearch(path *string, results *string) error {
-	// Save in redis and set the ttl to 5min
-	if err := databases.Redis.Set(REDIS_PATTERN_KEY_search+*path, *results, 5*time.Minute).Err(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func RetrieveSearch(path *string) (string, error) {
-	// Check if the search exists on redis
-	results, err := databases.Redis.Get(REDIS_PATTERN_KEY_search + *path).Result()
-	if err != nil {
-		if err == redis.Nil {
-			return "", nil
-		} else {
-			return "", fmt.Errorf("search extraction failed")
-		}
-	}
-
-	// Return the results if they exists
-	// -- Convert in the caller, to avoid clutter here
-	return results, nil
-}
 
 func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.SearchResponse, error) {
 	user, err := utils.RequireLogin(ctx)
@@ -97,7 +65,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 
 	// Check cache
 	path := params.ToString(user_locale.Lang, databases.REDIS_SEPARATOR)
-	cache_results, err := RetrieveSearch(&path)
+	cache_results, err := queries.RetrieveSearch(&path)
 	if err != nil {
 		log.Println("error in redis cache", err)
 	} else if cache_results != "" {
@@ -119,7 +87,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 	if medias_count == 0 {
 		response := pb.SearchResponse{}
 		search := protojson.Format(response.ProtoReflect().Interface())
-		err = CacheSearch(&path, &search)
+		err = queries.CacheSearch(&path, &search)
 		if err != nil {
 			log.Println("failed to save to redis cache", err)
 		}
@@ -132,7 +100,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 		if errors.Is(err, sql.ErrNoRows) {
 			response := pb.SearchResponse{}
 			search := protojson.Format(response.ProtoReflect().Interface())
-			err = CacheSearch(&path, &search)
+			err = queries.CacheSearch(&path, &search)
 			if err != nil {
 				log.Println("failed to save to redis cache", err)
 			}
@@ -201,7 +169,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 
 	// Save in redis
 	search := protojson.Format(response.ProtoReflect().Interface())
-	err = CacheSearch(&path, &search)
+	err = queries.CacheSearch(&path, &search)
 	if err != nil {
 		log.Println("failed to save to redis cache", err)
 	}

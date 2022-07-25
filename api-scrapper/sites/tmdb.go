@@ -17,7 +17,7 @@ import (
 	"time"
 
 	ut "github.com/trixky/hypertube/.shared/utils"
-	"github.com/trixky/hypertube/api-scrapper/databases"
+	"github.com/trixky/hypertube/api-scrapper/queries"
 	"github.com/trixky/hypertube/api-scrapper/sqlc"
 )
 
@@ -395,7 +395,7 @@ func InsertMediaInformations(informations *MediaInformations) (media_id int32, e
 	ctx := context.Background()
 
 	// Insert Media
-	created_media, err := databases.DBs.SqlcQueries.CreateMedia(ctx, sqlc.CreateMediaParams{
+	created_media, err := queries.SqlcQueries.CreateMedia(ctx, sqlc.CreateMediaParams{
 		ImdbID:      ut.MakeNullString(informations.ImdbId),
 		TmdbID:      informations.TmdbId,
 		Description: ut.MakeNullString(&informations.Description),
@@ -411,7 +411,7 @@ func InsertMediaInformations(informations *MediaInformations) (media_id int32, e
 	media_id = int32(created_media.ID)
 
 	// Insert the main media name
-	err = databases.DBs.SqlcQueries.CreateMediaName(ctx, sqlc.CreateMediaNameParams{
+	err = queries.SqlcQueries.CreateMediaName(ctx, sqlc.CreateMediaNameParams{
 		MediaID: media_id,
 		Name:    informations.Title,
 		Lang:    "__",
@@ -421,7 +421,7 @@ func InsertMediaInformations(informations *MediaInformations) (media_id int32, e
 	}
 	// ... and insert other media names
 	for _, media_name := range informations.Names {
-		err = databases.DBs.SqlcQueries.CreateMediaName(ctx, sqlc.CreateMediaNameParams{
+		err = queries.SqlcQueries.CreateMediaName(ctx, sqlc.CreateMediaNameParams{
 			MediaID: media_id,
 			Name:    media_name.Title,
 			Lang:    media_name.Lang,
@@ -434,11 +434,11 @@ func InsertMediaInformations(informations *MediaInformations) (media_id int32, e
 	// Insert media genres
 	for _, genre_name := range informations.Genres {
 		// Check if the genre exist
-		genre, err := databases.DBs.SqlcQueries.GetGenre(ctx, genre_name)
+		genre, err := queries.SqlcQueries.GetGenre(ctx, genre_name)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				err = nil
-				created_genre, err := databases.DBs.SqlcQueries.CreateGenre(ctx, genre_name)
+				created_genre, err := queries.SqlcQueries.CreateGenre(ctx, genre_name)
 				if err != nil {
 					return media_id, err
 				}
@@ -449,7 +449,7 @@ func InsertMediaInformations(informations *MediaInformations) (media_id int32, e
 		}
 
 		// Add the relation
-		err = databases.DBs.SqlcQueries.CreateMediaGenre(ctx, sqlc.CreateMediaGenreParams{
+		err = queries.SqlcQueries.CreateMediaGenre(ctx, sqlc.CreateMediaGenreParams{
 			MediaID: media_id,
 			GenreID: int32(genre.ID),
 		})
@@ -461,11 +461,11 @@ func InsertMediaInformations(informations *MediaInformations) (media_id int32, e
 	// Insert related persons
 	for _, crew := range informations.Crew {
 		// Check if the name exist
-		name, err := databases.DBs.SqlcQueries.GetNameByTMDB(ctx, crew.Id)
+		name, err := queries.SqlcQueries.GetNameByTMDB(ctx, crew.Id)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				err = nil
-				created_name, err := databases.DBs.SqlcQueries.CreateName(ctx, sqlc.CreateNameParams{
+				created_name, err := queries.SqlcQueries.CreateName(ctx, sqlc.CreateNameParams{
 					TmdbID:    crew.Id,
 					Name:      crew.Name,
 					Thumbnail: ut.MakeNullString(crew.Thumbnail),
@@ -480,7 +480,7 @@ func InsertMediaInformations(informations *MediaInformations) (media_id int32, e
 		}
 
 		// Add the relation
-		err = databases.DBs.SqlcQueries.CreateMediaStaff(ctx, sqlc.CreateMediaStaffParams{
+		err = queries.SqlcQueries.CreateMediaStaff(ctx, sqlc.CreateMediaStaffParams{
 			MediaID: media_id,
 			NameID:  int32(name.ID),
 			Role:    ut.MakeNullString(&crew.Job),
@@ -491,11 +491,11 @@ func InsertMediaInformations(informations *MediaInformations) (media_id int32, e
 	}
 	for _, actor := range informations.Actors {
 		// Check if the name exist
-		name, err := databases.DBs.SqlcQueries.GetNameByTMDB(ctx, actor.Id)
+		name, err := queries.SqlcQueries.GetNameByTMDB(ctx, actor.Id)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				err = nil
-				created_name, err := databases.DBs.SqlcQueries.CreateName(ctx, sqlc.CreateNameParams{
+				created_name, err := queries.SqlcQueries.CreateName(ctx, sqlc.CreateNameParams{
 					TmdbID:    actor.Id,
 					Name:      actor.Name,
 					Thumbnail: ut.MakeNullString(actor.Thumbnail),
@@ -510,7 +510,7 @@ func InsertMediaInformations(informations *MediaInformations) (media_id int32, e
 		}
 
 		// Add the relation
-		err = databases.DBs.SqlcQueries.CreateMediaActor(ctx, sqlc.CreateMediaActorParams{
+		err = queries.SqlcQueries.CreateMediaActor(ctx, sqlc.CreateMediaActorParams{
 			MediaID:   media_id,
 			NameID:    int32(name.ID),
 			Character: ut.MakeNullString(&actor.Character),
@@ -538,7 +538,7 @@ func TryInsertOrGetMedia(name string) (media_id int32, err error) {
 	year := int32(year_int)
 
 	// Search for a media locally first
-	already_loaded_media, err := databases.DBs.SqlcQueries.FindMediaByNameYear(ctx, sqlc.FindMediaByNameYearParams{
+	already_loaded_media, err := queries.SqlcQueries.FindMediaByNameYear(ctx, sqlc.FindMediaByNameYearParams{
 		Name: query,
 		Year: ut.MakeNullInt32(&year),
 	})
@@ -558,7 +558,7 @@ func TryInsertOrGetMedia(name string) (media_id int32, err error) {
 	} else {
 		log.Println("found TMDB ID", result, "from", query, year)
 	}
-	existing_media, err := databases.DBs.SqlcQueries.GetMediaByTMDB(ctx, result)
+	existing_media, err := queries.SqlcQueries.GetMediaByTMDB(ctx, result)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return
 	}
@@ -585,7 +585,7 @@ func TryInsertOrGetMedia(name string) (media_id int32, err error) {
 func InsertOrGetMedia(imdb_id string) (media_id int32, err error) {
 	ctx := context.Background()
 
-	existing_media, err := databases.DBs.SqlcQueries.GetMediaByIMDB(ctx, ut.MakeNullString(&imdb_id))
+	existing_media, err := queries.SqlcQueries.GetMediaByIMDB(ctx, ut.MakeNullString(&imdb_id))
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return
 	}
@@ -605,7 +605,7 @@ func InsertOrGetMedia(imdb_id string) (media_id int32, err error) {
 	}
 
 	// Check if there is already a corresponding movie
-	existing_media, err = databases.DBs.SqlcQueries.GetMediaByTMDB(ctx, tmdb_id)
+	existing_media, err = queries.SqlcQueries.GetMediaByTMDB(ctx, tmdb_id)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return
 	}

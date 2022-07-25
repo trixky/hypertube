@@ -7,10 +7,11 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/sanitizer"
 	"github.com/trixky/hypertube/.shared/utils"
-	"github.com/trixky/hypertube/api-auth/databases"
 	pb "github.com/trixky/hypertube/api-auth/proto"
+	"github.com/trixky/hypertube/api-auth/queries"
 	"github.com/trixky/hypertube/api-auth/sqlc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -36,7 +37,7 @@ func (s *AuthServer) InternalLogin(ctx context.Context, in *pb.InternalLoginRequ
 	}
 
 	// -------------------- DB
-	user, err := databases.DBs.SqlcQueries.GetInternalUserByCredentials(context.Background(), sqlc.GetInternalUserByCredentialsParams{
+	user, err := queries.SqlcQueries.GetInternalUserByCredentials(context.Background(), sqlc.GetInternalUserByCredentialsParams{
 		Email: in.GetEmail(),
 		Password: sql.NullString{
 			String: utils.EncryptPassword(in.GetPassword()),
@@ -55,7 +56,7 @@ func (s *AuthServer) InternalLogin(ctx context.Context, in *pb.InternalLoginRequ
 	// Generates the token
 	token := uuid.New().String()
 
-	if err := databases.DBs.RedisQueries.AddToken(user.ID, token, databases.EXTERNAL_none); err != nil {
+	if err := queries.AddToken(user.ID, token, databases.REDIS_EXTERNAL_none); err != nil {
 		return nil, status.Errorf(codes.Internal, "token generation failed")
 	}
 
@@ -65,7 +66,7 @@ func (s *AuthServer) InternalLogin(ctx context.Context, in *pb.InternalLoginRequ
 		Firstname: user.Firstname,
 		Lastname:  user.Lastname,
 		Email:     user.Email,
-		External:  databases.EXTERNAL_none,
+		External:  databases.REDIS_EXTERNAL_none,
 	}, false)
 
 	if err != nil {

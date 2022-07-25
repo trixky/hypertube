@@ -9,9 +9,9 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
 	"github.com/trixky/hypertube/.shared/sanitizer"
-	"github.com/trixky/hypertube/api-auth/databases"
 	"github.com/trixky/hypertube/api-auth/email"
 	pb "github.com/trixky/hypertube/api-auth/proto"
+	"github.com/trixky/hypertube/api-auth/queries"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -36,7 +36,7 @@ func (s *AuthServer) InternalRecoverPassword(ctx context.Context, in *pb.Interna
 	}
 
 	// -------------------- DB
-	user, err := databases.DBs.SqlcQueries.GetInternalUserByEmail(context.Background(), in.GetEmail())
+	user, err := queries.SqlcQueries.GetInternalUserByEmail(context.Background(), in.GetEmail())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return _empty, status.Errorf(codes.NotFound, "no user finded with this email")
@@ -47,7 +47,7 @@ func (s *AuthServer) InternalRecoverPassword(ctx context.Context, in *pb.Interna
 	// -------------------- Cache
 	password_token := uuid.New().String() // token generation
 
-	if err := databases.DBs.RedisQueries.AddPasswordToken(user.ID, password_token); err != nil {
+	if err := queries.AddPasswordToken(user.ID, password_token); err != nil {
 		return _empty, status.Errorf(codes.Internal, "password token generation failed")
 	}
 

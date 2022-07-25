@@ -10,9 +10,10 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/environment"
 	"github.com/trixky/hypertube/.shared/utils"
-	"github.com/trixky/hypertube/api-auth/databases"
+	"github.com/trixky/hypertube/api-auth/queries"
 	"github.com/trixky/hypertube/api-auth/sqlc"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -124,7 +125,7 @@ func callbackGoogle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// -------------------- DB
-	user, err := databases.DBs.SqlcQueries.CreateGoogleExternalUser(context.Background(), sqlc.CreateGoogleExternalUserParams{
+	user, err := queries.SqlcQueries.CreateGoogleExternalUser(context.Background(), sqlc.CreateGoogleExternalUserParams{
 		Email:     me_google_response.Email,
 		Username:  me_google_response.Login,
 		Firstname: me_google_response.Firstname,
@@ -137,7 +138,7 @@ func callbackGoogle(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if databases.ErrorIsDuplication(err) {
-			user, err = databases.DBs.SqlcQueries.GetUserByGoogleId(context.Background(), sql.NullString{
+			user, err = queries.SqlcQueries.GetUserByGoogleId(context.Background(), sql.NullString{
 				String: me_google_response.Id,
 				Valid:  true,
 			})
@@ -155,7 +156,7 @@ func callbackGoogle(w http.ResponseWriter, r *http.Request) {
 	// -------------------- Cache
 	token := uuid.New().String() // token generation
 
-	if err := databases.DBs.RedisQueries.AddToken(user.ID, token, databases.EXTERNAL_GOOGLE); err != nil {
+	if err := queries.AddToken(user.ID, token, databases.REDIS_EXTERNAL_google); err != nil {
 		http.Error(w, "token generation failed", http.StatusInternalServerError)
 		return
 	}
@@ -170,7 +171,7 @@ func callbackGoogle(w http.ResponseWriter, r *http.Request) {
 		Firstname: user.Firstname,
 		Lastname:  user.Lastname,
 		Email:     user.Email,
-		External:  databases.EXTERNAL_GOOGLE,
+		External:  databases.REDIS_EXTERNAL_google,
 	}, true)
 
 	if err != nil {

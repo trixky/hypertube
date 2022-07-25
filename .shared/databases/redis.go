@@ -11,14 +11,16 @@ import (
 )
 
 const (
-	REDIS_SEPARATOR         = "."
-	REDIS_EXTERNAL_none     = "none"
-	REDIS_EXTERNAL_42       = "42"
-	REDIS_EXTERNAL_google   = "google"
-	REDIS_PATTERN_KEY_token = "token"
+	REDIS_SEPARATOR                  = "."
+	REDIS_EXTERNAL_none              = "none"
+	REDIS_EXTERNAL_42                = "42"
+	REDIS_EXTERNAL_google            = "google"
+	REDIS_PATTERN_KEY_token          = "token"
+	REDIS_PATTERN_KEY_search         = "search"
+	REDIS_PATTERN_KEY_password_token = "password_token"
 )
 
-type Token_info struct {
+type RedisTokenInfo struct {
 	Id       int64
 	External string
 }
@@ -35,7 +37,7 @@ func AddToken(user_id int64, token string, external string) error {
 	return err
 }
 
-func RetrieveToken(token string) (*Token_info, error) {
+func RetrieveToken(token string) (*RedisTokenInfo, error) {
 	keys, err := Redis.Keys(REDIS_PATTERN_KEY_token + REDIS_SEPARATOR + token + REDIS_SEPARATOR + "*").Result()
 
 	if err != nil {
@@ -60,7 +62,7 @@ func RetrieveToken(token string) (*Token_info, error) {
 		return nil, fmt.Errorf("token extraction failed")
 	}
 
-	return &Token_info{
+	return &RedisTokenInfo{
 		Id:       int64(id),
 		External: external,
 	}, nil
