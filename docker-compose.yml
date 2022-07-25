@@ -90,8 +90,10 @@ services:
   api-streaming:
     build: ./api-streaming
     env_file:
+      - ./.env
       - ./postgres/.env
       - ./redis/.env
+      - ./client/.env
       - ./api-streaming/.env
     volumes:
       - ./api-streaming:/app
@@ -108,8 +110,10 @@ services:
   api-position:
     build: ./api-position
     env_file:
+      - ./.env
       - ./postgres/.env
       - ./redis/.env
+      - ./client/.env
       - ./api-position/.env
     volumes:
       - ./api-position:/app
