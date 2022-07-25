@@ -6,9 +6,9 @@ import (
 	"encoding/base64"
 	"errors"
 
+	"github.com/trixky/hypertube/.shared/utils"
 	"github.com/trixky/hypertube/api-user/databases"
 	pb "github.com/trixky/hypertube/api-user/proto"
-	"github.com/trixky/hypertube/api-user/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
