@@ -6,8 +6,8 @@ import (
 	"errors"
 	"log"
 
-	"github.com/trixky/hypertube/api-media/databases"
 	pb "github.com/trixky/hypertube/api-media/proto"
+	"github.com/trixky/hypertube/api-media/queries"
 	"github.com/trixky/hypertube/api-media/utils"
 )
 
@@ -16,7 +16,7 @@ func (s *MediaServer) Genres(ctx context.Context, in *pb.GenresRequest) (*pb.Gen
 		return nil, err
 	}
 
-	genres, err := databases.DBs.SqlcQueries.GetGenres(ctx)
+	genres, err := queries.SqlcQueries.GetGenres(ctx)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil

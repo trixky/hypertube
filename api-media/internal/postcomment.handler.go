@@ -7,8 +7,8 @@ import (
 	"log"
 
 	"github.com/golang/protobuf/ptypes"
-	"github.com/trixky/hypertube/api-media/databases"
 	pb "github.com/trixky/hypertube/api-media/proto"
+	"github.com/trixky/hypertube/api-media/queries"
 	"github.com/trixky/hypertube/api-media/sqlc"
 	"github.com/trixky/hypertube/api-media/utils"
 	"google.golang.org/grpc/codes"
@@ -22,7 +22,7 @@ func (s *MediaServer) PostComment(ctx context.Context, in *pb.PostCommentRequest
 	}
 
 	// Check if media exists
-	media, err := databases.DBs.SqlcQueries.GetMediaByID(ctx, int64(in.MediaId))
+	media, err := queries.SqlcQueries.GetMediaByID(ctx, int64(in.MediaId))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, status.Errorf(codes.NotFound, "no media with this id")
@@ -38,7 +38,7 @@ func (s *MediaServer) PostComment(ctx context.Context, in *pb.PostCommentRequest
 	}
 
 	// Add the comment
-	comment, err := databases.DBs.SqlcQueries.CreateComment(ctx, sqlc.CreateCommentParams{
+	comment, err := queries.SqlcQueries.CreateComment(ctx, sqlc.CreateCommentParams{
 		UserID:  int32(user.ID),
 		MediaID: int32(media.ID),
 		Content: in.Content,

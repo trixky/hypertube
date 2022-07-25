@@ -7,8 +7,8 @@ import (
 	"log"
 
 	"github.com/golang/protobuf/ptypes"
-	"github.com/trixky/hypertube/api-media/databases"
 	pb "github.com/trixky/hypertube/api-media/proto"
+	"github.com/trixky/hypertube/api-media/queries"
 	"github.com/trixky/hypertube/api-media/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -20,7 +20,7 @@ func (s *MediaServer) GetComments(ctx context.Context, in *pb.GetCommentsRequest
 	}
 
 	// Find the media
-	media, err := databases.DBs.SqlcQueries.GetMediaByID(ctx, int64(in.MediaId))
+	media, err := queries.SqlcQueries.GetMediaByID(ctx, int64(in.MediaId))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, status.Errorf(codes.NotFound, "no media with this id")
@@ -31,7 +31,7 @@ func (s *MediaServer) GetComments(ctx context.Context, in *pb.GetCommentsRequest
 	}
 
 	// Load comments
-	comments, err := databases.DBs.SqlcQueries.GetMediaComments(ctx, int32(media.ID))
+	comments, err := queries.SqlcQueries.GetMediaComments(ctx, int32(media.ID))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return &pb.GetCommentsResponse{}, nil
