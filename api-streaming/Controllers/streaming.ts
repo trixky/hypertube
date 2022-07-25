@@ -206,20 +206,20 @@ router.get('/torrent/:torrentId/stream', async function (req, res) {
 		// If the browser has no support for range we just returns a 200 with no ranges
 		let returnCode = 200;
 		const headers: Record<string, string | number> = {
-			'Content-Length': size,
+			'Content-Length': end - start + 1,
 			'Content-Type': `video/${extension}`
 		};
 		if (range) {
 			returnCode = 206;
-			headers['Content-Range'] = `bytes ${start}-${end - 1}/${size}`;
+			headers['Content-Range'] = `bytes ${start}-${end}/${size}`;
 			headers['Accept-Ranges'] = 'bytes';
 		}
 		console.log('Sending headers', headers);
 		res.writeHead(returnCode, headers);
 
 		// Send the file read to the response
-		console.log('Sending completed torrent file');
-		const file = fs.createReadStream(downloadResult.path, { start, end });
+		console.log('Sending completed torrent file', downloadResult.path);
+		const file = fs.createReadStream(downloadResult.path, { start, end: end + 1 });
 		pump(file, res);
 	}
 });

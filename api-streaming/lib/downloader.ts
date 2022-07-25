@@ -5,7 +5,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import { sleep } from '../utils/time';
 import { CACHE_PATH, CACHE_PATH_MOVIES } from './cache';
 import { Readable } from 'stream';
-import { unlink } from 'fs/promises';
+import { stat, unlink } from 'fs/promises';
 import path from 'path';
 
 const EXTENSION_mkv = 'mkv';
@@ -176,14 +176,19 @@ async function transcodeMovieFile(
 			localTorrents[torrentId].downloaded = true;
 			localTorrents[torrentId].ffmpegClosed = true;
 
-			await updateTorrent(torrentId, movieFile.path, true, movieFile.length);
+			try {
+				const fileStat = await stat(localOutputPath);
+				await updateTorrent(torrentId, movieFile.path, true, fileStat.size);
+			} catch (error) {
+				console.error('Fatal error -- ffmpeg output does not exists on disk');
+			}
 
 			// Destroy the engine only when the transcode is completed
 			// -- to avoid killing the stream while transcoding
 			// -- The torrent *should* be complete since the transcode need the whole file
 			if (localTorrents[torrentId].downloadComplete) {
 				engine.destroy(() => {
-					console.log('TorrentEngine destroyed');
+					console.log('TorrentEngine destroyed after transcode');
 				});
 				delete localTorrents[torrentId];
 			}
@@ -195,7 +200,7 @@ async function transcodeMovieFile(
 			// Don't forget to destroy the engine if the download was already completed
 			if (localTorrents[torrentId].downloadComplete) {
 				engine.destroy(() => {
-					console.log('TorrentEngine destroyed');
+					console.log('TorrentEngine destroyed on transcode error');
 				});
 			}
 			delete localTorrents[torrentId];
@@ -309,7 +314,7 @@ export async function download(torrent: Torrent, acceptMkv: boolean): Promise<Do
 		} catch {
 			console.log('No movie found in the torrent');
 			engine.destroy(() => {
-				console.log('TorrentEngine destroyed');
+				console.log('TorrentEngine destroyed on initialization error');
 			});
 			reject(new Error('No movie found in the torrent'));
 			delete localTorrents[torrent.id];
@@ -378,7 +383,7 @@ export async function download(torrent: Torrent, acceptMkv: boolean): Promise<Do
 			if (!localTorrent || localTorrent.ffmpegClosed) {
 				console.log('Closing engine since ffmpeg is already closed');
 				engine.destroy(() => {
-					console.log('TorrentEngine destroyed');
+					console.log('TorrentEngine destroyed on download completion');
 				});
 				delete localTorrents[torrent.id];
 			}
