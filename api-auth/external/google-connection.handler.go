@@ -10,10 +10,10 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/trixky/hypertube/.shared/environment"
+	"github.com/trixky/hypertube/.shared/utils"
 	"github.com/trixky/hypertube/api-auth/databases"
-	"github.com/trixky/hypertube/api-auth/environment"
 	"github.com/trixky/hypertube/api-auth/sqlc"
-	"github.com/trixky/hypertube/api-auth/utils"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -38,12 +38,12 @@ type meGoogleResponse struct {
 // setupGoogleConfig setups the google config from environment variables
 func setupGoogleConfig() {
 	config := &oauth2.Config{
-		ClientID:     environment.E.APIGoogle.ClientId,
-		ClientSecret: environment.E.APIGoogle.ClientSecret,
-		RedirectURL:  environment.E.APIGoogle.RedirectURL,
+		ClientID:     environment.ApiGoogle.ClientId,
+		ClientSecret: environment.ApiGoogle.ClientSecret,
+		RedirectURL:  environment.ApiGoogle.RedirectURL,
 		Scopes: []string{
-			environment.E.APIGoogle.ScopeEmail,
-			environment.E.APIGoogle.ScopesUserinfo,
+			environment.ApiGoogle.ScopeEmail,
+			environment.ApiGoogle.ScopesUserinfo,
 		},
 		Endpoint: google.Endpoint,
 	}
@@ -101,7 +101,7 @@ func callbackGoogle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Exchange the google token to the google user info
-	google_r, err := http.Get(environment.E.APIGoogle.UserInfoURL + "?access_token=" + google_token.AccessToken)
+	google_r, err := http.Get(environment.ApiGoogle.UserInfoURL + "?access_token=" + google_token.AccessToken)
 
 	if err != nil {
 		http.Error(w, "user info scrapping failed", http.StatusInternalServerError)
@@ -164,7 +164,7 @@ func callbackGoogle(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, token_cookie)
 
-	me, err := utils.HeaderCookieMeGeneration(utils.User{
+	me, err := utils.HeaderCookieUserGeneration(utils.User{
 		Id:        int(user.ID),
 		Username:  user.Username,
 		Firstname: user.Firstname,
