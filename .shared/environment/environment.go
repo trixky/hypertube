@@ -22,8 +22,8 @@ type Config struct {
 	ENV_http_port         string
 }
 
-// read_port convert and sanitize string port to integer
-func read_port(name string) (int, error) {
+// ReadPort convert and sanitize string port to integer
+func ReadPort(name string) (int, error) {
 	const (
 		port_max = 65535
 		port_min = 1000

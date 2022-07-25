@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 
+	sutils "github.com/trixky/hypertube/.shared/utils"
 	"github.com/trixky/hypertube/api-media/databases"
 	"github.com/trixky/hypertube/api-media/sqlc"
 	"google.golang.org/grpc/codes"
@@ -11,7 +12,7 @@ import (
 
 func RequireLogin(ctx context.Context) (*sqlc.User, error) {
 	// -------------------- get token
-	sanitized_token, err := ExtractSanitizedTokenFromGrpcGatewayCookies("", ctx)
+	sanitized_token, err := sutils.ExtractSanitizedTokenFromGrpcGatewayCookies("", ctx)
 	if err != nil {
 		return nil, err
 	}

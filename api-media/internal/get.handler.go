@@ -8,6 +8,7 @@ import (
 	"sort"
 
 	"github.com/golang/protobuf/ptypes"
+	sutils "github.com/trixky/hypertube/.shared/utils"
 	"github.com/trixky/hypertube/api-media/databases"
 	pb "github.com/trixky/hypertube/api-media/proto"
 	"github.com/trixky/hypertube/api-media/sqlc"
@@ -105,7 +106,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 	}
 
 	torrents, err := databases.DBs.SqlcQueries.GetMediaTorrentsForUser(ctx, sqlc.GetMediaTorrentsForUserParams{
-		MediaID: ut.MakeNullInt32(&media_id),
+		MediaID: sutils.MakeNullInt32(&media_id),
 		UserID:  int32(user.ID),
 	})
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
