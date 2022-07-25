@@ -28,7 +28,7 @@ async function main() {
 
 	app.use(
 		cors({
-			origin: ['http://localhost:4040'],
+			origin: [`http://${process.env.DOMAIN}:${process.env.CLIENT_PORT}`],
 			credentials: true
 		})
 	);

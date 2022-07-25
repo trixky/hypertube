@@ -3,6 +3,7 @@ package email
 // https://www.courier.com/guides/golang-send-email/
 
 import (
+	"fmt"
 	"net/smtp"
 
 	"github.com/trixky/hypertube/.shared/environment"
@@ -34,7 +35,7 @@ func SendPasswordToken(user_email string, password_token string) error {
 	// Generates the subject of the email
 	subject := "Recover your Hypertube password"
 	// Generates the redirect_url of the email
-	redirect_url := "http://localhost:4040/recover/apply" + "?password_token=" + password_token
+	redirect_url := "http://" + environment.Client.Domain + ":" + fmt.Sprint(environment.Client.Port) + "/recover/apply" + "?password_token=" + password_token
 	// Generates the body of the email
 	body := "You asked to recover your password.\r\nDon't wait, the link is temporary!\r\n\n" + redirect_url + "\r\n"
 	// Generates the msg of the email from all these parts
