@@ -4,11 +4,11 @@ import (
 	"context"
 	"log"
 
+	"github.com/trixky/hypertube/.shared/utils"
 	"github.com/trixky/hypertube/api-scrapper/databases"
 	pb "github.com/trixky/hypertube/api-scrapper/proto"
 	st "github.com/trixky/hypertube/api-scrapper/sites"
 	"github.com/trixky/hypertube/api-scrapper/sqlc"
-	"github.com/trixky/hypertube/api-scrapper/utils"
 )
 
 func (s *ScrapperServer) RefreshTorrent(ctx context.Context, in *pb.RefreshTorrentRequest) (*pb.RefreshTorrentResponse, error) {
