@@ -15,10 +15,10 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
 ## Compile to the auth api
 
 ```
-protoc -Iproto --go_out=api-auth --go-grpc_out=api-auth --grpc-gateway_out=api-auth proto/*.proto --experimental_allow_proto3_optional
-protoc -Iproto --go_out=api-user --go-grpc_out=api-user --grpc-gateway_out=api-user  proto/user.proto
-protoc -Iproto --go_out=api-scrapper --go-grpc_out=api-scrapper --grpc-gateway_out=api-scrapper proto/*.proto --experimental_allow_proto3_optional
-protoc -Iproto --go_out=api-media --go-grpc_out=api-media --grpc-gateway_out=api-media proto/*.proto --experimental_allow_proto3_optional
+protoc -Iproto --go_out=api-auth --go-grpc_out=api-auth --grpc-gateway_out=api-auth proto/auth.proto
+protoc -Iproto --go_out=api-user --go-grpc_out=api-user --grpc-gateway_out=api-user proto/user.proto
+protoc -Iproto --go_out=api-scrapper --go-grpc_out=api-scrapper --grpc-gateway_out=api-scrapper proto/comment.proto proto/media.proto proto/scrapper.proto --experimental_allow_proto3_optional
+protoc -Iproto --go_out=api-media --go-grpc_out=api-media --grpc-gateway_out=api-media proto/comment.proto proto/media.proto proto/scrapper.proto --experimental_allow_proto3_optional
 ```
 
 # GRPC/api_rest compatibility
