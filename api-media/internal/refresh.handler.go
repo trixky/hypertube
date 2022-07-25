@@ -7,9 +7,9 @@ import (
 	"time"
 
 	sutils "github.com/trixky/hypertube/.shared/utils"
-	"github.com/trixky/hypertube/api-media/databases"
 	"github.com/trixky/hypertube/api-media/external"
 	pb "github.com/trixky/hypertube/api-media/proto"
+	"github.com/trixky/hypertube/api-media/queries"
 	"github.com/trixky/hypertube/api-media/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -23,7 +23,7 @@ func (s *MediaServer) Refresh(in *pb.RefreshMediaRequest, out pb.MediaService_Re
 	ctx := out.Context()
 
 	// Find the media
-	media, err := databases.DBs.SqlcQueries.GetMediaByID(ctx, int64(in.MediaId))
+	media, err := queries.SqlcQueries.GetMediaByID(ctx, int64(in.MediaId))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return status.Errorf(codes.NotFound, "no media with this id")
@@ -35,7 +35,7 @@ func (s *MediaServer) Refresh(in *pb.RefreshMediaRequest, out pb.MediaService_Re
 
 	// Get the torrents associated with the Media
 	media_id := int32(media.ID)
-	torrents, err := databases.DBs.SqlcQueries.GetMediaTorrents(ctx, sutils.MakeNullInt32(&media_id))
+	torrents, err := queries.SqlcQueries.GetMediaTorrents(ctx, sutils.MakeNullInt32(&media_id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil

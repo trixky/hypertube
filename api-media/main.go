@@ -3,10 +3,11 @@ package main
 import (
 	"log"
 
+	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/environment"
-	"github.com/trixky/hypertube/api-media/databases"
 	"github.com/trixky/hypertube/api-media/external"
 	"github.com/trixky/hypertube/api-media/internal"
+	"github.com/trixky/hypertube/api-media/queries"
 )
 
 func init() {
@@ -24,8 +25,10 @@ func init() {
 	external.Scrapper.GetAll()                   // Get scrapper environment
 
 	external.NewApiScrapperClient() // Init Scrapper client
-	databases.InitDBs()             // Init DBs
-	internal.NewGrpcServers()       // Init internal servers
+	databases.InitPostgres()        // Init DBs
+	databases.InitRedis()
+	queries.InitSqlc(databases.SqlDatabase) // Init Sqlc queries
+	internal.NewGrpcServers()               // Init internal servers
 }
 
 func main() {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/trixky/hypertube/api-media/databases"
+	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/api-media/sqlc"
 )
 
@@ -196,12 +196,10 @@ func GenerateQuery(mode string, arg *FindMediasParams) (string, []interface{}) {
 }
 
 func CountMedias(ctx context.Context, arg FindMediasParams) (int64, error) {
-	db := databases.DBs.SqlDatabase
-
 	// Dynamically update the query
 	query, args := GenerateQuery("count", &arg)
 
-	row := db.QueryRowContext(ctx, query, args...)
+	row := databases.SqlDatabase.QueryRowContext(ctx, query, args...)
 	var count int64
 	err := row.Scan(&count)
 
@@ -209,13 +207,11 @@ func CountMedias(ctx context.Context, arg FindMediasParams) (int64, error) {
 }
 
 func FindMedias(ctx context.Context, arg FindMediasParams) ([]sqlc.Media, error) {
-	db := databases.DBs.SqlDatabase
-
 	// Dynamically update the query
 	query, args := GenerateQuery("find", &arg)
 
 	// Send the query and handle the result
-	rows, err := db.QueryContext(ctx, query, args...)
+	rows, err := databases.SqlDatabase.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

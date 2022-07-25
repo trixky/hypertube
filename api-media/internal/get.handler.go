@@ -9,8 +9,8 @@ import (
 
 	"github.com/golang/protobuf/ptypes"
 	sutils "github.com/trixky/hypertube/.shared/utils"
-	"github.com/trixky/hypertube/api-media/databases"
 	pb "github.com/trixky/hypertube/api-media/proto"
+	"github.com/trixky/hypertube/api-media/queries"
 	"github.com/trixky/hypertube/api-media/sqlc"
 	"github.com/trixky/hypertube/api-media/utils"
 	ut "github.com/trixky/hypertube/api-media/utils"
@@ -56,7 +56,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 	user_locale := ut.GetLocale(ctx)
 
 	// Find the media
-	media, err := databases.DBs.SqlcQueries.GetMediaByID(ctx, int64(in.Id))
+	media, err := queries.SqlcQueries.GetMediaByID(ctx, int64(in.Id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, status.Errorf(codes.NotFound, "no media with this id")
@@ -89,7 +89,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 	}
 
 	// Find relations
-	names, err := databases.DBs.SqlcQueries.GetMediaNames(ctx, int32(media.ID))
+	names, err := queries.SqlcQueries.GetMediaNames(ctx, int32(media.ID))
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.Println(err)
 		return nil, err
@@ -105,7 +105,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 		}
 	}
 
-	torrents, err := databases.DBs.SqlcQueries.GetMediaTorrentsForUser(ctx, sqlc.GetMediaTorrentsForUserParams{
+	torrents, err := queries.SqlcQueries.GetMediaTorrentsForUser(ctx, sqlc.GetMediaTorrentsForUserParams{
 		MediaID: sutils.MakeNullInt32(&media_id),
 		UserID:  int32(user.ID),
 	})
@@ -134,7 +134,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 		})
 	}
 
-	genres, err := databases.DBs.SqlcQueries.GetMediaGenres(ctx, int32(media.ID))
+	genres, err := queries.SqlcQueries.GetMediaGenres(ctx, int32(media.ID))
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	} else {
@@ -144,7 +144,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 		response.Media.Genres = append(response.Media.Genres, genre.Name)
 	}
 
-	actors, err := databases.DBs.SqlcQueries.GetMediaActors(ctx, int32(media.ID))
+	actors, err := queries.SqlcQueries.GetMediaActors(ctx, int32(media.ID))
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.Println(err)
 		return nil, err
@@ -161,7 +161,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 		})
 	}
 
-	staffs, err := databases.DBs.SqlcQueries.GetMediaStaffs(ctx, int32(media.ID))
+	staffs, err := queries.SqlcQueries.GetMediaStaffs(ctx, int32(media.ID))
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.Println(err)
 		return nil, err
@@ -203,7 +203,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 	}
 
 	// Load comments
-	comments, err := databases.DBs.SqlcQueries.GetMediaComments(ctx, int32(media.ID))
+	comments, err := queries.SqlcQueries.GetMediaComments(ctx, int32(media.ID))
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.Println(err)
 		return nil, err
