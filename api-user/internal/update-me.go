@@ -14,14 +14,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func sanitizeUpdateMe(in *pb.UpdateMeRequest) error {
-	if err := sanitizer.SanitizeEmail(in.GetEmail()); err != nil { // email
-		return err
-	}
-
-	return nil
-}
-
 func (s *UserServer) UpdateMe(ctx context.Context, in *pb.UpdateMeRequest) (*pb.UserInfoResponse, error) {
 	// -------------------- get token
 	sanitized_token, err := utils.ExtractSanitizedTokenFromGrpcGatewayCookies(in.GetToken(), ctx)

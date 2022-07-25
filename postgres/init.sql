@@ -45,6 +45,9 @@ VALUES (202, 'username_test_7', 'firstname_test_7', 'lastname_test_7', 'email.te
 -- user test 3 (8)
 INSERT INTO users (id, username, firstname, lastname, email, password)
 VALUES (203, 'username_test_8', 'firstname_test_8', 'lastname_test_8', 'email.test_8@test.com', '1eba53d83fcffd42a3e3113fe52e68b8e9bbf478e29a12eb840557942386b482');
+-- user test 4 (9)
+INSERT INTO users (id, username, firstname, lastname, email, password)
+VALUES (204, 'username_test_9', 'firstname_test_9', 'lastname_test_9', 'email.test_9@test.com', '1eba53d83fcffd42a3e3113fe52e68b8e9bbf478e29a12eb840557942386b482');
 
 -- Person Informations
 

@@ -54,6 +54,30 @@ func TestApiAuth() error {
 	return cmd.Run()
 }
 
+func TestApiUser() error {
+	// --------------------- REDIS
+	if redis_ctx, redis_container, err := createRedisContainer(); err != nil {
+		return err
+	} else {
+		defer redis_container.Terminate(redis_ctx)
+	}
+
+	// --------------------- POSTGRES
+	if postgres_ctx, postgres_container, err := createPostgresContainer(); err != nil {
+		return err
+	} else {
+		defer postgres_container.Terminate(postgres_ctx)
+	}
+
+	cmd := exec.Command("go", "test", "./...")
+	cmd.Dir = "../../api-user"
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
+
 // ---------------------------------------------
 // ---------------------------------------------
 // ---------------------------------------------

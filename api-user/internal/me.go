@@ -30,6 +30,7 @@ func (s *UserServer) GetMe(ctx context.Context, in *pb.GetMeRequest) (*pb.UserIn
 	token_info, err := databases.RetrieveToken(in.GetToken())
 
 	if err != nil {
+
 		return nil, status.Errorf(codes.Unauthenticated, "token retrieving failed")
 	}
 
