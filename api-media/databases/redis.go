@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -51,9 +52,11 @@ func RetrieveToken(token string) (*Token_info, error) {
 }
 
 func CacheSearch(path *string, results *string) error {
-	// Save in redis
-	err := DBs.Redis.Append(REDIS_PATTERN_KEY_search+*path, *results).Err()
-	return err
+	// Save in redis and set the ttl to 5min
+	if err := DBs.Redis.Set(REDIS_PATTERN_KEY_search+*path, *results, 5*time.Minute).Err(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func RetrieveSearch(path *string) (string, error) {
