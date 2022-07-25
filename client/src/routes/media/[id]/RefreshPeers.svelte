@@ -8,6 +8,7 @@
 	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import Spinner from '$components/animations/spinner.svelte';
+	import { apiMedia } from '$utils/api';
 
 	export let mediaId: number;
 	let loading = false;
@@ -15,7 +16,7 @@
 	const dispatch = createEventDispatcher();
 	async function refresh() {
 		loading = true;
-		const response = await fetch(`http://localhost:7072/v1/media/${mediaId}/refresh`, {
+		const response = await fetch(apiMedia(`/v1/media/${mediaId}/refresh`), {
 			method: 'GET',
 			credentials: 'include',
 			headers: { accept: 'application/json' }

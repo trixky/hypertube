@@ -5,6 +5,7 @@
 	import { fly } from 'svelte/transition';
 	import type { MediaComment } from '$types/Media';
 	import Warning from '$components/inputs/warning.svelte';
+	import { apiMedia } from '$utils/api';
 
 	$: self = $session.user!;
 
@@ -41,7 +42,7 @@
 		}
 		commentError = undefined;
 		loadingComment = true;
-		const res = await fetch(`http://localhost:7072/v1/media/${mediaId}/comment`, {
+		const res = await fetch(apiMedia(`/v1/media/${mediaId}/comment`), {
 			method: 'POST',
 			credentials: 'include',
 			headers: { accept: 'application/json', 'content-type': 'application/json' },

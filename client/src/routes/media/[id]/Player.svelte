@@ -7,6 +7,7 @@
 	import { _ } from 'svelte-i18n';
 	import { readableFileSize } from '$utils/media';
 	import { cubicOut } from 'svelte/easing';
+	import { apiPosition, apiStreaming } from '$utils/api';
 
 	type StatusResponse =
 		| {
@@ -137,7 +138,7 @@
 			// Load subtitles
 			try {
 				setSubtitleMessage('info', 'Loading subtitles...');
-				const subtitlesUrl = `http://localhost:3030/torrent/${torrent.id}/subtitles`;
+				const subtitlesUrl = apiStreaming(`/torrent/${torrent.id}/subtitles`);
 				fetch(subtitlesUrl, { method: 'GET', credentials: 'include' })
 					.then(async (response) => {
 						if (response.ok) {
@@ -153,7 +154,7 @@
 									track.kind = 'captions';
 									track.label = subtitle.lang == 'fr' ? 'Francais' : 'English';
 									track.srclang = subtitle.lang;
-									track.src = `http://localhost:3030/subtitles/${subtitle.id}`;
+									track.src = apiStreaming(`/subtitles/${subtitle.id}`);
 									player?.appendChild(track);
 									if (
 										!$session.locale!.startsWith(mediaLang) &&
@@ -183,7 +184,7 @@
 			// Check torrent status for some informations
 			let idledFor = 0;
 			async function checkStatus() {
-				const response = await fetch(`http://localhost:3030/torrent/${torrent.id}/status`, {
+				const response = await fetch(apiStreaming(`/torrent/${torrent.id}/status`), {
 					method: 'GET',
 					credentials: 'include',
 					headers: {
@@ -264,7 +265,7 @@
 						if (currentTime && !isNaN(currentTime) && currentTime > 0) {
 							updatingPosition = true;
 							dispatch('timeUpdate', currentTime);
-							fetch(`http://localhost:3040/v1/position/${torrent.id}`, {
+							fetch(apiPosition(`/v1/position/${torrent.id}`), {
 								method: 'POST',
 								credentials: 'include',
 								headers: {
@@ -329,7 +330,7 @@
 	<video
 		bind:this={player}
 		class="w-full"
-		src={`http://localhost:3030/torrent/${torrent.id}/stream`}
+		src={apiStreaming(`/torrent/${torrent.id}/stream`)}
 		controls
 		autoplay
 		muted

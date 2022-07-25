@@ -1,4 +1,5 @@
 import { browser } from '$app/env';
+import { apiMedia } from '$utils/api';
 import { writable } from 'svelte/store';
 
 export type Genre = {
@@ -10,9 +11,7 @@ export async function getGenres(
 	sender: (info: RequestInfo, init?: RequestInit | undefined) => Promise<Response> = fetch,
 	session?: App.Session
 ) {
-	const url = browser
-		? `http://localhost:7072/v1/media/genres`
-		: `http://api-media:7072/v1/media/genres`;
+	const url = apiMedia(`/v1/media/genres`);
 	const res = await sender(url, {
 		method: 'GET',
 		credentials: 'include',

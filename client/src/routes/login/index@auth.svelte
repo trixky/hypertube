@@ -15,6 +15,7 @@
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
 	import { _ } from 'svelte-i18n';
+	import { apiAuth } from '$utils/api';
 
 	let from_url_parameter: string | null;
 
@@ -62,7 +63,7 @@
 			show_password = false;
 
 			setTimeout(async () => {
-				const res = await fetch('http://localhost:7070/v1/internal/login', {
+				const res = await fetch(apiAuth('/v1/internal/login'), {
 					method: 'POST',
 					headers: {
 						'content-type': 'application/json',

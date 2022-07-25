@@ -4,7 +4,7 @@
 	import type { MediaProps, MediaTorrent } from '$types/Media';
 
 	export const load: Load = async ({ params, fetch, session }) => {
-		const url = `http://localhost:7072/v1/media/${params.id}/get`;
+		const url = apiMedia(`/v1/media/${params.id}/get`);
 		const response = await fetch(url, {
 			method: 'GET',
 			credentials: 'include',
@@ -53,18 +53,18 @@
 	import LazyLoad from '$components/lazy/LazyLoad.svelte';
 	import Background from '$components/animations/Background.svelte';
 	import RefreshPeers, { type RefreshResult } from './RefreshPeers.svelte';
-	import { imageUrl } from '$utils/image';
 	import Comments from './Comments.svelte';
 	import { extractPalette } from '$utils/color';
 	import Torrent from './Torrent.svelte';
 	import Player from './Player.svelte';
+	import { apiMedia, imageProxy } from '$utils/api';
 
 	/// @ts-expect-error media is given as a prop
 	export let props: MediaProps;
 	let { media, torrents, staffs, actors, comments } = props;
 	addUserTitle(media);
 
-	const cover = media.thumbnail ? imageUrl(media.thumbnail) : '/no_cover.png';
+	const cover = media.thumbnail ? imageProxy(media.thumbnail) : '/no_cover.png';
 	const durationStr = (() => {
 		if (!media.duration) {
 			return '';
@@ -90,13 +90,13 @@
 	const cleanStaffs = staffs.map((staff) => ({
 		id: staff.id,
 		name: staff.name,
-		thumbnail: imageUrl(staff.thumbnail!),
+		thumbnail: imageProxy(staff.thumbnail!),
 		roles: [staff.role!]
 	}));
 	const cleanActors = actors.map((actor) => ({
 		id: actor.id,
 		name: actor.name,
-		thumbnail: imageUrl(actor.thumbnail!),
+		thumbnail: imageProxy(actor.thumbnail!),
 		characters: [actor.character!]
 	}));
 
@@ -179,7 +179,7 @@
 				? media.thumbnail
 				: undefined;
 			if (useBackground) {
-				useBackground = imageUrl(useBackground);
+				useBackground = imageProxy(useBackground);
 				const image = new Image();
 				image.setAttribute('crossOrigin', 'anonymous');
 				image.src = useBackground;
@@ -191,7 +191,7 @@
 			// Load the image used for the gradient
 			let useImage = media.thumbnail ? media.thumbnail : undefined;
 			if (useImage && useImage != '') {
-				useImage = imageUrl(useImage);
+				useImage = imageProxy(useImage);
 				const image = new Image();
 				image.setAttribute('crossOrigin', 'anonymous');
 				image.src = useImage;

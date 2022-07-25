@@ -197,8 +197,12 @@ services:
   client:
     build: ./client
     env_file:
-      - ./client/.env
       - ./api-auth/.env
+      - ./api-user/.env
+      - ./api-media/.env
+      - ./api-streaming/.env
+      - ./tmdb-proxy/.env
+      - ./client/.env
     volumes:
       - ./client:/app
       - /app/node_modules
