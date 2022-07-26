@@ -4,7 +4,7 @@
 </script>
 
 <!-- ========================= HTML -->
-<h1 class:alone class="text-blue-300 font-bold logo-title font-['Holtwood One SC'] text-5xl">
+<h1 class:alone class="text-blue-300 font-bold logo-title font-['Holtwood One SC'] text-5xl max-w-[95%] text-clip overflow-hidden">
 	Hypertube
 </h1>
 

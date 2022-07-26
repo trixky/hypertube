@@ -94,7 +94,7 @@
 <BlackBox title={$_('auth.forgot_password_header')}>
 	<Logo alone />
 	<form action="" class="pt-1 w-full">
-		<label for="email" class="required">{$_('auth.email')}</label>
+		<label for="email" class="required truncate">{$_('auth.email')}</label>
 		<input
 			type="email"
 			placeholder={$_('auth.email')}
