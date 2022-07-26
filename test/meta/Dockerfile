@@ -15,4 +15,4 @@ WORKDIR /app
 
 COPY . .
 
-ENTRYPOINT npx jest --runInBand --forceExit
+ENTRYPOINT yarn run jest --runInBand --forceExit
