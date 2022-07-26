@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	initializer "github.com/trixky/hypertube/.shared/databases"
+	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/environment"
 	"github.com/trixky/hypertube/api-auth/proto"
 )
@@ -25,20 +25,12 @@ func init() {
 	environment.ApiGoogle.GetAll()               // Get google api environment
 	environment.Outlook.GetAll()                 // Get outlook environment
 
-	initializer.InitPostgres() // Init DBs
-	initializer.InitRedis()
+	databases.InitPostgres() // Init DBs
+	databases.InitRedis()
 }
 
 func TestInternalRegister(t *testing.T) {
 	server := &AuthServer{}
-
-	type Input struct {
-		Usermame  string
-		Firstname string
-		Lastname  string
-		Email     string
-		Password  string
-	}
 
 	tests := []struct {
 		input          *proto.InternalRegisterRequest
