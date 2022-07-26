@@ -3,7 +3,7 @@ import { shared } from '../shared';
 import { get_config } from '../config';
 
 const API_MEDIA_request = supertest(
-	`${get_config().API_MEDIA_addresse}:${get_config().API_MEDIA_port}`
+	`${get_config().API_MEDIA_addresse}:${get_config().API_MEDIA_GRPC_GATEWAY_PORT}`
 );
 
 export function DESCRIBE_TEST_api_media() {
