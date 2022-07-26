@@ -1,7 +1,61 @@
 <!-- ========================= SCRIPT -->
+<script lang="ts" context="module">
+	import type { Load } from '@sveltejs/kit';
+
+	// Preload search results and genres
+	// -- and insert them on startup in the client
+	export const load: Load = async ({ fetch, session, params }) => {
+		const userId = parseInt(params.id);
+		if (isNaN(userId) || userId < 1) {
+			return {
+				status: 400
+			};
+		}
+
+		if (userId == session.user?.id) {
+			return {
+				status: 200,
+				props: {
+					user: session.user
+				}
+			};
+		}
+
+		const url_search_params = new URLSearchParams();
+		url_search_params.append('id', params.id);
+		const url = apiUser('/v1/user?' + url_search_params.toString());
+		const response = await fetch(url, {
+			method: 'GET',
+			credentials: 'include',
+			headers: {
+				'Content-type': 'application/json; charset=UTF-8'
+			}
+		});
+		if (!response.ok || response.status >= 400) {
+			return {
+				status: response.ok ? response.status : 500
+			};
+		}
+		const body = await response.json();
+		if (!(cookies.labels.user_info in body)) {
+			return {
+				status: 500
+			};
+		}
+		const user_64 = body[cookies.labels.user_info];
+		const user_json = atob(user_64);
+		const user = JSON.parse(user_json);
+		return {
+			status: 200,
+			props: {
+				user
+			}
+		};
+	};
+</script>
+
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { browser } from '$app/env';
 	import BlackBox from '$components/containers/black-box.svelte';
 	import Warning from '$components/inputs/warning.svelte';
 	import Eye from '$components/inputs/eye.svelte';
@@ -10,11 +64,18 @@
 	import * as cookies from '$utils/cookies';
 	import { uppercase_first_character } from '$utils/str';
 	import { encrypt_password } from '$utils/password';
-	import { page, session } from '$app/stores';
+	import { apiUser } from '$utils/api';
+	import { session } from '$app/stores';
 	import InfoLine from './info-line.svelte';
-	import { apiAuth } from '$utils/api';
 
-	$: its_me = $session.user?.id.toString() === $page.params.id;
+	export let user: NonNullable<App.Session['user']>;
+
+	$: {
+		user;
+		modification_mode = false;
+	}
+
+	$: its_me = $session.user?.id == user.id;
 	let modification_mode = false;
 	$: img_src = modification_mode ? '/return.png' : '/pen.png';
 	$: img_alt = modification_mode ? $_('auth.cancel') : $_('auth.modify');
@@ -25,15 +86,10 @@
 
 	let user_does_not_exist = false;
 
-	let current_username = '';
-	let current_firstname = '';
-	let current_lastname = '';
-	let current_email = '';
-
-	$: if (its_me) current_username = $session.user!.username;
-	$: if (its_me) current_firstname = $session.user!.firstname;
-	$: if (its_me) current_lastname = $session.user!.lastname;
-	$: if (its_me) current_email = $session.user!.email;
+	$: current_username = user.username;
+	$: current_firstname = user.firstname;
+	$: current_lastname = user.lastname;
+	$: current_email = user.email;
 
 	$: if (its_me) user_does_not_exist = false;
 
@@ -115,53 +171,6 @@
 		confirm_new_password_warning = '';
 	}
 
-	$: if (!its_me) {
-		if (browser) {
-			(async () => {
-				var url_search_params = new URLSearchParams();
-
-				url_search_params.append('id', $page.params.id);
-
-				const url = apiAuth('/v1/user?' + url_search_params.toString());
-				const res = await fetch(url, {
-					method: 'GET',
-					credentials: 'include',
-					headers: {
-						'Content-type': 'application/json; charset=UTF-8'
-					}
-				});
-
-				if (res.ok) {
-					await res
-						.json()
-						.then((body) => {
-							if (cookies.labels.user_info in body) {
-								const user_64 = body[cookies.labels.user_info];
-								const user_json = atob(user_64);
-								const user = JSON.parse(user_json);
-								current_firstname = user.username;
-								current_lastname = user.firstname;
-								current_username = user.lastname;
-							} else {
-								notifies_update_response_warning($_('auth.server_error'));
-							}
-						})
-						.catch(() => {
-							notifies_update_response_warning($_('auth.server_error'));
-						});
-				} else {
-					if (res.status == 403) {
-						current_password_warning = $_('auth.invalid_password');
-					} else if (res.status == 400 || res.status == 404) {
-						user_does_not_exist = true;
-					} else {
-						notifies_update_response_warning($_('auth.server_error'));
-					}
-				}
-			})();
-		}
-	}
-
 	function handle_update() {
 		return new Promise((resolve) => {
 			patch_attemps++;
@@ -179,7 +188,7 @@
 			if (inputs_corrupted) return resolve(false);
 			show_password = false;
 
-			var url_search_params = new URLSearchParams();
+			const url_search_params = new URLSearchParams();
 
 			setTimeout(async () => {
 				url_search_params.append('username', username);
@@ -189,7 +198,7 @@
 				url_search_params.append('current_password', await encrypt_password(current_password));
 				url_search_params.append('new_password', await encrypt_password(new_password));
 
-				const url = apiAuth('/v1/me?' + url_search_params.toString());
+				const url = apiUser('/v1/me?' + url_search_params.toString());
 				const res = await fetch(url, {
 					method: 'PATCH',
 					credentials: 'include',
@@ -205,6 +214,20 @@
 							if (cookies.labels.user_info in body) {
 								cookies.add_a_cookie(cookies.labels.user_info, body[cookies.labels.user_info]);
 								$session.token = body[cookies.labels.user_info];
+								if ($session.user) {
+									if (username) {
+										$session.user.username = username;
+									}
+									if (firstname) {
+										$session.user.firstname = firstname;
+									}
+									if (lastname) {
+										$session.user.lastname = lastname;
+									}
+									if (email) {
+										$session.user.email = email;
+									}
+								}
 								clear_all_inputs();
 								notifies_response_success($_('auth.profile_updated'));
 								resolve(true);

@@ -1,7 +1,7 @@
 import type { ExternalFetch, GetSession, Handle } from '@sveltejs/kit';
 import { localeFromCookie } from '$lib/i18n';
 import { extract_cookie, get_user, labels } from '$utils/cookies';
-import { ApiMediaPort, Origin } from '$utils/api';
+import { ApiMediaPort, ApiUserPort, Origin } from '$utils/api';
 
 export const handle: Handle = ({ event, resolve }) => {
 	event.locals.locale = 'en';
@@ -38,6 +38,12 @@ export const externalFetch: ExternalFetch = (request) => {
 	if (request.url.startsWith(`http://${Origin}:${ApiMediaPort}/`)) {
 		request = new Request(
 			request.url.replace(`http://${Origin}:${ApiMediaPort}/`, `http://api-media:${ApiMediaPort}/`),
+			request
+		);
+	}
+	if (request.url.startsWith(`http://${Origin}:${ApiUserPort}/`)) {
+		request = new Request(
+			request.url.replace(`http://${Origin}:${ApiUserPort}/`, `http://api-user:${ApiUserPort}/`),
 			request
 		);
 	}

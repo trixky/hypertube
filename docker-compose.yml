@@ -156,6 +156,7 @@ services:
       - api-auth
       - api-user
       - api-position
+      - api-media
       - redis
     profiles:
       - test
