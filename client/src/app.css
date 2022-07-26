@@ -20,8 +20,12 @@ main > div:not(.media-page) label {
 	@apply block p-2 text-white;
 }
 
+label.required {
+	@apply relative;
+}
+
 main > div:not(.media-page) label.required::after {
-	@apply content-['*'] text-blue-300;
+	@apply content-['*'] text-blue-300 absolute -left-[1px] top-[5px];
 }
 
 .extra-link {
