@@ -7,6 +7,7 @@ import (
 	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/environment"
 	"github.com/trixky/hypertube/api-auth/proto"
+	"github.com/trixky/hypertube/api-auth/queries"
 )
 
 func init() {
@@ -25,8 +26,9 @@ func init() {
 	environment.ApiGoogle.GetAll()               // Get google api environment
 	environment.Outlook.GetAll()                 // Get outlook environment
 
-	databases.InitPostgres() // Init DBs
-	databases.InitRedis()
+	databases.InitPostgres() // Init postgres
+	databases.InitRedis()    // Init redis
+	queries.InitSqlc()       // Init Sqlc queries
 }
 
 func TestInternalLogin(t *testing.T) {

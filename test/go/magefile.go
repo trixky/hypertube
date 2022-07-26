@@ -13,6 +13,7 @@ import (
 
 	"github.com/docker/go-connections/nat"
 	_ "github.com/lib/pq"
+	"github.com/magefile/mage/mg"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -28,6 +29,11 @@ func Run() error {
 	cmd := exec.Command("go", "run", "main.go")
 
 	return cmd.Run()
+}
+
+func Test() {
+	mg.Deps(TestApiAuth)
+	mg.Deps(TestApiUser)
 }
 
 func TestApiAuth() error {
