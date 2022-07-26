@@ -39,6 +39,14 @@
 		goto('/login');
 	};
 
+	const errorMap: Record<number, string> = {
+		400: $_('error.bad_request'),
+		401: $_('error.unauthorized'),
+		403: $_('error.forbidden'),
+		404: $_('error.not_found'),
+		500: $_('error.server_error')
+	};
+
 	let background: Background;
 	onMount(() => {
 		if (browser && background) {
@@ -55,16 +63,14 @@
 	<Background bind:this={background} palette={['rgb(147, 197, 253)', 'red', 'white	']} />
 	<div class="relative flex flex-col justify-center items-center w-full h-full">
 		<h1 class="text-6xl block">
-			{#if status == 404}
-				{$_('error.not_found')}
-			{:else if status >= 500}
-				{$_('error.server_error')}
+			{#if errorMap[status]}
+				{errorMap[status]}
 			{:else}
 				{status}
 			{/if}
 		</h1>
 		<div class="flex mt-4">
-			{#if status == 403 && $session.user && $page.routeId == 'search@logged'}
+			{#if $page.routeId == 'search@logged'}
 				<button
 					class="flex items-center text-md p-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 hover:shadow-blue-600 hover:shadow-sm transition-all"
 					on:click|preventDefault={refresh}

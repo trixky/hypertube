@@ -109,7 +109,10 @@
     "not_found": "Not Found",
     "back_to_search": "Back to Search",
     "login_or_register": "Login/Register",
-    "server_error": "Internal Server Error"
+    "server_error": "Internal Server Error",
+    "forbidden": "Forbidden",
+    "unauthorized": "Unauthorized",
+    "bad_request": "Bad Request"
   },
   "title": {
     "media": "Watch {title} on hypertube",

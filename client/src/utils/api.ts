@@ -26,7 +26,7 @@ export function apiUser(route: string): string {
 	return `http://${Origin}:${ApiUserPort}/${cleanRoute(route)}`;
 }
 
-export const ApiAuthPort = import.meta.env.VITE_TMDB_PROXY_PORT ?? '7070';
+export const ApiAuthPort = import.meta.env.VITE_API_AUTH_PORT ?? '7070';
 export function apiAuth(route: string): string {
 	return `http://${Origin}:${ApiAuthPort}/${cleanRoute(route)}`;
 }
@@ -35,13 +35,3 @@ export const ApiPositionPort = import.meta.env.VITE_API_POSITION_PORT ?? '3040';
 export function apiPosition(route: string): string {
 	return `http://${Origin}:${ApiPositionPort}/${cleanRoute(route)}`;
 }
-
-console.log(
-	Origin,
-	ApiMediaPort,
-	TmdbProxyPort,
-	ApiStreamingPort,
-	ApiUserPort,
-	ApiAuthPort,
-	ApiPositionPort
-);
