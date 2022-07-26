@@ -2,12 +2,14 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
+	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/environment"
 	_test "github.com/trixky/hypertube/.shared/test"
-	"github.com/trixky/hypertube/api-user/databases"
 	"github.com/trixky/hypertube/api-user/proto"
+	"github.com/trixky/hypertube/api-user/queries"
 )
 
 func init() {
@@ -26,7 +28,9 @@ func init() {
 	environment.ApiGoogle.GetAll()               // Get google api environment
 	environment.Outlook.GetAll()                 // Get outlook environment
 
-	databases.InitDBs() // Init DBs
+	databases.InitPostgres() // Init postgres
+	databases.InitRedis()    // Init redis
+	queries.InitSqlc()       // Init sqlc queries
 }
 
 func TestGetMe(t *testing.T) {
@@ -94,22 +98,32 @@ func TestGetMe(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		fmt.Println("--------------- 1 ", test.input.Token)
 		ctx := context.Background()
+		fmt.Println("--------------- 2")
 
 		if len(test.input.Token) > 0 {
+			fmt.Println("--------------- 3")
 			key := databases.REDIS_PATTERN_KEY_token + databases.REDIS_SEPARATOR + test.input.Token + databases.REDIS_SEPARATOR + test.user_id
+			fmt.Println("--------------- 4")
 
-			databases.DBs.Redis.Set(key, databases.EXTERNAL_none, 0)
+			databases.Redis.Set(key, databases.REDIS_EXTERNAL_none, 0)
+			fmt.Println("--------------- 5")
 
 			if test.invalid_token {
+				fmt.Println("--------------- 6")
 				test.input.Token = _test.InvalidateToken(test.input.Token)
 			} else if test.corrupted_token {
+				fmt.Println("--------------- 7")
 				test.input.Token = _test.CorrupteToken(test.input.Token)
 			}
+			fmt.Println("--------------- 8")
 		}
 
+		fmt.Println("--------------- 9")
 		if _, err := server.GetMe(ctx, test.input); (err != nil) != test.error_expected {
 			t.Fatal(err)
 		}
+		fmt.Println("--------------- 10")
 	}
 }

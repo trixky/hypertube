@@ -131,8 +131,8 @@ services:
     ports:
       - "${API_POSITION_PORT}:${API_POSITION_PORT}"
 
-  tests-meta:
-    build: ./tests/meta
+  test-meta:
+    build: ./test/meta
     env_file:
       - ./client/.env
       - ./api-auth/.env
@@ -141,7 +141,7 @@ services:
       - ./api-media/.env
       - ./redis/.env
     volumes:
-      - ./tests/meta:/app
+      - ./test/meta:/app
       - /app/node_modules
       - /app/.yarn
     depends_on:
@@ -149,6 +149,7 @@ services:
       - api-auth
       - api-user
       - api-position
+      - api-media
       - redis
     links:
       - client
