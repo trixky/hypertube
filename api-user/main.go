@@ -22,9 +22,9 @@ func init() {
 	environment.Redis.GetAll()                   // Get redis environment
 	environment.Grpc.GetAll(&environment_config) // Get grpc environment
 
-	databases.InitPostgres() // Init DBs
-	databases.InitRedis()
-	queries.InitSqlc()        // Init Sqlc queries
+	databases.InitPostgres()  // Init postgres
+	databases.InitRedis()     // Init redis
+	queries.InitSqlc()        // Init sqlc queries
 	internal.NewGrpcServers() // Init internal servers
 }
 

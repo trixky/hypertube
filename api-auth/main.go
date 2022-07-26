@@ -28,8 +28,8 @@ func init() {
 	environment.ApiGoogle.GetAll()               // Get google api environment
 	environment.Outlook.GetAll()                 // Get outlook environment
 
-	databases.InitPostgres() // Init DBs
-	databases.InitRedis()
+	databases.InitPostgres()  // Init postgres
+	databases.InitRedis()     // Init redis
 	queries.InitSqlc()        // Init Sqlc queries
 	internal.NewGrpcServers() // Init internal servers
 	external.NewHttpServer()  // Init external servers

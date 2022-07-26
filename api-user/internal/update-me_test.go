@@ -4,10 +4,11 @@ import (
 	"context"
 	"testing"
 
+	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/environment"
 	_test "github.com/trixky/hypertube/.shared/test"
-	"github.com/trixky/hypertube/api-user/databases"
 	"github.com/trixky/hypertube/api-user/proto"
+	"github.com/trixky/hypertube/api-user/queries"
 )
 
 func init() {
@@ -26,7 +27,9 @@ func init() {
 	environment.ApiGoogle.GetAll()               // Get google api environment
 	environment.Outlook.GetAll()                 // Get outlook environment
 
-	databases.InitDBs() // Init DBs
+	databases.InitPostgres() // Init postgres
+	databases.InitRedis()    // Init redis
+	queries.InitSqlc()       // Init sqlc queries
 }
 
 func TestUpdateMe(t *testing.T) {
@@ -161,7 +164,7 @@ func TestUpdateMe(t *testing.T) {
 		if len(test.input.Token) > 0 {
 			key := databases.REDIS_PATTERN_KEY_token + databases.REDIS_SEPARATOR + test.input.Token + databases.REDIS_SEPARATOR + test.user_id
 
-			databases.DBs.Redis.Set(key, databases.EXTERNAL_none, 0)
+			databases.Redis.Set(key, databases.REDIS_EXTERNAL_none, 0)
 
 			if test.invalid_token {
 				test.input.Token = _test.InvalidateToken(test.input.Token)

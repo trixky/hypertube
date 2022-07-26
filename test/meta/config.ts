@@ -16,7 +16,7 @@ interface Config {
 	API_POSITION_port: number | undefined;
 	// ----------------------------------- API_MEDIA
 	API_MEDIA_addresse: string;
-	API_MEDIA_port: number | undefined;
+	API_MEDIA_GRPC_GATEWAY_PORT: number | undefined;
 }
 
 const config = <Config>{
@@ -37,7 +37,7 @@ const config = <Config>{
 	API_POSITION_port: undefined,
 	// ----------------------------------- API_POSITION
 	API_MEDIA_addresse: 'api-media',
-	API_MEDIA_port: undefined
+	API_MEDIA_GRPC_GATEWAY_PORT: undefined
 };
 
 export function get_config(): Config {
@@ -80,11 +80,11 @@ export function read_env() {
 	if (isNaN(config.API_POSITION_port))
 		throw new Error('API_POSITION_PORT environment variable is missing');
 	// ----------------------------------- API_MEDIA
-	config.API_MEDIA_port = parseInt(
-		process.env.API_SEARCH_GRPC_GATEWAY_PORT === undefined
+	config.API_MEDIA_GRPC_GATEWAY_PORT = parseInt(
+		process.env.API_MEDIA_GRPC_GATEWAY_PORT === undefined
 			? 'x'
-			: process.env.API_SEARCH_GRPC_GATEWAY_PORT
+			: process.env.API_MEDIA_GRPC_GATEWAY_PORT
 	);
-	if (isNaN(config.API_MEDIA_port))
-		throw new Error('API_MEDIA_PORT environment variable is missing');
+	if (isNaN(config.API_MEDIA_GRPC_GATEWAY_PORT))
+		throw new Error('API_MEDIA_GRPC_GATEWAY_PORT environment variable is missing');
 }
