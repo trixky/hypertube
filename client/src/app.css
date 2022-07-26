@@ -25,7 +25,7 @@ main > div:not(.media-page) label.required::after {
 }
 
 .extra-link {
-	@apply text-slate-400 text-sm;
+	@apply text-slate-400 text-sm mt-2;
 }
 
 /* https://stackoverflow.com/questions/2781549/removing-input-background-colour-for-chrome-autocomplete */
