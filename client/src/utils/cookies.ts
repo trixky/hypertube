@@ -38,21 +38,26 @@ export function get_token(): string | undefined {
 	return get_a_cookie(labels.token);
 }
 
+export function extract_user(encodedUser: string): User | undefined {
+	const user = atob(encodedUser);
+	const me = JSON.parse(user);
+	if (me) {
+		return {
+			id: me.id,
+			username: me.username,
+			firstname: me.firstname,
+			lastname: me.lastname,
+			email: me.email,
+			external: me.external
+		};
+	}
+	return undefined;
+}
+
 export function get_user(cookies: string) {
 	const encodedUser = extract_cookie(cookies, labels.user_info);
 	if (encodedUser != undefined) {
-		const user = atob(encodedUser);
-		const me = JSON.parse(user);
-		if (me) {
-			return <User>{
-				id: me.id,
-				username: me.username,
-				firstname: me.firstname,
-				lastname: me.lastname,
-				email: me.email,
-				external: me.external
-			};
-		}
+		return extract_user(encodedUser);
 	}
 	return undefined;
 }

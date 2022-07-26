@@ -12,6 +12,7 @@
 	import { goto } from '$app/navigation';
 	import { _ } from 'svelte-i18n';
 	import { apiAuth } from '$utils/api';
+	import { session } from '$app/stores';
 
 	let loading = false;
 
@@ -97,10 +98,27 @@
 						.json()
 						.then((body) => {
 							if (cookies.labels.token in body && cookies.labels.user_info in body) {
-								cookies.add_a_cookie(cookies.labels.token, body.token);
-								cookies.add_a_cookie(cookies.labels.user_info, body[cookies.labels.user_info]);
-								resolve(true);
-								goto('/');
+								const user = atob(body[cookies.labels.user_info]);
+								const me = JSON.parse(user);
+								if (me) {
+									cookies.add_a_cookie(cookies.labels.token, body.token);
+									cookies.add_a_cookie(cookies.labels.user_info, body[cookies.labels.user_info]);
+									session.set({
+										token: body.token,
+										user: {
+											id: me.id,
+											username: me.username,
+											firstname: me.firstname,
+											lastname: me.lastname,
+											email: me.email,
+											external: me.external
+										}
+									});
+									resolve(true);
+									goto('/');
+								} else {
+									notifies_response_warning($_('auth.server_error'));
+								}
 							} else {
 								notifies_response_warning($_('auth.server_error'));
 							}

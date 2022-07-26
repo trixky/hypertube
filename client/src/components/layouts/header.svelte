@@ -16,9 +16,9 @@
 
 	const logout = () => {
 		cookies.deleteUserCookies();
+		goto('/login');
 		$session.token = undefined;
 		$session.user = undefined;
-		goto('/login');
 	};
 </script>
 
