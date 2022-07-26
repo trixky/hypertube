@@ -59,6 +59,8 @@
 
 	let show_password = false;
 	$: password_input_type = show_password ? 'text' : 'password';
+	let show_confirm_password = false;
+	$: confirm_password_input_type = show_confirm_password ? 'text' : 'password';
 
 	let emails_already_in_use: Array<string> = [];
 
@@ -281,7 +283,7 @@
 		<label for="confirm password" class="required">{$_('auth.confirm_password')}</label>
 		<div class="relative">
 			<input
-				type={password_input_type}
+				type={confirm_password_input_type}
 				placeholder={$_('auth.confirm_password')}
 				name="confirm password"
 				value={confirm_password}
@@ -292,7 +294,7 @@
 				}}
 				disabled={loading}
 			/>
-			<Eye bind:open={show_password} />
+			<Eye bind:open={show_confirm_password} />
 		</div>
 		<Warning content={confirm_password_warning} color="red" />
 		<ConfirmationButton

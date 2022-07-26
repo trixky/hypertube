@@ -144,6 +144,7 @@ CREATE TABLE torrents (
     last_update TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     file_path VARCHAR (500) NULL,
     downloaded BOOLEAN DEFAULT false,
+    length VARCHAR (250) DEFAULT NULL,
     last_access TIMESTAMPTZ NULL
 );
 CREATE UNIQUE INDEX unique_torrent_url ON torrents(full_url);
