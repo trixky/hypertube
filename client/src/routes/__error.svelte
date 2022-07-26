@@ -64,7 +64,7 @@
 			{/if}
 		</h1>
 		<div class="flex mt-4">
-			{#if status == 403 && $session.user && $page.routeId == 'search@logged'}
+			{#if $page.routeId == 'search@logged'}
 				<button
 					class="flex items-center text-md p-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 hover:shadow-blue-600 hover:shadow-sm transition-all"
 					on:click|preventDefault={refresh}
