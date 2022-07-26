@@ -39,6 +39,14 @@
 		goto('/login');
 	};
 
+	const errorMap: Record<number, string> = {
+		400: $_('error.bad_request'),
+		401: $_('error.unauthorized'),
+		403: $_('error.forbidden'),
+		404: $_('error.not_found'),
+		500: $_('error.server_error')
+	};
+
 	let background: Background;
 	onMount(() => {
 		if (browser && background) {
@@ -55,10 +63,8 @@
 	<Background bind:this={background} palette={['rgb(147, 197, 253)', 'red', 'white	']} />
 	<div class="relative flex flex-col justify-center items-center w-full h-full">
 		<h1 class="text-6xl block">
-			{#if status == 404}
-				{$_('error.not_found')}
-			{:else if status >= 500}
-				{$_('error.server_error')}
+			{#if errorMap[status]}
+				{errorMap[status]}
 			{:else}
 				{status}
 			{/if}
