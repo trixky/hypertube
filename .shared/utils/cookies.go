@@ -37,6 +37,7 @@ func ExtractSanitizedTokenFromGrpcGatewayCookies(token string, ctx context.Conte
 	cookie_headers := md.Get("grpcgateway-cookie")
 
 	if len(cookie_headers) != 1 {
+
 		return "", COOKIE_ERROR_token_missing
 	}
 

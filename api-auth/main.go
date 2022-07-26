@@ -19,9 +19,9 @@ func init() {
 		ENV_grpc_gateway_port: "API_AUTH_GRPC_GATEWAY_PORT",
 		ENV_http_port:         "API_AUTH_HTTP_PORT",
 	}
-
 	environment.Postgres.GetAll()                // Get postgres environment
 	environment.Redis.GetAll()                   // Get redis environment
+	environment.Client.GetAll()                  // Get client environment
 	environment.Grpc.GetAll(&environment_config) // Get grpc environment
 	environment.Http.GetAll(&environment_config) // Get http environment
 	environment.Api42.GetAll()                   // Get 42 api environment

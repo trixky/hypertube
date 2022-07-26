@@ -5,6 +5,8 @@ services:
       dockerfile: ./api-auth/Dockerfile
       context: ./
     env_file:
+      - ./.env
+      - ./client/.env
       - ./api-auth/.env
       - ./postgres/.env
       - ./redis/.env
@@ -42,7 +44,7 @@ services:
     ports:
       - "${API_USER_GRPC_PORT}:${API_USER_GRPC_PORT}"
       - "${API_USER_GRPC_GATEWAY_PORT}:${API_USER_GRPC_GATEWAY_PORT}"
-      - "${API_USER_HTTP_PORT}:${API_USER_HTTP_PORT}"
+
     # access to the server:
     # $> docker-compose exec server sh
 
