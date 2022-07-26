@@ -69,7 +69,7 @@ func RetrieveToken(token string) (*RedisTokenInfo, error) {
 }
 
 func InitRedis() error {
-	log.Println("start connection to redis on default address")
+	log.Println("start connection to redis on %s:%d", environment.Redis.Host, environment.Redis.Port)
 	Redis = redis.NewClient(&redis.Options{
 		Addr:     environment.Redis.Host + ":" + environment.Redis.Port,
 		Password: "",

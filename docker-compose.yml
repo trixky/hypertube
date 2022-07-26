@@ -230,6 +230,19 @@ services:
     ports:
       - "${CLIENT_PORT}:${CLIENT_PORT}"
 
+  streaming-proxy:
+    image: nginx:1.23-alpine
+    env_file:
+      - ./streaming-proxy/.env
+    volumes:
+      - ./streaming-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./api-streaming/.cache:/var/www/cache
+    ports:
+      - "${STREAMING_PROXY_PORT}:80"
+    profiles:
+      - debug
+
+
 volumes:
   postgres-data:
     driver: local
