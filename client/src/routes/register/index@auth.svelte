@@ -199,7 +199,7 @@
 <BlackBox title={$_('auth.register_header')}>
 	<Logo alone />
 	<form action="" class="pt-1 w-full">
-		<label for="username" class="required">{$_('auth.username')}</label>
+		<label for="username" class="required truncate">{$_('auth.username')}</label>
 		<input
 			type="text"
 			placeholder={$_('auth.username')}
@@ -214,8 +214,8 @@
 		/>
 		<Warning content={username_warning} color="red" />
 		<div class="flex justify-between">
-			<div class="pr-2">
-				<label for="firstname" class="required">{$_('auth.first_name')}</label>
+			<div class="w-[47%]">
+				<label for="firstname" class="required truncate">{$_('auth.first_name')}</label>
 				<input
 					type="text"
 					placeholder={$_('auth.first_name')}
@@ -230,8 +230,8 @@
 				/>
 				<Warning content={firstname_warning} color="red" />
 			</div>
-			<div class="pl-2">
-				<label for="lastname" class="required">{$_('auth.last_name')}</label>
+			<div class="w-[47%]">
+				<label for="lastname" class="required truncate">{$_('auth.last_name')}</label>
 				<input
 					type="text"
 					placeholder={$_('auth.last_name')}
@@ -247,7 +247,7 @@
 				<Warning content={lastname_warning} color="red" />
 			</div>
 		</div>
-		<label for="email" class="required">{$_('auth.email')}</label>
+		<label for="email" class="required truncate">{$_('auth.email')}</label>
 		<input
 			type="email"
 			placeholder={$_('auth.email')}
@@ -261,7 +261,7 @@
 			disabled={loading}
 		/>
 		<Warning content={email_warning} color="red" />
-		<label for="password" class="required">{$_('auth.password')}</label>
+		<label for="password" class="required truncate">{$_('auth.password')}</label>
 		<div class="relative">
 			<input
 				type={password_input_type}
@@ -278,7 +278,7 @@
 			<Eye bind:open={show_password} />
 		</div>
 		<Warning content={password_warning} color="red" />
-		<label for="confirm password" class="required">{$_('auth.confirm_password')}</label>
+		<label for="confirm password" class="required truncate">{$_('auth.confirm_password')}</label>
 		<div class="relative">
 			<input
 				type={password_input_type}
