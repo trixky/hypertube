@@ -23,7 +23,7 @@
 	on:click|preventDefault={toto}
 	class:loading
 	class:disabled
-	class="relative mt-6 mb-2 py-2 px-4 bg-blue-300 block m-auto rounded-sm hover:bg-blue-400 duration-[0.35s]"
+	class="relative block mt-6 mb-2 py-2 px-4 bg-blue-300 block m-auto rounded-sm hover:bg-blue-400 duration-[0.35s]"
 	{disabled}
 >
 	{#if loading}

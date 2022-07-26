@@ -126,7 +126,7 @@
 <BlackBox title={$_('auth.forgot_password_header')}>
 	<Logo alone />
 	<form action="" class="pt-1 w-full">
-		<label for="password" class="required">{$_('auth.password')}</label>
+		<label for="password" class="required truncate">{$_('auth.password')}</label>
 		<div class="relative">
 			<input
 				type={new_password_input_type}
@@ -143,7 +143,7 @@
 			<Eye bind:open={show_password} />
 		</div>
 		<Warning content={new_password_warning} color="red" />
-		<label for="confirm password" class="required">{$_('auth.confirm_password')}</label>
+		<label for="confirm password" class="required truncate">{$_('auth.confirm_password')}</label>
 		<div class="relative">
 			<input
 				type={new_password_input_type}
