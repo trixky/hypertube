@@ -314,14 +314,14 @@
 {#if theatre}
 	<div
 		class="absolute top-0 right-0 bottom-0 left-0 bg-black bg-opacity-80 select-none pointer-events-none z-20"
-		transition:fade
+		transition:fade|local
 	/>
 {/if}
 <div
 	class={`${
 		theatre ? 'w-full' : 'w-11/12 md:w-4/5 lg:w-1/2'
 	} mx-auto text-white my-4 flex-grow relative mb-10 transition-all z-30`}
-	transition:slide={{ duration: 1000, easing: cubicOut }}
+	transition:slide|local={{ duration: 1000, easing: cubicOut }}
 	on:introstart={focusPlayer}
 	on:introend={playerOpened}
 	on:transitionstart={focusPlayer}
@@ -341,12 +341,12 @@
 	<div class="mt-2 flex flex-col md:flex-row justify-between items-center">
 		<div class="flex flex-col w-full md:w-auto text-left pl-2">
 			{#if playMessage}
-				<span class={`message ${playMessage.type} whitespace-pre-line`} transition:fade>
+				<span class={`message ${playMessage.type} whitespace-pre-line`} transition:fade|local>
 					{playMessage.content}
 				</span>
 			{/if}
 			{#if subtitleMessage && subtitleMessage.visible}
-				<span class={`message ${subtitleMessage.type}`} transition:fade={{ duration: 1000 }}>
+				<span class={`message ${subtitleMessage.type}`} transition:fade|local={{ duration: 1000 }}>
 					{subtitleMessage.content}
 				</span>
 			{/if}

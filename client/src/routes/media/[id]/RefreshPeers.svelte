@@ -50,8 +50,8 @@
 
 {#if loading}
 	<div
-		in:fade={{ duration: 350 }}
-		out:fade={{ duration: 80 }}
+		in:fade|local={{ duration: 350 }}
+		out:fade|local={{ duration: 80 }}
 		id="spinner"
 		class="absolute inline-block -translate-x-full transition-all duration-[0.35s] opacity-50"
 		style={`--tw-translate-x: calc(-100% - 4px);`}
