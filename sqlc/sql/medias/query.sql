@@ -24,7 +24,7 @@ LEFT JOIN positions ON torrents.id = positions.torrent_id AND positions.user_id 
 WHERE torrents.media_id = $1
 ORDER BY seed DESC, leech ASC;
 
--- name: WatcheMedia :one
+-- name: WatchedMedia :one
 SELECT * FROM positions
 RIGHT JOIN torrents ON torrents.id = positions.torrent_id
 WHERE positions.user_id = $1 AND torrents.media_id = $2

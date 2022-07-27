@@ -13,10 +13,6 @@ type Locale struct {
 	Lang, Region string
 }
 
-const (
-	COOKIE_locale = "locale"
-)
-
 func NameMatchLocale(user_locale *Locale, lang string) bool {
 	name_locale := strings.ToLower(lang)
 	return lang == "__" ||
@@ -24,6 +20,10 @@ func NameMatchLocale(user_locale *Locale, lang string) bool {
 		name_locale == user_locale.Region ||
 		((user_locale.Lang == "gb" || user_locale.Region == "gb") && name_locale == "gb")
 }
+
+const (
+	COOKIE_locale = "locale"
+)
 
 // var Locales []string = []string{"en", "fr"}
 var LocaleMatcher = regexp.MustCompile("(?i)^(fr|en)(-\\w+)?$")

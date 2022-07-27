@@ -329,7 +329,7 @@
 >
 	<video
 		bind:this={player}
-		class="w-full"
+		class="w-full max-h-screen"
 		src={apiStreaming(`/torrent/${torrent.id}/stream`)}
 		controls
 		autoplay

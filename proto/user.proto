@@ -1,12 +1,11 @@
 syntax = "proto3";
 
-import "google/api/annotations.proto";
-
-
 option go_package = "./proto";
 
-
 package auth;
+
+import "google/api/annotations.proto";
+import "media.proto";
 
 message GetMeRequest {
     string token = 1;
@@ -30,6 +29,11 @@ message UserInfoResponse {
     string user_info = 1; // base 64
 }
 
+message GetUserMoviesRequest {
+    int64 user_id = 1;
+	optional uint32 page = 2;
+}
+
 service UserService {
     rpc GetMe(GetMeRequest) returns (UserInfoResponse) {
         option (google.api.http) = {
@@ -46,6 +50,12 @@ service UserService {
     rpc GetUser(GetUserRequest) returns (UserInfoResponse) {
         option (google.api.http) = {
             get: "/v1/user"
+        };
+    };
+
+    rpc GetUserMovies(GetUserMoviesRequest) returns (media.MediaList) {
+        option (google.api.http) = {
+            get: "/v1/user/{user_id}/movies"
         };
     };
 }
