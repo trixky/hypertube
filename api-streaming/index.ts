@@ -51,10 +51,19 @@ import scheduleDeleteFiles from './jobs/delete-files';
 	app.use('/', subtitlesRouter);
 	app.use('/', streamRouter);
 
-	app.listen(env.API_STREAMING_PORT);
+	const server = app.listen(env.API_STREAMING_PORT);
 	console.log('[api-streaming] listening on port', env.API_STREAMING_PORT);
 
 	// *
 
 	scheduleDeleteFiles();
+
+	// *
+
+	function closeGracefully() {
+		server.close();
+	}
+
+	process.once('SIGINT', closeGracefully);
+	process.once('SIGTERM', closeGracefully);
 })();

@@ -39,8 +39,17 @@ async function main() {
 
 	app.use('/v1/position', service_router);
 
-	app.listen(process.env.API_POSITION_PORT);
+	const server = app.listen(process.env.API_POSITION_PORT);
 	console.log('[api-position] listening on port', process.env.API_POSITION_PORT);
+
+	// *
+
+	function closeGracefully() {
+		server.close();
+	}
+
+	process.once('SIGINT', closeGracefully);
+	process.once('SIGTERM', closeGracefully);
 }
 
 main();
