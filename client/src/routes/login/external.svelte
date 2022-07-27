@@ -11,5 +11,6 @@
 <!-- ========================= HTML -->
 <div class="py-4 w-full flex justify-between duration-100">
 	<ContinueWith href={href_google} logo="google_logo.svg.png" destination="google" {disabled} />
+	&nbsp;&nbsp;&nbsp;&nbsp;
 	<ContinueWith href={href_42} logo="42_logo.svg.png" destination="42" {disabled} />
 </div>

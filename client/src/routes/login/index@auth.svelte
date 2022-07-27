@@ -149,7 +149,7 @@
 	<External disabled={loading} />
 	<Separator content={$_('auth.omniauth_separator')} />
 	<form action="" class="pt-1 w-full">
-		<label for="email" class="required">{$_('auth.email')}</label>
+		<label for="email" class="required truncate">{$_('auth.email')}</label>
 		<input
 			type="email"
 			placeholder={$_('auth.email')}
@@ -163,7 +163,7 @@
 			disabled={loading}
 		/>
 		<Warning content={email_warning} color="red" />
-		<label for="password" class="required">{$_('auth.password')}</label>
+		<label for="password" class="required truncate">{$_('auth.password')}</label>
 		<div class="relative">
 			<input
 				type={password_input_type}
@@ -180,15 +180,17 @@
 			<Eye bind:open={show_password} />
 		</div>
 		<Warning content={password_warning} color="red" />
-		<p class="extra-link pl-28 mb-4 float-right">
+		<p class="extra-link absolute right-10 pl-6">
 			<a href="/recover/ask">{$_('auth.forgot_password')}</a>
 		</p>
-		<ConfirmationButton
+		<div class="mt-10">
+			<ConfirmationButton
 			name={$_('auth.login_action')}
 			handler={handle_login}
 			bind:loading
 			bind:disabled
-		/>
+			/>
+		</div>
 		<Warning centered content={response_warning} color="red" />
 		<Warning centered content={response_success} color="green" />
 	</form>
