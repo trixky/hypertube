@@ -1,15 +1,16 @@
 FROM node:16-alpine3.15 as builder
 
-RUN yarn set version stable
+RUN yarn set version berry
+
+WORKDIR /app
+COPY . .
+
+RUN yarn install
+RUN yarn build
 
 FROM builder
 
 WORKDIR /app
-COPY ./package.json .
-COPY ./.yarnrc.yml .
-COPY ./yarn.lock .
+COPY --from=builder /app .
 
-RUN yarn install
-COPY . .
-
-ENTRYPOINT yarn run dev --host --port ${CLIENT_PORT}
+ENTRYPOINT node ./build/index.js
