@@ -57,8 +57,7 @@
 </script>
 
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
-	import { browser } from '$app/env';
+	import { onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Spinner from '$components/animations/spinner.svelte';
 	import {
@@ -133,7 +132,6 @@
 
 		try {
 			await search.loadMore();
-			onScroll();
 		} catch (error) {
 			loadMoreError = true;
 		}
@@ -145,40 +143,9 @@
 		search.execute();
 	}
 
-	function onScroll() {
-		if (browser) {
-			if (
-				$loadingMore ||
-				$results.length == 0 ||
-				$totalResults == $results.length ||
-				loadMoreError
-			) {
-				return;
-			}
-			const element = document.documentElement;
-			const offset = element.scrollHeight - element.clientHeight - element.scrollTop;
-			if (offset <= 100) {
-				loadMore();
-			}
-		}
-	}
-
 	onMount(async () => {
 		if (!$search.hasResults) {
 			await search.execute();
-		} else {
-			onScroll();
-		}
-		if (browser) {
-			window.addEventListener('scroll', onScroll, { passive: true });
-			window.addEventListener('resize', onScroll, { passive: true });
-		}
-	});
-
-	onDestroy(() => {
-		if (browser) {
-			window.removeEventListener('scroll', onScroll);
-			window.removeEventListener('resize', onScroll);
 		}
 	});
 </script>

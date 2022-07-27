@@ -2,8 +2,8 @@ version: "3.8"
 services:
   api-auth:
     build:
-      dockerfile: ./api-auth/Dockerfile
       context: ./
+      dockerfile: ./api-auth/Dockerfile
     env_file:
       - ./.env
       - ./client/.env
@@ -27,8 +27,8 @@ services:
 
   api-user:
     build:
-      dockerfile: ./api-user/Dockerfile
       context: ./
+      dockerfile: ./api-user/Dockerfile
     env_file:
       - ./api-user/.env
       - ./postgres/.env
@@ -51,8 +51,8 @@ services:
 
   api-scrapper:
     build:
-      dockerfile: ./api-scrapper/Dockerfile
       context: ./
+      dockerfile: ./api-scrapper/Dockerfile
     env_file:
       - ./api-scrapper/.env
       - ./postgres/.env
@@ -69,8 +69,8 @@ services:
 
   api-media:
     build:
-      dockerfile: ./api-media/Dockerfile
       context: ./
+      dockerfile: ./api-media/Dockerfile
     env_file:
       - ./api-scrapper/.env
       - ./api-media/.env
@@ -214,7 +214,7 @@ services:
   client:
     build:
       context: ./client
-      dockerfile: ./Dockerfile.dev
+      dockerfile: ./Dockerfile
     env_file:
       - ./.env
       - ./api-auth/.env
@@ -223,12 +223,6 @@ services:
       - ./api-streaming/.env
       - ./tmdb-proxy/.env
       - ./client/.env
-    volumes:
-      - ./client:/app
-      - /app/node_modules
-      - /app/.yarn
-      - /app/.svelte-kit
-      - /app/build
     depends_on:
       - api-auth
       - api-media
@@ -237,19 +231,7 @@ services:
       - api-media
       - tmdb-proxy
     ports:
-      - "${CLIENT_PORT}:${CLIENT_PORT}"
-
-  streaming-proxy:
-    image: nginx:1.23-alpine
-    env_file:
-      - ./streaming-proxy/.env
-    volumes:
-      - ./streaming-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./api-streaming/.cache:/var/www/cache
-    ports:
-      - "${STREAMING_PROXY_PORT}:80"
-    profiles:
-      - debug
+      - "${CLIENT_PORT}:3000"
 
 volumes:
   postgres-data:
