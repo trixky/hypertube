@@ -29,7 +29,7 @@
 		class:text-green-300={color == 'green'}
 		class:text-blue-300={color == 'blue'}
 		class:text-orange-300={color == 'orange'}
-		class="text-xs pb-2 whitespace-pre-line px-2 transition-colors"
+		class="text-xs pt-2 whitespace-pre-line px-2 transition-colors"
 		bind:offsetHeight={height_warning}
 	>
 		{uppercase_first_character(content)}

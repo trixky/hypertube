@@ -20,12 +20,16 @@ main > div:not(.media-page) label {
 	@apply block p-2 text-white;
 }
 
+label.required {
+	@apply relative;
+}
+
 main > div:not(.media-page) label.required::after {
-	@apply content-['*'] text-blue-300;
+	@apply content-['*'] text-blue-300 absolute -left-[1px] top-[5px];
 }
 
 .extra-link {
-	@apply text-slate-400 text-sm;
+	@apply text-slate-400 text-sm mt-2;
 }
 
 /* https://stackoverflow.com/questions/2781549/removing-input-background-colour-for-chrome-autocomplete */
