@@ -1,0 +1,11 @@
+FROM node:16-alpine3.15 as builder
+
+RUN yarn set version berry
+
+WORKDIR /app
+
+COPY . .
+RUN yarn install
+
+USER node
+ENTRYPOINT npx ts-node-dev --respawn index.ts

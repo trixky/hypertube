@@ -10,9 +10,6 @@ services:
       - ./api-auth/.env
       - ./postgres/.env
       - ./redis/.env
-    volumes:
-      - ./api-auth:/hypertube/app
-      - ./.shared:/hypertube/.shared
     depends_on:
       - postgres
       - redis
@@ -33,9 +30,6 @@ services:
       - ./api-user/.env
       - ./postgres/.env
       - ./redis/.env
-    volumes:
-      - ./api-user:/hypertube/app
-      - ./.shared:/hypertube/.shared
     depends_on:
       - postgres
       - redis
@@ -56,9 +50,6 @@ services:
     env_file:
       - ./api-scrapper/.env
       - ./postgres/.env
-    volumes:
-      - ./api-scrapper:/hypertube/app
-      - ./.shared:/hypertube/.shared
     depends_on:
       - postgres
     restart: on-failure
@@ -77,8 +68,7 @@ services:
       - ./postgres/.env
       - ./redis/.env
     volumes:
-      - ./api-media:/hypertube/app
-      - ./.shared:/hypertube/.shared
+      - streaming-data:/app/.cache
     depends_on:
       - postgres
       - api-scrapper
@@ -100,15 +90,10 @@ services:
       - ./redis/.env
       - ./client/.env
       - ./api-streaming/.env
-    volumes:
-      - ./api-streaming:/app
-      - /app/node_modules
-      - /app/.yarn
     depends_on:
       - postgres
     restart: on-failure
     links:
-      - client
       - postgres
     ports:
       - "${API_STREAMING_PORT}:${API_STREAMING_PORT}"
@@ -121,16 +106,11 @@ services:
       - ./redis/.env
       - ./client/.env
       - ./api-position/.env
-    volumes:
-      - ./api-position:/app
-      - /app/node_modules
-      - /app/.yarn
     depends_on:
       - postgres
       - redis
     restart: on-failure
     links:
-      - client
       - postgres
       - redis
     ports:
@@ -225,10 +205,15 @@ services:
       - ./client/.env
     depends_on:
       - api-auth
+      - api-user
       - api-media
+      - api-streaming
+      - api-position
     links:
       - api-auth
       - api-media
+      - api-streaming
+      - api-position
       - tmdb-proxy
     ports:
       - "${CLIENT_PORT}:3000"
@@ -240,3 +225,6 @@ volumes:
     driver: local
   nginx-proxy-data:
     driver: local
+  streaming-data:
+    driver: local
+
