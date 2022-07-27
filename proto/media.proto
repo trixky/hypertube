@@ -44,7 +44,7 @@ message SearchRequest {
 	optional float rating = 8;
 }
 
-message SearchResponse {
+message MediaList {
 	uint32 page = 1;
 	uint32 results = 2;
 	uint32 total_results = 3;
@@ -130,31 +130,36 @@ message PostCommentResponse {
 }
 
 service MediaService {
-    rpc Search(SearchRequest) returns (SearchResponse) {
+    rpc Search(SearchRequest) returns (MediaList) {
         option (google.api.http) = {
             get: "/v1/media/search"
         };
 	};
+
     rpc Genres(GenresRequest) returns (GenresResponse) {
         option (google.api.http) = {
             get: "/v1/media/genres"
         };
 	};
+
     rpc Get(GetRequest) returns (GetResponse) {
         option (google.api.http) = {
             get: "/v1/media/{id}/get"
         };
 	};
+
 	rpc Refresh(RefreshMediaRequest) returns (stream RefreshMediaResponse) {
         option (google.api.http) = {
             get: "/v1/media/{media_id}/refresh"
         };
 	}
+
     rpc GetComments(GetCommentsRequest) returns (GetCommentsResponse) {
         option (google.api.http) = {
             get: "/v1/media/{media_id}/comments"
         };
 	};
+
     rpc PostComment(PostCommentRequest) returns (PostCommentResponse) {
         option (google.api.http) = {
             post: "/v1/media/{media_id}/comment"

@@ -12,8 +12,7 @@ import (
 	pb "github.com/trixky/hypertube/api-media/proto"
 	"github.com/trixky/hypertube/api-media/queries"
 	"github.com/trixky/hypertube/api-media/sqlc"
-	"github.com/trixky/hypertube/api-media/utils"
-	ut "github.com/trixky/hypertube/api-media/utils"
+	utils "github.com/trixky/hypertube/api-media/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -53,7 +52,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 		return nil, err
 	}
 
-	user_locale := ut.GetLocale(ctx)
+	user_locale := sutils.GetLocale(ctx)
 
 	// Find the media
 	media, err := queries.SqlcQueries.GetMediaByID(ctx, int64(in.Id))
@@ -97,7 +96,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 		err = nil
 	}
 	for _, name := range names {
-		if ut.NameMatchLocale(&user_locale, name.Lang) {
+		if sutils.NameMatchLocale(&user_locale, name.Lang) {
 			response.Media.Names = append(response.Media.Names, &pb.MediaName{
 				Lang:  name.Lang,
 				Title: name.Name,

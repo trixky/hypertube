@@ -16,13 +16,13 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.SearchResponse, error) {
+func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.MediaList, error) {
 	user, err := utils.RequireLogin(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	user_locale := utils.GetLocale(ctx)
+	user_locale := sutils.GetLocale(ctx)
 
 	// Check and set arguments for the query
 	params := utils.FindMediasParams{
@@ -69,7 +69,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 	if err != nil {
 		log.Println("error in redis cache", err)
 	} else if cache_results != "" {
-		response := pb.SearchResponse{}
+		response := pb.MediaList{}
 		err = protojson.Unmarshal([]byte(cache_results), &response)
 		if err != nil {
 			log.Println("error in redis cache unmarshal", err)
@@ -85,7 +85,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 		return nil, err
 	}
 	if medias_count == 0 {
-		response := pb.SearchResponse{}
+		response := pb.MediaList{}
 		search := protojson.Format(response.ProtoReflect().Interface())
 		err = queries.CacheSearch(&path, &search)
 		if err != nil {
@@ -98,7 +98,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 	medias, err := utils.FindMedias(ctx, params)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			response := pb.SearchResponse{}
+			response := pb.MediaList{}
 			search := protojson.Format(response.ProtoReflect().Interface())
 			err = queries.CacheSearch(&path, &search)
 			if err != nil {
@@ -128,7 +128,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 
 		// Check watched status
 		// -- at least one torrent has a position
-		_, err := queries.SqlcQueries.WatcheMedia(ctx, sqlc.WatcheMediaParams{
+		_, err := queries.SqlcQueries.WatchedMedia(ctx, sqlc.WatchedMediaParams{
 			UserID:  int32(user.ID),
 			MediaID: sutils.MakeNullInt32(&media_id),
 		})
@@ -148,7 +148,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 			return nil, err
 		}
 		for _, name := range names {
-			if utils.NameMatchLocale(&user_locale, name.Lang) {
+			if sutils.NameMatchLocale(&user_locale, name.Lang) {
 				pb_media.Names = append(pb_media.Names, &pb.MediaName{
 					Lang:  name.Lang,
 					Title: name.Name,
@@ -160,7 +160,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Sea
 		pb_medias = append(pb_medias, &pb_media)
 	}
 
-	response := pb.SearchResponse{
+	response := pb.MediaList{
 		Page:         uint32(page),
 		Results:      uint32(len(pb_medias)),
 		TotalResults: uint32(medias_count),

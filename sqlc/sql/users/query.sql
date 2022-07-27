@@ -69,3 +69,17 @@ AND id_google IS NULL;
 -- name: DeleteUser :exec
 DELETE FROM users
 WHERE id = $1;
+
+-- name: CountUserMedias :one
+SELECT COUNT(distinct medias.id) as total
+FROM torrents
+RIGHT JOIN medias ON torrents.media_id = medias.id
+RIGHT JOIN positions ON torrents.id = positions.torrent_id AND positions.user_id = $1;
+
+-- name: GetUserMedias :many
+SELECT medias.*, positions.id
+FROM torrents
+RIGHT JOIN medias ON torrents.media_id = medias.id
+RIGHT JOIN positions ON torrents.id = positions.torrent_id AND positions.user_id = $2
+ORDER BY positions.id DESC
+LIMIT 50 OFFSET $1;
