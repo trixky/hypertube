@@ -1,21 +1,22 @@
 FROM node:16-alpine3.15 as builder
 
-# install ffmpeg for transcode
-RUN apk add --no-cache ffmpeg
-
-RUN yarn set version stable
+RUN yarn set version berry
 
 WORKDIR /app
-COPY ./package.json .
-COPY ./.yarnrc.yml .
-COPY ./yarn.lock .
-
-RUN yarn install
-
-FROM builder
-
-WORKDIR /app
-
 COPY . .
 
-ENTRYPOINT npx ts-node-dev --respawn main.ts
+RUN yarn install
+RUN yarn build
+
+FROM node:16-alpine3.15
+
+# Install ffmpeg for transcode
+RUN apk add ffmpeg dumb-init
+
+WORKDIR /app
+COPY --from=builder --chown=node:node /app .
+
+RUN mkdir -p /app/.cache
+RUN chown -R node:node /app/.cache
+USER node
+ENTRYPOINT dumb-init node ./dist/index.js

@@ -1,17 +1,16 @@
-FROM golang:1.18.3-alpine3.16
+FROM golang:1.18.3-alpine3.16 as builder
 
-# https://levelup.gitconnected.com/docker-for-go-development-a27141f36ba9
-
-# copy api files
 WORKDIR /hypertube/app
 COPY ./api-auth /hypertube/app
 COPY ./.shared /hypertube/.shared
 
-# install api dependencies
 RUN go mod download
 
-# install CompileDaemon (hot reload)
-RUN go get github.com/githubnemo/CompileDaemon
-RUN go install -v github.com/githubnemo/CompileDaemon
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -gcflags "all=-N -l" -o /api
 
-ENTRYPOINT CompileDaemon --build="go build main.go" --command=./main
+FROM golang:1.18.3-alpine3.16
+
+RUN mkdir /data
+COPY --from=builder /api .
+
+ENTRYPOINT ./api

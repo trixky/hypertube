@@ -2,8 +2,8 @@ version: "3.8"
 services:
   api-auth:
     build:
-      dockerfile: ./api-auth/Dockerfile
       context: ./
+      dockerfile: ./api-auth/Dockerfile.dev
     env_file:
       - ./.env
       - ./client/.env
@@ -27,8 +27,8 @@ services:
 
   api-user:
     build:
-      dockerfile: ./api-user/Dockerfile
       context: ./
+      dockerfile: ./api-user/Dockerfile.dev
     env_file:
       - ./api-user/.env
       - ./postgres/.env
@@ -51,8 +51,8 @@ services:
 
   api-scrapper:
     build:
-      dockerfile: ./api-scrapper/Dockerfile
       context: ./
+      dockerfile: ./api-scrapper/Dockerfile.dev
     env_file:
       - ./api-scrapper/.env
       - ./postgres/.env
@@ -69,8 +69,8 @@ services:
 
   api-media:
     build:
-      dockerfile: ./api-media/Dockerfile
       context: ./
+      dockerfile: ./api-media/Dockerfile.dev
     env_file:
       - ./api-scrapper/.env
       - ./api-media/.env
@@ -93,7 +93,9 @@ services:
       - "${API_MEDIA_GRPC_GATEWAY_PORT}:${API_MEDIA_GRPC_GATEWAY_PORT}"
 
   api-streaming:
-    build: ./api-streaming
+    build:
+      context: ./api-streaming
+      dockerfile: ./Dockerfile.dev
     env_file:
       - ./.env
       - ./postgres/.env
@@ -102,6 +104,7 @@ services:
       - ./api-streaming/.env
     volumes:
       - ./api-streaming:/app
+      - streaming-data:/app/.cache
       - /app/node_modules
       - /app/.yarn
     depends_on:
@@ -114,7 +117,9 @@ services:
       - "${API_STREAMING_PORT}:${API_STREAMING_PORT}"
 
   api-position:
-    build: ./api-position
+    build:
+      context: ./api-position
+      dockerfile: ./Dockerfile.dev
     env_file:
       - ./.env
       - ./postgres/.env
@@ -245,7 +250,7 @@ services:
       - ./streaming-proxy/.env
     volumes:
       - ./streaming-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./api-streaming/.cache:/var/www/cache
+      - streaming-data:/var/www/cache
     ports:
       - "${STREAMING_PROXY_PORT}:80"
     profiles:
@@ -257,4 +262,6 @@ volumes:
   redis-data:
     driver: local
   nginx-proxy-data:
+    driver: local
+  streaming-data:
     driver: local
