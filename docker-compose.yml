@@ -44,7 +44,6 @@ services:
     ports:
       - "${API_USER_GRPC_PORT}:${API_USER_GRPC_PORT}"
       - "${API_USER_GRPC_GATEWAY_PORT}:${API_USER_GRPC_GATEWAY_PORT}"
-
     # access to the server:
     # $> docker-compose exec server sh
 
@@ -158,6 +157,25 @@ services:
       - api-position
       - api-media
       - redis
+    profiles:
+      - test
+
+  test-go:
+    build:
+      dockerfile: ./test/go/Dockerfile
+      context: ./
+    env_file:
+      - ./client/.env
+      - ./postgres/.env
+      - ./redis/.env
+      - ./api-auth/.env
+      - ./api-user/.env
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./test/go:/hypertube/test/go
+      - ./.shared:/hypertube/.shared
+      - ./api-auth:/hypertube/api-auth
+      - ./api-user:/hypertube/api-user
     profiles:
       - test
 
