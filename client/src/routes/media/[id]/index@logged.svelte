@@ -225,7 +225,7 @@
 			{#if background}
 				<div
 					class="header-image transition-all"
-					in:fade={{ duration: 250 }}
+					in:fade|local={{ duration: 250 }}
 					style={`background-image: url("${background}")`}
 				/>
 			{/if}
@@ -252,7 +252,7 @@
 			<img
 				src={cover}
 				alt={`${media.userTitle ? media.userTitle : media.title} Cover`}
-				in:fade={{ duration: 150, delay: 50 }}
+				in:fade|local={{ duration: 150, delay: 50 }}
 				class="h-[500px] rounded-md flex-grow-0 "
 			/>
 			<div

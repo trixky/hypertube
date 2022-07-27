@@ -107,7 +107,12 @@
 		</div>
 	</form>
 	{#each cleanComments as comment (comment.id)}
-		<div id="comment-{comment.id}" class="comment" class:self={comment.user.id == self.id} in:fly>
+		<div
+			id="comment-{comment.id}"
+			class="comment"
+			class:self={comment.user.id == self.id}
+			in:fly|local
+		>
 			{#if comment.user.id == self.id}
 				<div class="bordered" />
 			{/if}
