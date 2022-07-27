@@ -2,6 +2,31 @@
 <script lang="ts" context="module">
 	import type { Load } from '@sveltejs/kit';
 
+	async function getUserMovies(
+		fetch: (info: RequestInfo, init?: RequestInit | undefined) => Promise<Response>,
+		userId: number,
+		page = 1
+	) {
+		// Get user movies
+		const response = await fetch(apiUser(`/v1/user/${userId}/movies?page=${page}`), {
+			method: 'GET',
+			credentials: 'include'
+		});
+		if (!response.ok || response.status >= 400) {
+			return {
+				status: response.ok ? response.status : 500
+			};
+		}
+		const results = (await response.json()) as {
+			page: number;
+			results: number;
+			totalResults: number;
+			medias: Result[];
+		};
+
+		return { medias: results.medias.map(addUserTitle), totalResults: results.totalResults };
+	}
+
 	// Preload search results and genres
 	// -- and insert them on startup in the client
 	export const load: Load = async ({ fetch, session, params }) => {
@@ -16,11 +41,13 @@
 			return {
 				status: 200,
 				props: {
-					user: session.user
+					user: session.user,
+					...(await getUserMovies(fetch, session.user.id))
 				}
 			};
 		}
 
+		// Get user informations
 		const url_search_params = new URLSearchParams();
 		url_search_params.append('id', params.id);
 		const url = apiUser('/v1/user?' + url_search_params.toString());
@@ -45,10 +72,12 @@
 		const user_64 = body[cookies.labels.user_info];
 		const user_json = atob(user_64);
 		const user = JSON.parse(user_json);
+
 		return {
 			status: 200,
 			props: {
-				user
+				user,
+				...(await getUserMovies(fetch, user.id))
 			}
 		};
 	};
@@ -67,6 +96,9 @@
 	import { apiUser } from '$utils/api';
 	import { session } from '$app/stores';
 	import InfoLine from './info-line.svelte';
+	import MediaList from '$components/generics/MediaList.svelte';
+	import type { Result } from '$types/Media';
+	import { addUserTitle } from '$utils/media';
 
 	export let user: NonNullable<App.Session['user']>;
 
@@ -355,6 +387,36 @@
 			modification_mode = false;
 		}
 	}
+
+	// * User movies
+
+	export let medias: Result[] = [];
+	export let totalResults: number = 0;
+	let loadingMovies = false;
+
+	let page = 2;
+	async function loadMore() {
+		loadingMovies = true;
+		const response = await fetch(apiUser(`/v1/user/${user.id}/movies?page=${page}`), {
+			method: 'GET',
+			credentials: 'include'
+		});
+		if (!response.ok || response.status >= 400) {
+			return {
+				status: response.ok ? response.status : 500
+			};
+		}
+		const results = (await response.json()) as {
+			page: number;
+			results: number;
+			totalResults: number;
+			medias: Result[];
+		};
+		medias.push(...results.medias.map(addUserTitle));
+		medias = medias;
+		page += 1;
+		loadingMovies = false;
+	}
 </script>
 
 <svelte:window on:keydown={handle_keydown} />
@@ -363,175 +425,184 @@
 <svelte:head>
 	<title>hypertube :: User Profile</title>
 </svelte:head>
-<div class="flex justify-center items-center w-full h-auto text-white">
-	<BlackBox title={its_me ? $_('auth.my_profile') : $_('auth.profile')}>
-		{#if !user_does_not_exist}
-			{#if its_me}
-				<button class="absolute right-5 top-4" on:click={handle_pen}>
-					<img class="invert" src={img_src} width="18px" height="18px" alt={img_alt} />
-				</button>
-			{/if}
-			<form class="pt-1 w-full">
-				<div>
-					<InfoLine
-						centered={!modification_mode}
-						label={$_('auth.username')}
-						bind:value={current_username}
-						{can_be_empty}
-					/>
-					{#if modification_mode}
-						<input
-							type="text"
-							placeholder={$_('auth.username')}
-							name="username"
-							bind:value={username}
-							on:input={check_username}
-							on:blur={() => {
-								username_blur = true;
-								check_username();
-							}}
-							disabled={loading}
-						/>
-						<Warning content={username_warning} color="red" />
-					{/if}
-				</div>
-				<div>
-					<InfoLine
-						centered={!modification_mode}
-						label={$_('auth.first_name')}
-						bind:value={current_firstname}
-						{can_be_empty}
-					/>
-					{#if modification_mode}
-						<input
-							type="text"
-							placeholder={$_('auth.first_name')}
-							name="firstname"
-							bind:value={firstname}
-							on:input={check_firstname}
-							on:blur={() => {
-								firstname_blur = true;
-								check_firstname();
-							}}
-							disabled={loading}
-						/>
-						<Warning content={firstname_warning} color="red" />
-					{/if}
-				</div>
-				<div>
-					<InfoLine
-						centered={!modification_mode}
-						label={$_('auth.last_name')}
-						bind:value={current_lastname}
-						{can_be_empty}
-					/>
-					{#if modification_mode}
-						<input
-							type="text"
-							placeholder={$_('auth.last_name')}
-							name="lastname"
-							bind:value={lastname}
-							on:input={check_lastname}
-							on:blur={() => {
-								lastname_blur = true;
-								check_lastname();
-							}}
-							disabled={loading}
-						/>
-						<Warning content={lastname_warning} color="red" />
-					{/if}
-				</div>
+<div class="flex flex-col flex-grow w-full h-full text-white">
+	<div class="flex justify-center items-center ">
+		<BlackBox title={its_me ? $_('auth.my_profile') : $_('auth.profile')}>
+			{#if !user_does_not_exist}
 				{#if its_me}
+					<button class="absolute right-5 top-4" on:click={handle_pen}>
+						<img class="invert" src={img_src} width="18px" height="18px" alt={img_alt} />
+					</button>
+				{/if}
+				<form class="pt-1 w-full">
 					<div>
 						<InfoLine
 							centered={!modification_mode}
-							label={$_('auth.email')}
-							bind:value={current_email}
+							label={$_('auth.username')}
+							bind:value={current_username}
 							{can_be_empty}
 						/>
-						{#if modification_mode && $session.user?.external === 'none'}
+						{#if modification_mode}
 							<input
-								type="email"
-								placeholder={$_('auth.email')}
-								name="email"
-								bind:value={email}
-								on:input={check_email}
+								type="text"
+								placeholder={$_('auth.username')}
+								name="username"
+								bind:value={username}
+								on:input={check_username}
 								on:blur={() => {
-									email_blur = true;
-									check_email();
+									username_blur = true;
+									check_username();
 								}}
 								disabled={loading}
 							/>
-							<Warning content={email_warning} color="red" />
+							<Warning content={username_warning} color="red" />
 						{/if}
 					</div>
-				{/if}
-				{#if modification_mode && $session.user?.external === 'none'}
-					<div id="passwords">
-						<InfoLine label={$_('auth.password')} no_value />
-						<div class="relative">
+					<div>
+						<InfoLine
+							centered={!modification_mode}
+							label={$_('auth.first_name')}
+							bind:value={current_firstname}
+							{can_be_empty}
+						/>
+						{#if modification_mode}
 							<input
-								type={password_input_type}
-								placeholder={$_('auth.current_password')}
-								name="current_password"
-								value={current_password}
-								on:input={check_current_password}
+								type="text"
+								placeholder={$_('auth.first_name')}
+								name="firstname"
+								bind:value={firstname}
+								on:input={check_firstname}
 								on:blur={() => {
-									current_password_blur = true;
-									check_current_password();
+									firstname_blur = true;
+									check_firstname();
 								}}
 								disabled={loading}
 							/>
-							<Eye bind:open={show_password} />
-						</div>
-						<Warning content={current_password_warning} color="red" />
-						<div class="relative mt-3">
-							<input
-								type={password_input_type}
-								placeholder={$_('auth.new_password')}
-								name="new_password"
-								value={new_password}
-								on:input={check_new_password}
-								on:blur={() => {
-									new_password_blur = true;
-									check_new_password();
-								}}
-								disabled={loading}
-							/>
-							<Eye bind:open={show_password} />
-						</div>
-						<Warning content={new_password_warning} color="red" />
-						<div class="relative mt-3">
-							<input
-								type={password_input_type}
-								placeholder={$_('auth.new_password')}
-								name="confirm_new_password"
-								value={confirm_new_password}
-								on:input={check_confirm_new_password}
-								on:blur={() => {
-									confirm_new_password_blur = true;
-									check_confirm_new_password();
-								}}
-								disabled={loading}
-							/>
-							<Eye bind:open={show_password} />
-						</div>
-						<Warning content={confirm_new_password_warning} color="red" />
+							<Warning content={firstname_warning} color="red" />
+						{/if}
 					</div>
-				{/if}
-				{#if modification_mode}
-					<ConfirmationButton
-						name={$_('auth.update')}
-						handler={handle_update}
-						bind:loading
-						bind:disabled
-					/>
-					<Warning centered content={response_update_warning} color="red" />
-					<Warning centered content={response_update_success} color="green" />
-				{/if}
-			</form>
+					<div>
+						<InfoLine
+							centered={!modification_mode}
+							label={$_('auth.last_name')}
+							bind:value={current_lastname}
+							{can_be_empty}
+						/>
+						{#if modification_mode}
+							<input
+								type="text"
+								placeholder={$_('auth.last_name')}
+								name="lastname"
+								bind:value={lastname}
+								on:input={check_lastname}
+								on:blur={() => {
+									lastname_blur = true;
+									check_lastname();
+								}}
+								disabled={loading}
+							/>
+							<Warning content={lastname_warning} color="red" />
+						{/if}
+					</div>
+					{#if its_me}
+						<div>
+							<InfoLine
+								centered={!modification_mode}
+								label={$_('auth.email')}
+								bind:value={current_email}
+								{can_be_empty}
+							/>
+							{#if modification_mode && $session.user?.external === 'none'}
+								<input
+									type="email"
+									placeholder={$_('auth.email')}
+									name="email"
+									bind:value={email}
+									on:input={check_email}
+									on:blur={() => {
+										email_blur = true;
+										check_email();
+									}}
+									disabled={loading}
+								/>
+								<Warning content={email_warning} color="red" />
+							{/if}
+						</div>
+					{/if}
+					{#if modification_mode && $session.user?.external === 'none'}
+						<div id="passwords">
+							<InfoLine label={$_('auth.password')} no_value />
+							<div class="relative">
+								<input
+									type={password_input_type}
+									placeholder={$_('auth.current_password')}
+									name="current_password"
+									value={current_password}
+									on:input={check_current_password}
+									on:blur={() => {
+										current_password_blur = true;
+										check_current_password();
+									}}
+									disabled={loading}
+								/>
+								<Eye bind:open={show_password} />
+							</div>
+							<Warning content={current_password_warning} color="red" />
+							<div class="relative mt-3">
+								<input
+									type={password_input_type}
+									placeholder={$_('auth.new_password')}
+									name="new_password"
+									value={new_password}
+									on:input={check_new_password}
+									on:blur={() => {
+										new_password_blur = true;
+										check_new_password();
+									}}
+									disabled={loading}
+								/>
+								<Eye bind:open={show_password} />
+							</div>
+							<Warning content={new_password_warning} color="red" />
+							<div class="relative mt-3">
+								<input
+									type={password_input_type}
+									placeholder={$_('auth.new_password')}
+									name="confirm_new_password"
+									value={confirm_new_password}
+									on:input={check_confirm_new_password}
+									on:blur={() => {
+										confirm_new_password_blur = true;
+										check_confirm_new_password();
+									}}
+									disabled={loading}
+								/>
+								<Eye bind:open={show_password} />
+							</div>
+							<Warning content={confirm_new_password_warning} color="red" />
+						</div>
+					{/if}
+					{#if modification_mode}
+						<ConfirmationButton
+							name={$_('auth.update')}
+							handler={handle_update}
+							bind:loading
+							bind:disabled
+						/>
+						<Warning centered content={response_update_warning} color="red" />
+						<Warning centered content={response_update_success} color="green" />
+					{/if}
+				</form>
+			{:else}
+				<p class="text-white">{$_('auth.user_does_not_exists')}</p>
+			{/if}
+		</BlackBox>
+	</div>
+	<div class="flex-grow bg-black">
+		{#if totalResults == 0}
+			<p>{$_('media.user_no_results')}</p>
 		{:else}
-			<p class="text-white">{$_('auth.user_does_not_exists')}</p>
+			<MediaList list={medias} {totalResults} {loadMore} loading={loadingMovies} />
 		{/if}
-	</BlackBox>
+	</div>
 </div>

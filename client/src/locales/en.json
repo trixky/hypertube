@@ -47,7 +47,8 @@
     "resume": "Resume",
     "theatre_mode": "Theatre mode",
     "disable_theatre_mode": "Disable Theatre mode",
-    "low_seed": "This torrent has a low peer count and might not start"
+    "low_seed": "This torrent has a low peer count and might not start",
+    "user_no_results": "This user didn't watch any movies yet"
   },
   "auth": {
     "email": "Email",

@@ -47,7 +47,8 @@
     "resume": "Reprendre",
     "theatre_mode": "Mode theatre",
     "disable_theatre_mode": "Desactiver le Mode theatre",
-    "low_seed": "Il y a peu de pairs sur ce Torrent, et la video risque de ne pas se lancer"
+    "low_seed": "Il y a peu de pairs sur ce Torrent, et la video risque de ne pas se lancer",
+    "user_no_results": "Cet utilisateur n'a pas encore regarder de films"
   },
   "auth": {
     "email": "Email",

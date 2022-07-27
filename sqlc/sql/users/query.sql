@@ -77,9 +77,9 @@ RIGHT JOIN medias ON torrents.media_id = medias.id
 RIGHT JOIN positions ON torrents.id = positions.torrent_id AND positions.user_id = $1;
 
 -- name: GetUserMedias :many
-SELECT medias.*, positions.id
+SELECT DISTINCT ON (medias.id) medias.*, positions.id
 FROM torrents
 RIGHT JOIN medias ON torrents.media_id = medias.id
 RIGHT JOIN positions ON torrents.id = positions.torrent_id AND positions.user_id = $2
-ORDER BY positions.id DESC
+ORDER BY medias.id DESC, positions.id DESC
 LIMIT 50 OFFSET $1;

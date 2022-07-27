@@ -59,7 +59,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
-	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import Spinner from '$components/animations/spinner.svelte';
 	import {
@@ -73,15 +72,13 @@
 	} from '$stores/search';
 	import SortAsc from '$components/icons/SortAsc.svelte';
 	import SortDesc from '$components/icons/SortDesc.svelte';
-	import LazyLoad from '$components/lazy/LazyLoad.svelte';
-	import Eye from '$components/icons/Eye.svelte';
 	import ChevronDown from '$components/icons/ChevronDown.svelte';
 	import ChevronUp from '$components/icons/ChevronUp.svelte';
 	import { genres, getGenres, type Genre } from '$stores/genres';
 	import Times from '$components/icons/Times.svelte';
 	import { accordion } from '$directives/accordion';
 	import type { Result } from '$types/Media';
-	import { imageProxy } from '$utils/api';
+	import MediaList from '$components/generics/MediaList.svelte';
 
 	export let ssrGenres: Genre[];
 	genres.set(ssrGenres);
@@ -96,34 +93,6 @@
 
 	let loadMoreError = false;
 	$: loading = $searching || $loadingMore;
-
-	// * Infinite loader
-	// Obser the Load More card when it's visible and loadMore if the user can see it
-	let observer: IntersectionObserver;
-	function onIntersectionEvent(entries: IntersectionObserverEntry[]) {
-		if (loading || $results.length == 0 || $totalResults == $results.length) {
-			return;
-		}
-		for (const entry of entries) {
-			if (entry.isIntersecting) {
-				loadMore();
-			}
-		}
-	}
-	if (browser) {
-		observer = new IntersectionObserver(onIntersectionEvent, { threshold: 0 });
-	}
-	let loader: HTMLElement | undefined;
-	let observing: HTMLElement | undefined;
-	$: {
-		if (loader) {
-			observer.observe(loader);
-			observing = loader;
-		} else if (observing) {
-			observer.unobserve(observing);
-			observing = undefined;
-		}
-	}
 
 	// Genres
 	let genresOpen = false;
@@ -346,66 +315,7 @@
 			<div class="text-5xl text-white">{$_('search.no_results')}</div>
 		</div>
 	{:else}
-		<div class="result-wrapper p-4">
-			{#each $results as result, index (result.id)}
-				{@const cover = result.thumbnail ? imageProxy(result.thumbnail) : '/no_cover.png'}
-				<LazyLoad
-					tag="a"
-					href={`/media/${result.id}`}
-					class="relative result overflow-hidden h-[268px] w-40 min-h-[268px] mx-auto"
-				>
-					<div
-						class="cover"
-						class:opacity-80={result.watched}
-						style={`background-image: url(${cover})`}
-						in:fade={{ duration: 150, delay: (index - $search.startAt) * 10 }}
-					>
-						{#if result.rating}
-							{@const rating = Math.round(result.rating * 10) / 10}
-							<div class="rating">
-								<div class="flex justify-between items-center w-full">
-									<div class="stars" style={`--rating: ${rating};`} />
-									<div class="text-sm">{rating}/10</div>
-								</div>
-							</div>
-						{/if}
-					</div>
-					<div
-						class="text-white font-bold truncate"
-						title={result.userTitle ? result.userTitle : result.title}
-					>
-						{result.userTitle ? result.userTitle : result.title}
-					</div>
-					{#if result.year}
-						<div class="text-white text-sm opacity-80">{result.year}</div>
-					{/if}
-					{#if result.watched}
-						<div class="absolute bottom-1 right-1 text-white">
-							<Eye />
-						</div>
-					{/if}
-				</LazyLoad>
-			{/each}
-			{#if $totalResults != $results.length}
-				<div
-					bind:this={loader}
-					class="result overflow-hidden min-h-[14rem] w-40 mx-auto cursor-pointer text-white"
-					class:opacity-50={loading}
-					on:click={loadMore}
-				>
-					{#if loading}
-						<div class="flex w-full h-full justify-center items-center text-2xl text-white">
-							{$_('search.loading_more')}
-							<Spinner size={32} />
-						</div>
-					{:else}
-						<div class="flex w-full h-full justify-center items-center text-2xl text-white">
-							{$_('search.load_more')}
-						</div>
-					{/if}
-				</div>
-			{/if}
-		</div>
+		<MediaList list={$results} totalResults={$totalResults} {loadMore} {loading} />
 	{/if}
 </div>
 
@@ -417,14 +327,6 @@
 
 	label {
 		@apply px-2 text-white;
-	}
-
-	.result-wrapper {
-		@apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-9 3xl:grid-cols-11 gap-x-1 gap-y-2;
-	}
-
-	.cover {
-		@apply h-56 w-40 rounded-md overflow-hidden cursor-pointer transition-all bg-center bg-cover relative;
 	}
 
 	.search-bar-bg {
