@@ -60,7 +60,9 @@ function generateFullPath(file_path: string, transcoded: boolean): string {
 
 function convertTorrentToMagnet(torrent_url: string): Promise<string> {
 	return new Promise((resolve) => {
+		console.log('Downloading remote', torrent_url);
 		parseTorrent.remote(torrent_url, (err, parsedTorrent) => {
+			console.log('parse-torrent downloaded remote torrent');
 			if (err) throw err;
 			if (!parsedTorrent) throw new Error('Failed to parse torrent');
 			resolve(parseTorrent.toMagnetURI(parsedTorrent));
@@ -71,10 +73,11 @@ function convertTorrentToMagnet(torrent_url: string): Promise<string> {
 async function getMagnet(torrent: Torrent): Promise<string> {
 	let magnet = torrent.magnet;
 
-	// extract or generate the magnet
+	// Extract or generate the magnet
 	if (magnet == null) {
-		if (torrent.torrent_url === null)
+		if (torrent.torrent_url === null) {
 			throw new Error('No magnet or torrent url available for this torrent');
+		}
 		magnet = await convertTorrentToMagnet(torrent.torrent_url);
 	}
 
@@ -83,7 +86,8 @@ async function getMagnet(torrent: Torrent): Promise<string> {
 
 function selectMovieFromTorrent(engine: TorrentStream.TorrentEngine): Promise<TorrentFile> {
 	return new Promise((resolve, reject) => {
-		engine.on('ready', async function () {
+		engine.on('ready', function () {
+			console.log('Loaded files from Engine', engine.files.length);
 			const validFiles = engine.files.filter((file) => {
 				const extension = fileExtension(file.name);
 				return (
@@ -117,6 +121,7 @@ async function transcodeMovieFile(
 	}
 
 	const stream = movieFile.createReadStream();
+	const crf = movieFile.name.match('4k|2160p') ? 50 : 40;
 	ffmpeg()
 		.input(stream)
 		.inputFormat('matroska')
@@ -136,7 +141,7 @@ async function transcodeMovieFile(
 		// *
 		// .outputOptions("-vf scale=-1:101")
 		// .outputOptions("-qp 0")
-		.outputOptions('-crf 40')
+		.outputOptions(`-crf ${crf}`)
 		.outputOptions('-b:v 2500K')
 		.outputOptions('-deadline realtime')
 		.outputOptions('-cpu-used 6')
@@ -308,6 +313,7 @@ export async function download(torrent: Torrent, acceptMkv: boolean): Promise<Do
 		localTorrents[torrent.id].engine = engine;
 
 		// Select the good file in the torrent (using extension and size)
+		console.log('Selecting movie from the torrent');
 		let movieFile: TorrentFile;
 		try {
 			movieFile = await selectMovieFromTorrent(engine);
