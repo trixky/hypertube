@@ -2,10 +2,10 @@
 <!-- https://icons.getbootstrap.com/icons/chevron-down/ -->
 <svg
 	xmlns="http://www.w3.org/2000/svg"
-	width="16"
-	height="16"
+	width="11"
+	height="11"
 	fill="currentColor"
-	class="inline-block ml-2"
+	class="inline-block ml-2 translate-x-[4px]"
 	viewBox="0 0 16 16"
 >
 	<path

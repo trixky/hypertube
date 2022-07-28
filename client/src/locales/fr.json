@@ -4,7 +4,7 @@
       "year": "Annee",
       "query_placeholder": "Recherche",
       "rating": "Note",
-      "rating_placeholder": "Note Min.",
+      "rating_placeholder": "Note",
       "sort_by": "Trier par",
       "genres": {
         "name": "Categories",
@@ -56,7 +56,7 @@
     "forgot_password": "Mot de passe oublie ?",
     "join_question": "Pas encore sur Hypertube ?",
     "signup": "S'inscrire",
-    "continue_with": "Utiliser",
+    "continue_with": "Continer avec",
     "omniauth_separator": "ou",
     "username": "Nom d'utilisateur",
     "first_name": "Prénom",
