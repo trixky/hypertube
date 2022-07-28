@@ -36,7 +36,7 @@
 			<Spinner />
 		</div>
 	{/if}
-	<p class="inline-block capitalize">{name}</p>
+	<p class="inline-block capitalize text-black">{name}</p>
 </button>
 
 <!-- ========================= CSS -->

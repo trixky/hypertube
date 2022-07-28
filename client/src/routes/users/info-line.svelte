@@ -5,12 +5,11 @@
 	export let label: string;
 	export let value = '';
 	export let no_value = false;
-	export let centered = false;
 	export let can_be_empty = false;
 </script>
 
 <!-- ========================= HTML -->
-<div class:centered class="my-0">
+<div class="centered my-0">
 	<div class="inline-block px-2 align-bottom">
 		<label class="inline-block capitalize" for="username">{label}</label>
 	</div>

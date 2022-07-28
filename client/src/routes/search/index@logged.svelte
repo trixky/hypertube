@@ -170,19 +170,18 @@
 	{/if}
 </svelte:head>
 <div class="media-page bg-black min-h-[90%] w-full flex-grow">
-	<div class="w-full sticky top-0 z-10 border-b-2 border-blue-500">
-		<div class="flex flex-col md:flex-row items-center p-4">
+	<div class="w-full sticky top-0 z-10">
+		<div class="flex flex-col md:flex-row items-top p-4">
 			<div class="search-bar-bg" />
 			<div class="relative">
 				<input
 					type="text"
-					class="input block w-full mb-2 lg:inline-block lg:w-auto lg:mb-0"
+					class="input mb-2 lg:inline-block"
 					placeholder={$_('search.form.query_placeholder')}
 					disabled={loading}
 					bind:value={$search.query}
 					on:input={debounceSearch}
 				/>
-				<label for="year" class="lg:ml-4">{$_('search.form.year')}</label>
 				<input
 					type="number"
 					class="input w-20 mb-2 lg:mb-0"
@@ -195,7 +194,6 @@
 					bind:value={$search.year}
 					on:input={debounceSearch}
 				/>
-				<label for="rating">{$_('search.form.rating')}</label>
 				<input
 					type="number"
 					class="input w-20"
@@ -208,7 +206,7 @@
 					bind:value={$search.rating}
 					on:input={debounceSearch}
 				/>
-				<button class="input w-full lg:w-auto lg:ml-4" on:click={toggleGenres}>
+				<button class="input" on:click={toggleGenres}>
 					<span>
 						{$_('search.form.genres.name')}
 						{#if $search.genres.length > 0}
@@ -223,10 +221,9 @@
 				</button>
 			</div>
 			<div class="relative flex-grow" />
-			<div class="relative mt-2 lg:mt-0">
-				<label for="sort">{$_('search.form.sort_by')}</label>
+			<div class="relative mt-2 md:mt-0 lg:mt-0">
 				<select
-					class="input"
+					class="input bg-blue-300"
 					name="sort"
 					disabled={loading}
 					bind:value={$search.sortBy}
@@ -237,14 +234,14 @@
 					{/each}
 				</select>
 				<div
-					class="input inline-block ml-2 cursor-pointer"
+					class="text-white inline-block ml-2 cursor-pointer"
 					class:opacity-80={loading}
 					on:click={toggleSort}
 				>
 					{#if $search.sortOrder == 'ASC'}
-						{$_('asc.short')} <SortAsc />
+						<SortAsc />
 					{:else}
-						{$_('desc.short')} <SortDesc />
+						<SortDesc />
 					{/if}
 				</div>
 			</div>
@@ -255,7 +252,7 @@
 		>
 			<div class="flex items-center flex-wrap p-4 pb-0" bind:offsetHeight={genresHeight}>
 				<button
-					class="inline-flex items-center text-red-500 border border-red-100 py-1 px-2 mb-2 mr-2 rounded-md hover:bg-red-700 transition-all hover:shadow-md shadow-red-900 hover:text-white"
+					class="inline-flex items-center text-red-500 py-1 px-2 mb-2 mr-2 hover:underline underline-offset-1 transition-all hover:shadow-md"
 					on:click={clearGenres}
 				>
 					<Times />
@@ -274,7 +271,7 @@
 						/>
 						<label
 							for={genre.name}
-							class="inline-block flex-grow px-2 py-1 peer-checked:bg-green-700 bg-slate-600 rounded-md border border-gray-400 peer-checked:border-green-600 transition-colors cursor-pointer"
+							class="inline-block flex-grow px-2 py-1 peer-checked:text-blue-300 transition-colors cursor-pointer hover:underline underline-offset-1"
 						>
 							{genre.name}
 						</label>
@@ -299,7 +296,8 @@
 <!-- ========================= CSS -->
 <style lang="postcss">
 	.input {
-		@apply p-2 rounded-md bg-transparent border border-slate-400 bg-slate-900 text-white;
+		@apply p-2 bg-transparent  border-b-[1px] border-blue-300 text-white mx-1;
+		/* @apply p-2 rounded-md bg-transparent bg-gray-900 border-b-2 text-white mx-1; */
 	}
 
 	label {
