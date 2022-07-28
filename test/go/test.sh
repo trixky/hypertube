@@ -1,5 +1,9 @@
 echo \#\#\# start postgres/redis
 
+# change the ports to avoid network conflicts
+export POSTGRES_PORT=5433
+export REDIS_PORT=6380
+
 # start postgres
 /usr/local/bin/docker-entrypoint.sh postgres &> /dev/null &
 # start redis
