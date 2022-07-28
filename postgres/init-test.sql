@@ -1,5 +1,3 @@
-\ c hypertube;
-
 -- unencrypted from server side password: 1e8392fcefc860ef9714dcf4ad2249a995118c7a3bdbf4a96e8ffd7fe354c2e6
 -- **************** TESTS META
 -- user test 0 (0)
@@ -39,6 +37,10 @@ VALUES (204, 'username_test_9', 'firstname_test_9', 'lastname_test_9', 'email.te
 
 -- **************** TESTS API-MEDIA
 INSERT INTO medias (id, imdb_id, tmdb_id, description, duration, thumbnail, background, year, rating)
-VALUES (1, 'tt0000000', 0, 'Movie movie movie', 180, NULL, NULL, 1990, 6.9)
-INsERT INTO media_names (id, media_id, name, lang)
-VALUES (1, 1, 'Movie', '__')
+VALUES (1, 'tt0000000', 0, 'Movie movie movie', 180, NULL, NULL, 1990, 6.9);
+INSERT INTO media_names (id, media_id, name, lang)
+VALUES (1, 1, 'Movie', '__');
+INSERT INTO torrents (id, full_url, media_id, name, type, seed, leech, size, description_html, magnet, last_update)
+VALUES (1, 'https://torren.ts', 1, 'Movie.x264', 'CATEGORY_MOVIE', 42, 42, '4.2 GB', '<p>Movie</p>', 'magnet:hash', '2022-07-27 10:07:24.376856+00');
+INSERT INTO positions (id, user_id, torrent_id, position)
+VALUES (1, 201, 1, 1);

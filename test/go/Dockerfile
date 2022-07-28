@@ -8,12 +8,13 @@ RUN apk add redis
 
 # ------------------------------- postgres configuration
 COPY ./postgres /hypertube/postgres
-COPY ./postgres/init.sql /docker-entrypoint-initdb.d/
+COPY ./postgres/init.sql /docker-entrypoint-initdb.d/init-base.sql
+COPY ./postgres/init-test.sql /docker-entrypoint-initdb.d/init-test.sql
 
 # ------------------------------- install go
 COPY --from=golang:1.18.3-alpine3.16 /usr/local/go/ /usr/local/go/
 ENV PATH="/usr/local/go/bin:${PATH}"
-RUN apk add gcc musl-dev 
+RUN apk add gcc musl-dev
 
 # ------------------------------- copy project
 WORKDIR /hypertube/

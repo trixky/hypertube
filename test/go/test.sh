@@ -10,7 +10,7 @@ sleep 5
 
 # change the network context to localhost
 export POSTGRES_HOST=localhost
-export REDIS_HOST=localhost 
+export REDIS_HOST=localhost
 
 echo ============================================= START TESTS
 
@@ -25,4 +25,3 @@ do
     # start test
     go test ./...
 done
-
