@@ -17,6 +17,7 @@ bin
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+dump.rdb
 
 # Generated packages
 **/proto/*.go
@@ -28,6 +29,7 @@ bin
 **/tutu*
 **/tata*
 hypertube.sql
+.temp
 
 # todo
 *todo*
