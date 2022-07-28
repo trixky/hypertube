@@ -182,7 +182,8 @@ services:
       - ./api-auth/.env
       - ./api-user/.env
     volumes:
-      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init-base.sql
+      - ./postgres/init-test.sql:/docker-entrypoint-initdb.d/init-test.sql
       - ./test/go:/hypertube/test/go
       - ./.shared:/hypertube/.shared
       - ./api-auth:/hypertube/api-auth
