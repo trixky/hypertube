@@ -298,6 +298,7 @@
 				clearTimeout(initialStatusTimeout);
 				clearTimeout(statusTimeout);
 				clearTimeout(focusTimeout);
+				clearTimeout(subtitleMessageTimeout);
 				dispatch('error');
 			});
 		}
@@ -307,6 +308,7 @@
 		clearTimeout(initialStatusTimeout);
 		clearTimeout(statusTimeout);
 		clearTimeout(focusTimeout);
+		clearTimeout(subtitleMessageTimeout);
 	});
 </script>
 

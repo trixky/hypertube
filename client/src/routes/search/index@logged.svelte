@@ -75,9 +75,10 @@
 	import ChevronUp from '$components/icons/ChevronUp.svelte';
 	import { genres, getGenres, type Genre } from '$stores/genres';
 	import Times from '$components/icons/Times.svelte';
-	import { accordion } from '$directives/accordion';
 	import type { Result } from '$types/Media';
 	import MediaList from '$components/generics/MediaList.svelte';
+	import { tweened } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
 
 	export let ssrGenres: Genre[];
 	genres.set(ssrGenres);
@@ -95,6 +96,12 @@
 
 	// Genres
 	let genresOpen = false;
+	let genresHeight = 0;
+	let genresAnimations = tweened(genresHeight, {
+		duration: 200,
+		easing: cubicOut
+	});
+	$: genresAnimations.set(genresOpen ? genresHeight : 0);
 	function toggleGenres() {
 		genresOpen = !genresOpen;
 	}
@@ -242,8 +249,11 @@
 				</div>
 			</div>
 		</div>
-		<div class="relative text-white border-t border-blue-500" use:accordion={genresOpen}>
-			<div class="flex items-center flex-wrap p-4 pb-0">
+		<div
+			class="relative text-white border-t border-blue-500 overflow-hidden"
+			style="height: {$genresAnimations}px;"
+		>
+			<div class="flex items-center flex-wrap p-4 pb-0" bind:offsetHeight={genresHeight}>
 				<button
 					class="inline-flex items-center text-red-500 border border-red-100 py-1 px-2 mb-2 mr-2 rounded-md hover:bg-red-700 transition-all hover:shadow-md shadow-red-900 hover:text-white"
 					on:click={clearGenres}
