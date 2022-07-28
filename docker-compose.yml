@@ -188,6 +188,8 @@ services:
       - ./.shared:/hypertube/.shared
       - ./api-auth:/hypertube/api-auth
       - ./api-user:/hypertube/api-user
+      - ./api-media:/hypertube/api-media
+      - ./api-scrapper:/hypertube/api-scrapper
     profiles:
       - test
 
