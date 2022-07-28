@@ -21,6 +21,8 @@ WORKDIR /hypertube/
 COPY ./.shared /hypertube/.shared
 COPY ./api-auth /hypertube/api-auth
 COPY ./api-user /hypertube/api-user
+COPY ./api-media /hypertube/api-media
+COPY ./api-scrapper /hypertube/api-scrapper
 
 # it may be interesting to rebuild the image without
 # cache to take advantage of the pre-download of go dependencies
@@ -33,6 +35,12 @@ WORKDIR /hypertube/api-auth
 RUN go mod download
 # api-user
 WORKDIR /hypertube/api-user
+RUN go mod download
+# api-media
+WORKDIR /hypertube/api-media
+RUN go mod download
+# api-scrapper
+WORKDIR /hypertube/api-scrapper
 RUN go mod download
 
 WORKDIR /hypertube
