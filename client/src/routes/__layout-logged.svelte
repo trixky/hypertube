@@ -24,7 +24,7 @@
 </script>
 
 <!-- ========================= HTML -->
-<div class="flex flex-col min-h-screen">
+<div class="flex flex-col min-h-screen bg-black">
 	<Header />
 	<main class="flex-grow flex flex-row content-start justify-start relative">
 		<slot />
