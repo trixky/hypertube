@@ -11,7 +11,7 @@ import {
 	getTorrentSubtitles,
 	MediaInformations
 } from '../postgres/subtitles';
-import osdb, { SearchInformations } from '../lib/osdb';
+import osdb, { OSDBSubtitle, SearchInformations } from '../lib/osdb';
 import { CACHE_PATH_SUBTITLES } from '../lib/cache';
 
 const router = Router();
@@ -34,14 +34,18 @@ router.get('/torrent/:torrentId/subtitles', async function (req, res) {
 	}
 
 	// Check if there already is subtitles for the torrent
-	const subtitles = await getTorrentSubtitles(torrentId);
-	if (subtitles.length > 0) {
-		return res.status(200).send({
-			subtitles: subtitles.map((subtitle) => ({
-				id: parseInt(subtitle.id),
-				lang: subtitle.lang
-			}))
-		});
+	try {
+		const subtitles = await getTorrentSubtitles(torrentId);
+		if (subtitles.length > 0) {
+			return res.status(200).send({
+				subtitles: subtitles.map((subtitle) => ({
+					id: parseInt(subtitle.id),
+					lang: subtitle.lang
+				}))
+			});
+		}
+	} catch (err) {
+		return res.status(500).send({ error: 'Failed to get subtitles' });
 	}
 
 	// Get the media informations to query OpenSubtitles
@@ -66,9 +70,14 @@ router.get('/torrent/:torrentId/subtitles', async function (req, res) {
 		torrent_name: torrent.name
 	};
 	console.log('Searching subtitles for torrent', torrent.id, searchParams);
-	const osResults = await osdb.search(searchParams);
-	if (osResults === false) {
-		return res.status(200).send({ subtitles: [] });
+	let osResults: false | OSDBSubtitle[];
+	try {
+		osResults = await osdb.search(searchParams);
+		if (osResults === false) {
+			return res.status(200).send({ subtitles: [] });
+		}
+	} catch (error) {
+		return res.status(500).send({ error: 'Failed to fetch subtitles' });
 	}
 
 	// If there is results, select, download them and uncompress them
@@ -78,26 +87,41 @@ router.get('/torrent/:torrentId/subtitles', async function (req, res) {
 		const firstResult = osResults.find((subtitle) => subtitle.attributes.language == lang);
 		if (firstResult) {
 			console.log('downloading lang', lang, 'for', torrent.name);
-			const downloadedSubtitle = await osdb.download({
-				fileId: firstResult.attributes.files[0].file_id,
-				torrentId: torrent.id,
-				lang
-			});
+			let downloadedSubtitle:
+				| false
+				| {
+						extension: string;
+						buffer: string;
+				  } = false;
+			try {
+				downloadedSubtitle = await osdb.download({
+					fileId: firstResult.attributes.files[0].file_id,
+					torrentId: torrent.id,
+					lang
+				});
+			} catch (error) {
+				console.error('Failed to download subtitles for lang', lang, torrent.name);
+				continue;
+			}
 			// If the download succeeded, convert it and save it
 			if (downloadedSubtitle) {
-				const convertedSubtitle = stringifySync(parseSync(downloadedSubtitle.buffer), {
-					format: 'WebVTT'
-				});
-				const folder = `${CACHE_PATH_SUBTITLES}${torrent.id}`;
-				const path = `${folder}/${lang}.vtt`;
-				await mkdir(folder, { recursive: true });
-				await writeFile(path, convertedSubtitle);
-				const created = await createTorrentSubtitle({
-					torrent_id: torrent.id,
-					lang,
-					path
-				});
-				collected.push({ id: parseInt(created.rows[0].id), lang });
+				try {
+					const convertedSubtitle = stringifySync(parseSync(downloadedSubtitle.buffer), {
+						format: 'WebVTT'
+					});
+					const folder = `${CACHE_PATH_SUBTITLES}${torrent.id}`;
+					const path = `${folder}/${lang}.vtt`;
+					await mkdir(folder, { recursive: true });
+					await writeFile(path, convertedSubtitle);
+					const created = await createTorrentSubtitle({
+						torrent_id: torrent.id,
+						lang,
+						path
+					});
+					collected.push({ id: parseInt(created.rows[0].id), lang });
+				} catch (error) {
+					console.error('Failed to save subtitles for lang', lang, torrent.name);
+				}
 			} else if (osdb.blocked) {
 				break;
 			}
