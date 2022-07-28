@@ -9,7 +9,7 @@ for FOLDER in postgres redis api-auth api-user api-scrapper api-media tmdb-proxy
 do
     echo "source $FOLDER"
     if test -f "./$FOLDER/.env"; then
-        export $(grep -v '^#' ./$FOLDER/.env | xargs)
+        export $(echo "$(echo $(cat ./$FOLDER/.env) | grep -v '^#' | xargs)") 2>/dev/null
     else
         echo "No .env file in $FOLDER"
     fi

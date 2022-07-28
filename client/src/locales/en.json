@@ -4,7 +4,7 @@
       "year": "Year",
       "query_placeholder": "Search",
       "rating": "Rating",
-      "rating_placeholder": "Min. Rating",
+      "rating_placeholder": "Rating",
       "sort_by": "Sort By",
       "genres": {
         "name": "Genres",

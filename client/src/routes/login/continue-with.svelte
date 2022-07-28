@@ -15,7 +15,7 @@
 		{disabled}
 	>
 		<div class="flex justify-center items-center">
-			<p class="truncate pr-2 hidden ss:block">{$_('auth.continue_with')}</p>
+			<p class="truncate pr-2 hidden md:block">{$_('auth.continue_with')}</p>
 			<img
 				class="w-[20px] h-[20px] "
 				alt="{destination} logo"

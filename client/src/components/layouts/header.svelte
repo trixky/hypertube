@@ -23,13 +23,11 @@
 </script>
 
 <!-- ========================= HTML -->
-<header
-	class="relative z-10 w-full bg-black flex flex-col md:flex-row flex-nowrap items-stretch md:h-[7rem] border-b-stone-200 border-b pb-4 md:pb-0"
->
-	<div class="relative md:hidden w-full p-4 text-center">
-		<Logo />
-	</div>
-	<div
+<header class="relative text-center w-full bg-black">
+	<!-- <header
+	class="relative w-full bg-black flex flex-col md:flex-row flex-nowrap items-stretch md:h-[7rem] pb-4 md:pb-0"
+> -->
+	<!-- <div
 		class="relative md:w-1/2 flex justify-center md:justify-start items-center text-white mt-2 px-4 md:pr-0"
 	>
 		{#if user && !($page.url.pathname == '/search')}
@@ -37,45 +35,45 @@
 				{$_('navigation.search')}
 			</a>
 		{/if}
-	</div>
-	<div class="hidden md:block absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2">
+	</div> -->
+	<div class="absolute top-0 left-1/2 -translate-x-1/2 mt-7">
 		<Logo />
 	</div>
-	<div class="relative md:w-1/2 md:flex justify-end items-center px-4 md:pl-0">
+	<div class="mb-4 mt-24 mx-6 flex flex-col md:float-right md:mt-4">
+		<!-- <div class="float-right mt-8 mr-10 relative"> -->
 		{#if user}
-			<div class="flex flex-col">
-				<div title={$_('language')}>
-					<select
-						name="language"
-						id="language"
-						class="p-1 bg-transparent rounded-md text-white border border-gray-400"
-						on:change={setLocale}
-					>
-						<option value="en">English</option>
-						<option value="fr">Francais</option>
-					</select>
-				</div>
-
-				<div>
-					<a href={`/users/${user.id}`}>
-						<p class="text-white inline">{user.username}</p>
-						<img
-							class="invert inline-block -translate-y-[1px] translate-x-1"
-							src="/user.png"
-							width="16px"
-							height="16px"
-							alt={$_('auth.my_profile')}
-						/>
-					</a>
-				</div>
-
-				<button
-					class="flex items-center text-red-500 border border-red-100 py-1 px-2 mt-2 rounded-md hover:bg-red-700 transition-all hover:shadow-md shadow-red-900 hover:text-white"
-					on:click|preventDefault={logout}
+			<!-- <div class="flex flex-col content-end text-right"> -->
+			<!-- <div class="flex flex-col content-end"> -->
+			<div title={$_('language')} class="inline-block -translate-x-[6px]">
+				<select
+					name="language"
+					id="language"
+					class="p-1 bg-transparent text-white cursor-pointer"
+					on:change={setLocale}
 				>
-					<Logout /> <span class="hover:text-white transition-all">{$_('logout')}</span>
-				</button>
+					<option value="en">&nbsp;English</option>
+					<option value="fr">Francais</option>
+				</select>
 			</div>
+			<div class="my-1 inline">
+				<a href={`/users/${user.id}`} class="[&>*]:hover:underline">
+					<p class="text-white inline pr-1 underline-offset-1">{user.username}</p>
+					<img
+						class="invert inline"
+						src="/user.png"
+						width="16px"
+						height="16px"
+						alt={$_('auth.my_profile')}
+					/>
+				</a>
+			</div>
+			<button
+				class="inline text-red-500 transition-all rounded-md hover:underline underline-offset-1"
+				on:click|preventDefault={logout}
+			>
+				<span class="transition-all pr-3 ">{$_('logout')}</span><Logout />
+			</button>
+			<!-- </div> -->
 		{/if}
 	</div>
 </header>

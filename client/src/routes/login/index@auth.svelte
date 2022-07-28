@@ -185,10 +185,10 @@
 		</p>
 		<div class="mt-10">
 			<ConfirmationButton
-			name={$_('auth.login_action')}
-			handler={handle_login}
-			bind:loading
-			bind:disabled
+				name={$_('auth.login_action')}
+				handler={handle_login}
+				bind:loading
+				bind:disabled
 			/>
 		</div>
 		<Warning centered content={response_warning} color="red" />

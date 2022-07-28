@@ -1,6 +1,8 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts" context="module">
 	import type { Load } from '@sveltejs/kit';
+	import { goto } from '$app/navigation';
+	import Separator from '$components/generics/separator.svelte';
 
 	async function getUserMovies(
 		fetch: (info: RequestInfo, init?: RequestInit | undefined) => Promise<Response>,
@@ -109,7 +111,7 @@
 
 	$: its_me = $session.user?.id == user.id;
 	let modification_mode = false;
-	$: img_src = modification_mode ? '/return.png' : '/pen.png';
+	$: img_src = modification_mode ? '/close.png' : '/pen.png';
 	$: img_alt = modification_mode ? $_('auth.cancel') : $_('auth.modify');
 
 	let loading = false;
@@ -181,6 +183,10 @@
 	$: password_input_type = show_password ? 'text' : 'password';
 
 	let emails_already_in_use: Array<string> = [];
+
+	function handle_close() {
+		goto("/search")
+	}
 
 	function handle_pen() {
 		modification_mode = !modification_mode;
@@ -429,6 +435,9 @@
 	<div class="flex justify-center items-center ">
 		<BlackBox title={its_me ? $_('auth.my_profile') : $_('auth.profile')}>
 			{#if !user_does_not_exist}
+				<button class="absolute left-5 top-4" on:click={handle_close}>
+					<img class="invert" src="/return.png" width="18px" height="18px" alt={img_alt} />
+				</button>
 				{#if its_me}
 					<button class="absolute right-5 top-4" on:click={handle_pen}>
 						<img class="invert" src={img_src} width="18px" height="18px" alt={img_alt} />
@@ -436,12 +445,7 @@
 				{/if}
 				<form class="pt-1 w-full">
 					<div>
-						<InfoLine
-							centered={!modification_mode}
-							label={$_('auth.username')}
-							bind:value={current_username}
-							{can_be_empty}
-						/>
+						<InfoLine label={$_('auth.username')} bind:value={current_username} {can_be_empty} />
 						{#if modification_mode}
 							<input
 								type="text"
@@ -459,12 +463,7 @@
 						{/if}
 					</div>
 					<div>
-						<InfoLine
-							centered={!modification_mode}
-							label={$_('auth.first_name')}
-							bind:value={current_firstname}
-							{can_be_empty}
-						/>
+						<InfoLine label={$_('auth.first_name')} bind:value={current_firstname} {can_be_empty} />
 						{#if modification_mode}
 							<input
 								type="text"
@@ -482,12 +481,7 @@
 						{/if}
 					</div>
 					<div>
-						<InfoLine
-							centered={!modification_mode}
-							label={$_('auth.last_name')}
-							bind:value={current_lastname}
-							{can_be_empty}
-						/>
+						<InfoLine label={$_('auth.last_name')} bind:value={current_lastname} {can_be_empty} />
 						{#if modification_mode}
 							<input
 								type="text"
@@ -506,12 +500,7 @@
 					</div>
 					{#if its_me}
 						<div>
-							<InfoLine
-								centered={!modification_mode}
-								label={$_('auth.email')}
-								bind:value={current_email}
-								{can_be_empty}
-							/>
+							<InfoLine label={$_('auth.email')} bind:value={current_email} {can_be_empty} />
 							{#if modification_mode && $session.user?.external === 'none'}
 								<input
 									type="email"
@@ -598,7 +587,10 @@
 			{/if}
 		</BlackBox>
 	</div>
-	<div class="flex-grow bg-black">
+	<div class="w-1/2 max-w-[500px] m-auto my-3">
+		<Separator content="" />
+	</div>
+	<div class="flex-grow bg-black text-center">
 		{#if totalResults == 0}
 			<p>{$_('media.user_no_results')}</p>
 		{:else}

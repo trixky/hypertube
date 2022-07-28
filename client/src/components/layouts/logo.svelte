@@ -1,12 +1,26 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
+	import { page, session } from '$app/stores';
+	import { goto } from '$app/navigation';
+
 	export let alone = false;
+
+	$: link_to_search = $session.user && !($page.url.pathname == '/search')
+
+	const onClick = () => {
+		if (link_to_search) {
+			goto("/search")
+		}
+	};
 </script>
 
 <!-- ========================= HTML -->
+<!-- {#if onClick != undefined} -->
 <h1
 	class:alone
-	class="text-blue-300 font-bold logo-title font-['Holtwood One SC'] text-5xl max-w-[95%] text-clip overflow-visible"
+	on:click={onClick}
+	class="text-blue-300 text-5xl font-bold logo-title cursor-pointer select-none font-['Holtwood One SC'] text-clip"
+	class:cursor-pointer={link_to_search}
 >
 	Hypertube
 </h1>
@@ -18,6 +32,6 @@
 	}
 
 	.alone {
-		@apply absolute z-10 left-1/2 -translate-x-1/2 -top-6;
+		@apply absolute left-1/2 -translate-x-1/2 -top-6;
 	}
 </style>
