@@ -184,10 +184,6 @@
 
 	let emails_already_in_use: Array<string> = [];
 
-	function handle_close() {
-		goto('/search');
-	}
-
 	function handle_pen() {
 		modification_mode = !modification_mode;
 	}
@@ -435,9 +431,9 @@
 	<div class="flex justify-center items-center ">
 		<BlackBox title={its_me ? $_('auth.my_profile') : $_('auth.profile')}>
 			{#if !user_does_not_exist}
-				<button class="absolute left-5 top-4" on:click={handle_close}>
+				<a href="/search" class="absolute left-5 top-4">
 					<img class="invert" src="/return.png" width="18px" height="18px" alt={img_alt} />
-				</button>
+				</a>
 				{#if its_me}
 					<button class="absolute right-5 top-4" on:click={handle_pen}>
 						<img class="invert" src={img_src} width="18px" height="18px" alt={img_alt} />
