@@ -26,8 +26,8 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Med
 
 	// Check and set arguments for the query
 	params := utils.FindMediasParams{
-		SortColumn: "id",
-		SortOrder:  "DESC",
+		SortColumn: "name",
+		SortOrder:  "ASC",
 	}
 	page := int32(1)
 	if in.Page != nil && *in.Page > 1 {

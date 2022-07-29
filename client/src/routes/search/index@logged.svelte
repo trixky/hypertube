@@ -67,7 +67,7 @@
 	export let ssrTotalResults: number;
 	totalResults.set(ssrTotalResults);
 
-	let sortColumns: string[] = ['year', 'name', 'duration', 'id'];
+	let sortColumns: string[] = ['name', 'year', 'duration', 'id'];
 
 	let loadMoreError = false;
 	$: loading = $searching || $loadingMore;
@@ -224,10 +224,7 @@
 				</div>
 			</div>
 		</div>
-		<div
-			class="relative text-white overflow-hidden"
-			style="height: {$genresAnimations}px;"
-		>
+		<div class="relative text-white overflow-hidden" style="height: {$genresAnimations}px;">
 			<div class="flex items-center flex-wrap p-4 pb-0" bind:offsetHeight={genresHeight}>
 				<button
 					class="inline-flex items-center text-red-500 py-1 px-2 mb-2 mr-2 hover:underline underline-offset-1 transition-all hover:shadow-md"
