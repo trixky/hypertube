@@ -17,13 +17,11 @@ func init() {
 	environment_config := environment.Config{
 		ENV_grpc_port:         "API_MEDIA_GRPC_PORT",
 		ENV_grpc_gateway_port: "API_MEDIA_GRPC_GATEWAY_PORT",
-		ENV_http_port:         "API_MEDIA_HTTP_PORT",
 	}
 
 	environment.Postgres.GetAll()                // Get postgres environment
 	environment.Redis.GetAll()                   // Get redis environment
 	environment.Grpc.GetAll(&environment_config) // Get grpc environment
-	environment.Http.GetAll(&environment_config) // Get http environment
 
 	databases.InitPostgres() // Init postgres
 	databases.InitRedis()    // Init redis
@@ -68,7 +66,7 @@ func TestGetComment(t *testing.T) {
 		{
 			token: "f944c98c-0c2a-11ed-861d-0242ac120002",
 			input: &proto.GetCommentRequest{
-				CommentId: 1,
+				CommentId: 3,
 			},
 			error_expected: false,
 		},
