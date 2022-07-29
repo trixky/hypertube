@@ -78,7 +78,7 @@
 	{/if}
 	<form class="mt-4 mb-6" on:submit|preventDefault={postComment}>
 		<textarea
-			class="border border-white rounded-md w-full bg-transparent text-white p-4 disabled:opacity-50 transition-all"
+			class="border border-white rounded-md w-full bg-transparent text-white p-3 disabled:opacity-50 transition-all"
 			name="comment"
 			id="comment"
 			rows="4"
@@ -131,7 +131,7 @@
 <!-- ========================= CSS -->
 <style lang="postcss">
 	.comment {
-		@apply mb-4 p-2 border border-stone-400 rounded-md bg-stone-900 relative;
+		@apply mb-4 p-3 border border-stone-400 rounded-md bg-stone-900 relative;
 	}
 
 	.comment.self {
@@ -140,16 +140,16 @@
 	}
 
 	.comment.self .comment-header {
-		@apply p-2 pb-0 bg-stone-900 rounded-t-md;
+		@apply p-3 pb-0 bg-stone-900 rounded-t-md;
 	}
 	.comment.self .comment-content {
-		@apply p-2 pt-0 bg-stone-900 rounded-b-md;
+		@apply p-3 pt-0 bg-stone-900 rounded-b-md;
 	}
 
 	.comment.self .bordered {
 		@apply absolute top-0 right-0 bottom-0 left-0;
 		background: rgb(170, 50, 201);
-		background: linear-gradient(to bottom right, rgb(170, 50, 201) 0%, rgba(107, 139, 176, 1) 100%);
+		background: linear-gradient(to bottom right, rgb(255, 255, 255) 0%, rgba(107, 139, 176, 1) 100%);
 	}
 
 	.comment-header {
@@ -158,17 +158,5 @@
 
 	.comment-content {
 		@apply relative;
-	}
-
-	.comment-content::before {
-		@apply block w-full mb-1;
-		content: '';
-		height: 1px;
-		background: linear-gradient(
-			to right,
-			rgba(0, 0, 0, 0) 25%,
-			rgba(255, 255, 255, 0.8) 50%,
-			rgba(0, 0, 0, 0) 75%
-		);
 	}
 </style>
