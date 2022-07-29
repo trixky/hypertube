@@ -13,31 +13,20 @@
 				cookie: !browser ? `token=${session.token}; locale=${session.locale}` : ''
 			}
 		});
+		if (!response.ok || response.status >= 400) {
+			return {
+				status: response.status > 0 ? response.status : 500
+			};
+		}
 
 		let props: MediaProps | false = false;
 		if (response.ok) {
 			props = (await response.json()) as MediaProps;
 		}
 
-		const notFound = response.status == 404;
-		const forbidden = response.status >= 400 && response.status < 500 && !notFound;
-
-		if (forbidden) {
-			return {
-				status: 403
-			};
-		} else if (notFound) {
-			return {
-				status: 404
-			};
-		} else if (response.status >= 500) {
-			return {
-				status: 500
-			};
-		}
 		return {
 			status: response.status,
-			redirect: notFound || !response.ok ? '/search' : undefined,
+			redirect: !response.ok ? '/search' : undefined,
 			props: { props }
 		};
 	};

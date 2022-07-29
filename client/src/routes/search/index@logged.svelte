@@ -6,20 +6,9 @@
 	// -- and insert them on startup in the client
 	export const load: Load = async ({ fetch, session }) => {
 		const { response: genresResponse, genres } = await getGenres(fetch, session);
-		let notFound = genresResponse.status == 404;
-		let forbidden = genresResponse.status >= 400 && genresResponse.status < 500 && !notFound;
-
-		if (forbidden) {
+		if (!genresResponse.ok || genresResponse.status >= 400) {
 			return {
-				status: 403
-			};
-		} else if (notFound) {
-			return {
-				status: 404
-			};
-		} else if (genresResponse.status >= 500) {
-			return {
-				status: 500
+				status: genresResponse.status > 0 ? genresResponse.status : 500
 			};
 		}
 
@@ -28,20 +17,9 @@
 			results,
 			totalResults
 		} = await executeSearch(baseUrl, fetch, session);
-		notFound = searchResponse.status == 404;
-		forbidden = searchResponse.status >= 400 && searchResponse.status < 500 && !notFound;
-
-		if (forbidden) {
+		if (!searchResponse.ok || searchResponse.status >= 400) {
 			return {
-				status: 403
-			};
-		} else if (notFound) {
-			return {
-				status: 404
-			};
-		} else if (searchResponse.status >= 500) {
-			return {
-				status: 500
+				status: searchResponse.status > 0 ? searchResponse.status : 500
 			};
 		}
 
