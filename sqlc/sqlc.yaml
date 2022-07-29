@@ -1,36 +1,5 @@
 version: "1"
 packages:
-  - path: "../api-auth/sqlc"
-    name: "sqlc"
-    engine: "postgresql"
-    schema:
-      - "sql/torrents/schema.sql"
-      - "sql/position/schema.sql"
-      - "sql/medias/schema.sql"
-      - "sql/users/schema.sql"
-    queries:
-      - "sql/users/query.sql"
-  - path: "../api-user/sqlc"
-    name: "sqlc"
-    engine: "postgresql"
-    schema:
-      - "sql/torrents/schema.sql"
-      - "sql/position/schema.sql"
-      - "sql/medias/schema.sql"
-      - "sql/users/schema.sql"
-    queries:
-      - "sql/medias/query.sql"
-      - "sql/users/query.sql"
-  - path: "../api-scrapper/sqlc"
-    name: "sqlc"
-    engine: "postgresql"
-    schema:
-      - "sql/medias/schema.sql"
-      - "sql/torrents/schema.sql"
-      - "sql/position/schema.sql"
-    queries:
-      - "sql/scrapper/query.sql"
-      - "sql/medias/query.sql"
   - path: "../api-media/sqlc"
     name: "sqlc"
     engine: "postgresql"
