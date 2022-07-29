@@ -129,6 +129,41 @@ message PostCommentResponse {
 	string content = 4;
 }
 
+message GetAllCommentsRequest {
+}
+
+message GlobalComment {
+	uint64 id = 1;
+	uint64 media_id = 2;
+	comment.CommentUser user = 3;
+	google.protobuf.Timestamp date = 4;
+	string content = 5;
+}
+
+message GetAllCommentsResponse {
+	uint32 total_comments = 1;
+	repeated GlobalComment comments = 2;
+}
+
+message GetCommentRequest {
+	uint64 comment_id = 1;
+}
+
+message UpdateCommentRequest {
+	uint64 comment_id = 1;
+	string content = 2;
+}
+
+message UpdateCommentResponse {
+}
+
+message DeleteCommentRequest {
+	uint64 comment_id = 1;
+}
+
+message DeleteCommentResponse {
+}
+
 service MediaService {
     rpc Search(SearchRequest) returns (MediaList) {
         option (google.api.http) = {
@@ -164,6 +199,30 @@ service MediaService {
         option (google.api.http) = {
             post: "/v1/media/{media_id}/comment"
             body: "*"
+        };
+	};
+
+    rpc GetAllComments(GetAllCommentsRequest) returns (GetAllCommentsResponse) {
+        option (google.api.http) = {
+            get: "/v1/comments"
+        };
+	};
+
+    rpc GetComment(GetCommentRequest) returns (GlobalComment) {
+        option (google.api.http) = {
+            get: "/v1/comments/{comment_id}"
+        };
+	};
+
+    rpc UpdateComment(UpdateCommentRequest) returns (UpdateCommentResponse) {
+        option (google.api.http) = {
+            patch: "/v1/comments/{comment_id}"
+        };
+	};
+
+    rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse) {
+        option (google.api.http) = {
+            delete: "/v1/comments/{comment_id}"
         };
 	};
 }

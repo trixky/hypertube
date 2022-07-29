@@ -44,3 +44,11 @@ INSERT INTO torrents (id, full_url, media_id, name, type, seed, leech, size, des
 VALUES (1, 'https://torren.ts', 1, 'Movie.x264', 'CATEGORY_MOVIE', 42, 42, '4.2 GB', '<p>Movie</p>', 'magnet:hash', '2022-07-27 10:07:24.376856+00');
 INSERT INTO positions (id, user_id, torrent_id, position)
 VALUES (1, 201, 1, 1);
+
+-- **************** TESTS API-MEDIA/Comments
+INSERT INTO comments (id, user_id, media_id, content)
+VALUES (1, 201, 1, 'Comment comment comment [Deleted]');
+INSERT INTO comments (id, user_id, media_id, content)
+VALUES (2, 201, 1, 'Comment comment comment [Not Updated]');
+INSERT INTO comments (id, user_id, media_id, content)
+VALUES (3, 201, 1, 'Comment comment comment');
