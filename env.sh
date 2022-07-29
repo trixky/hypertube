@@ -5,7 +5,7 @@ else
     echo "Missing root .env file"
 fi
 
-for FOLDER in postgres redis api-auth api-user api-scrapper api-media tmdb-proxy api-streaming api-position client streaming-proxy
+for FOLDER in postgres redis api-auth api-user api-picture api-scrapper api-media tmdb-proxy api-streaming api-position client streaming-proxy
 do
     echo "source $FOLDER"
     if test -f "./$FOLDER/.env"; then
