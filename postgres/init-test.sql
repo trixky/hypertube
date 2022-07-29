@@ -51,4 +51,6 @@ VALUES (1, 201, 1, 'Comment comment comment [Deleted]');
 INSERT INTO comments (id, user_id, media_id, content)
 VALUES (2, 201, 1, 'Comment comment comment [Not Updated]');
 INSERT INTO comments (id, user_id, media_id, content)
-VALUES (3, 201, 1, 'Comment comment comment');
+VALUES (3, 201, 1, 'Comment comment comment [201]');
+INSERT INTO comments (id, user_id, media_id, content)
+VALUES (4, 202, 1, 'Comment comment comment [202]');

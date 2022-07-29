@@ -2,25 +2,23 @@ package internal
 
 import (
 	"context"
-	"fmt"
-	"math/rand"
 	"testing"
-	"time"
 
 	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/environment"
 	_test "github.com/trixky/hypertube/.shared/test"
 	"github.com/trixky/hypertube/api-media/proto"
 	"github.com/trixky/hypertube/api-media/queries"
+	"github.com/trixky/hypertube/api-media/utils"
 	"google.golang.org/grpc/metadata"
 )
 
 func init() {
 	// Set environment config
 	environment_config := environment.Config{
-		ENV_grpc_port:         "API_AUTH_GRPC_PORT",
-		ENV_grpc_gateway_port: "API_AUTH_GRPC_GATEWAY_PORT",
-		ENV_http_port:         "API_AUTH_HTTP_PORT",
+		ENV_grpc_port:         "API_MEDIA_GRPC_PORT",
+		ENV_grpc_gateway_port: "API_MEDIA_GRPC_GATEWAY_PORT",
+		ENV_http_port:         "API_MEDIA_HTTP_PORT",
 	}
 
 	environment.Postgres.GetAll()                // Get postgres environment
@@ -31,13 +29,6 @@ func init() {
 	databases.InitPostgres() // Init postgres
 	databases.InitRedis()    // Init redis
 	queries.InitSqlc()       // Init sqlc queries
-}
-
-func randomString(length int) string {
-	rand.Seed(time.Now().UnixNano())
-	b := make([]byte, length)
-	rand.Read(b)
-	return fmt.Sprintf("%x", b)[:length]
 }
 
 func TestPostComment(t *testing.T) {
@@ -87,7 +78,7 @@ func TestPostComment(t *testing.T) {
 			token: "f944c98c-0c2a-11ed-861d-0242ac120002",
 			input: &proto.PostCommentRequest{
 				MediaId: 1,
-				Content: randomString(100_000),
+				Content: utils.RandomString(100_000),
 			},
 			error_expected: true,
 		},

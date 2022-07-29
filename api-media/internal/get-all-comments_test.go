@@ -30,46 +30,37 @@ func init() {
 	queries.InitSqlc()       // Init sqlc queries
 }
 
-func TestGetComments(t *testing.T) {
+func TestGetAllComments(t *testing.T) {
 	server := &MediaServer{}
 
 	tests := []struct {
 		token           string
-		input           *proto.GetCommentsRequest
+		input           *proto.GetAllCommentsRequest
 		corrupted_token bool
 		invalid_token   bool
 		error_expected  bool
 	}{
 		// ------------------------- Failed expected
 		{ // Token missing #1
-			input:          &proto.GetCommentsRequest{},
+			input:          &proto.GetAllCommentsRequest{},
 			error_expected: true,
 		},
 		{ // Token invalid
 			token:          "576100d0-0c2b-11ed-861d-0242ac120002",
-			input:          &proto.GetCommentsRequest{},
+			input:          &proto.GetAllCommentsRequest{},
 			invalid_token:  true,
 			error_expected: true,
 		},
 		{ // Token corrupted
 			token:           "528ff7b4-0c2b-11ed-861d-0242ac120002",
-			input:           &proto.GetCommentsRequest{},
+			input:           &proto.GetAllCommentsRequest{},
 			corrupted_token: true,
 			error_expected:  true,
 		},
-		{ // Media doesn't exist
-			token: "f944c98c-0c2a-11ed-861d-0242ac120002",
-			input: &proto.GetCommentsRequest{
-				MediaId: 424242,
-			},
-			error_expected: true,
-		},
 		// ------------------------- Success expected
 		{
-			token: "f944c98c-0c2a-11ed-861d-0242ac120002",
-			input: &proto.GetCommentsRequest{
-				MediaId: 1,
-			},
+			token:          "f944c98c-0c2a-11ed-861d-0242ac120002",
+			input:          &proto.GetAllCommentsRequest{},
 			error_expected: false,
 		},
 	}
@@ -89,7 +80,7 @@ func TestGetComments(t *testing.T) {
 			}))
 		}
 
-		if _, err := server.GetComments(ctx, test.input); (err != nil) != test.error_expected {
+		if _, err := server.GetAllComments(ctx, test.input); (err != nil) != test.error_expected {
 			t.Fatal(err)
 		}
 	}
