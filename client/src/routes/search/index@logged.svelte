@@ -225,7 +225,7 @@
 			</div>
 		</div>
 		<div
-			class="relative text-white border-t border-blue-500 overflow-hidden"
+			class="relative text-white overflow-hidden"
 			style="height: {$genresAnimations}px;"
 		>
 			<div class="flex items-center flex-wrap p-4 pb-0" bind:offsetHeight={genresHeight}>
@@ -275,7 +275,6 @@
 <style lang="postcss">
 	.input {
 		@apply p-2 bg-transparent  border-b-[1px] border-blue-300 text-white mx-1;
-		/* @apply p-2 rounded-md bg-transparent bg-gray-900 border-b-2 text-white mx-1; */
 	}
 
 	label {

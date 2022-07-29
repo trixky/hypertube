@@ -10,6 +10,7 @@
 	import { uppercase_first_character } from '$utils/str';
 	import { encrypt_password } from '$utils/password';
 	import { goto } from '$app/navigation';
+	import { browser } from '$app/env';
 	import { _ } from 'svelte-i18n';
 	import { apiAuth } from '$utils/api';
 	import { session } from '$app/stores';
@@ -55,7 +56,13 @@
 		!lastname.length ||
 		!email.length ||
 		!password.length ||
-		!confirm_password.length;
+		!confirm_password.length ||
+		!username_blur ||
+		!firstname_blur ||
+		!lastname_blur ||
+		!email_blur ||
+		!password_blur ||
+		!confirm_password_blur;
 
 	let show_password = false;
 	$: password_input_type = show_password ? 'text' : 'password';
@@ -116,6 +123,7 @@
 											external: me.external
 										}
 									});
+									loading = false;
 									resolve(true);
 									goto('/');
 								} else {
@@ -134,6 +142,7 @@
 						check_email();
 					} else notifies_response_warning($_('auth.server_error'));
 				}
+				loading = false;
 				resolve(false);
 			}, 1000);
 		});
@@ -146,51 +155,109 @@
 	// ----------------------------------------------------------------- sanitizing
 	function check_username(): boolean {
 		response_warning = '';
-		if (registration_attempts || username_blur) username_warning = sanitizer.name(username);
+
+		let warning = sanitizer.name(username);
+
+		if (warning.length == 0 && username.length > 0) username_blur = true;
+
+		if (registration_attempts || username_blur) username_warning = warning;
 
 		return username_warning.length > 0;
 	}
+
 	function check_firstname(): boolean {
 		response_warning = '';
-		if (registration_attempts || firstname_blur) firstname_warning = sanitizer.name(firstname);
+
+		let warning = sanitizer.name(firstname);
+
+		if (warning.length == 0 && firstname.length > 0) firstname_blur = true;
+
+		if (registration_attempts || firstname_blur) firstname_warning = warning;
 
 		return firstname_warning.length > 0;
 	}
+
 	function check_lastname(): boolean {
 		response_warning = '';
-		if (registration_attempts || lastname_blur) lastname_warning = sanitizer.name(lastname);
+
+		let warning = sanitizer.name(lastname);
+
+		if (warning.length == 0 && lastname.length > 0) lastname_blur = true;
+
+		if (registration_attempts || lastname_blur) lastname_warning = warning;
 
 		return lastname_warning.length > 0;
 	}
+
 	function check_email(): boolean {
 		response_warning = '';
+
+		let warning = sanitizer.email(email);
+
+		if (warning.length == 0 && email.length > 0) email_blur = true;
+
 		if (registration_attempts || email_blur) {
 			if (emails_already_in_use.includes(email)) email_warning = $_('auth.email_already_in_use');
-			else email_warning = sanitizer.email(email);
+			else email_warning = warning;
 		}
 
 		return email_warning.length > 0;
 	}
+
 	function check_password(
 		event: (Event & { currentTarget: EventTarget & HTMLInputElement }) | null = null
 	): boolean {
 		response_warning = '';
 		if (event) password = event.currentTarget.value;
 
-		if (registration_attempts || password_blur) password_warning = sanitizer.password(password);
+		let warning = sanitizer.password(password);
+
+		if (warning.length == 0 && password.length > 0) password_blur = true;
+
+		if (registration_attempts || password_blur) password_warning = warning;
 
 		return password_warning.length > 0;
 	}
+
 	function check_confirm_password(
 		event: (Event & { currentTarget: EventTarget & HTMLInputElement }) | null = null
 	): boolean {
 		response_warning = '';
 		if (event) confirm_password = event.currentTarget.value;
 
+		let warning = sanitizer.confirm_password(password, confirm_password);
+
+		if (warning.length == 0 && confirm_password.length > 0) confirm_password_blur = true;
+
 		if (registration_attempts || confirm_password_blur)
-			confirm_password_warning = sanitizer.confirm_password(password, confirm_password);
+			confirm_password_warning = warning
 
 		return confirm_password_warning.length > 0;
+	}
+
+	if (browser) {
+		document.onkeypress = function (event) {
+			if (event.keyCode == 13) {
+				loading = true
+				event.preventDefault()
+
+				username_blur = true; // username
+				check_username()
+				firstname_blur = true; // firstname
+				check_firstname()
+				lastname_blur = true; // lastname
+				check_lastname()
+				email_blur = true; // email
+				check_email()
+				password_blur = true; // password
+				check_password()
+				confirm_password_blur = true; // confirm_password
+				check_confirm_password()
+				if (!disabled) {
+					handle_register()
+				}
+			}
+		};
 	}
 </script>
 

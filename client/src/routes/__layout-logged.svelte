@@ -21,6 +21,7 @@
 <script lang="ts">
 	import '../app.css';
 	import Header from '$components/layouts/header.svelte';
+	import Footer from '$components/layouts/footer.svelte';
 </script>
 
 <!-- ========================= HTML -->
@@ -29,4 +30,5 @@
 	<main class="flex-grow flex flex-row content-start justify-start relative">
 		<slot />
 	</main>
+	<Footer />
 </div>
