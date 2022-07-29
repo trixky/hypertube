@@ -39,13 +39,13 @@
 		goto('/login');
 	};
 
-	const errorMap: Record<number, string> = {
+	$: errorMap = {
 		400: $_('error.bad_request'),
 		401: $_('error.unauthorized'),
 		403: $_('error.forbidden'),
 		404: $_('error.not_found'),
 		500: $_('error.server_error')
-	};
+	} as Record<number, string>;
 
 	let background: Background;
 	onMount(() => {
