@@ -46,7 +46,7 @@
 
 	$: warnings = email_warning.length || password_warning.length;
 
-	$: disabled = warnings > 0 || !email.length || !password.length;
+	$: disabled = warnings > 0 || !email.length || !password.length || !email_blur || !password_blur;
 
 	let show_password = false;
 	$: password_input_type = show_password ? 'text' : 'password';
@@ -96,6 +96,7 @@
 											external: me.external
 										}
 									});
+									loading = false
 									resolve(true);
 									goto('/');
 								} else {
@@ -112,6 +113,7 @@
 					if (res.status == 403) notifies_response_warning($_('auth.login_failed'));
 					else notifies_response_warning($_('auth.server_error'));
 				}
+				loading = false
 				resolve(false);
 			}, 500);
 		});
@@ -124,19 +126,46 @@
 	// ----------------------------------------------------------------- sanitizing
 	function check_email(): boolean {
 		response_warning = '';
-		if (login_attempts || email_blur) email_warning = sanitizer.email(email);
+
+		let warning = sanitizer.email(email);
+
+		if (warning.length == 0 && email.length > 0) email_blur = true;
+
+		if (login_attempts || email_blur) email_warning = warning;
 
 		return email_warning.length > 0;
 	}
+
 	function check_password(
 		event: (Event & { currentTarget: EventTarget & HTMLInputElement }) | null = null
 	): boolean {
 		response_warning = '';
 		if (event) password = event.currentTarget.value;
 
-		if (login_attempts || password_blur) password_warning = sanitizer.password(password);
+		let warning = sanitizer.password(password);
+
+		if (warning.length == 0 && password.length > 0) password_blur = true;
+
+		if (login_attempts || password_blur) password_warning = warning;
 
 		return password_warning.length > 0;
+	}
+
+	if (browser) {
+		document.onkeypress = function (event) {
+			if (event.keyCode == 13) {
+				loading = true
+				event.preventDefault()
+
+				email_blur = true; // email
+				check_email()
+				password_blur = true; // password
+				check_password()
+				if (!disabled) {
+					handle_login()
+				}
+			}
+		};
 	}
 </script>
 
