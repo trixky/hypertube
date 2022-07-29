@@ -15,9 +15,9 @@ import (
 func init() {
 	// Set environment config
 	environment_config := environment.Config{
-		ENV_grpc_port:         "API_AUTH_GRPC_PORT",
-		ENV_grpc_gateway_port: "API_AUTH_GRPC_GATEWAY_PORT",
-		ENV_http_port:         "API_AUTH_HTTP_PORT",
+		ENV_grpc_port:         "API_MEDIA_GRPC_PORT",
+		ENV_grpc_gateway_port: "API_MEDIA_GRPC_GATEWAY_PORT",
+		ENV_http_port:         "API_MEDIA_HTTP_PORT",
 	}
 
 	environment.Postgres.GetAll()                // Get postgres environment
