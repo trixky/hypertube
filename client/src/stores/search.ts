@@ -109,8 +109,8 @@ export function searchStore() {
 		page: 1,
 		startAt: 0,
 		genres: [],
-		sortBy: 'id',
-		sortOrder: 'DESC'
+		sortBy: 'name',
+		sortOrder: 'ASC'
 	};
 	const { subscribe, set, update } = writable<SearchStore>(store);
 
