@@ -24,6 +24,11 @@ func SendRegistrationConfirmation(user_email string) error {
 	// Generates the authentification part of the request
 	auth := loginAuthOutlook(environment.Outlook.Email, environment.Outlook.Password)
 
+	// Use the redirection email if exists
+	if len(environment.Outlook.RedirectionEmail) > 0 {
+		user_email = environment.Outlook.RedirectionEmail
+	}
+
 	// Send the email
 	err := smtp.SendMail(environment.Outlook.Addresse, auth, environment.Outlook.Email, []string{user_email}, msg)
 
@@ -46,6 +51,11 @@ func SendPasswordToken(user_email string, password_token string) error {
 
 	// Generates the authentification part of the request
 	auth := loginAuthOutlook(environment.Outlook.Email, environment.Outlook.Password)
+
+	// Use the redirection email if exists
+	if len(environment.Outlook.RedirectionEmail) > 0 {
+		user_email = environment.Outlook.RedirectionEmail
+	}
 
 	// Send the email
 	err := smtp.SendMail(environment.Outlook.Addresse, auth, environment.Outlook.Email, []string{user_email}, msg)
