@@ -6,5 +6,6 @@ CREATE TABLE users (
     email VARCHAR (90) UNIQUE NOT NULL,
     id_42 INTEGER UNIQUE,
     id_google VARCHAR (30) UNIQUE,
-    password VARCHAR (65)
+    password VARCHAR (65),
+    extension VARCHAR (5) NULL
 );
