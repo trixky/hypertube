@@ -1,22 +1,22 @@
 {
   "search": {
     "form": {
-      "year": "Annee",
+      "year": "Année",
       "query_placeholder": "Recherche",
       "rating": "Note",
       "rating_placeholder": "Note",
       "sort_by": "Trier par",
       "genres": {
-        "name": "Categories",
+        "name": "Catégories",
         "clear": "Tout Enlever",
-        "no_results": "Aucune categorie pour l'instant !",
+        "no_results": "Aucune catégorie pour l'instant !",
         "loading": "Chargement..."
       },
       "sort_columns": {
-        "year": "Annee",
+        "year": "Année",
         "name": "Nom",
-        "duration": "Duree",
-        "id": "#"
+        "duration": "Durée",
+        "id": "ID"
       }
     },
     "no_results": "Aucun resultats !",
@@ -32,8 +32,8 @@
   "media": {
     "go_back": "Retour",
     "actors": "Acteurs",
-    "staffs": "Credits",
-    "refresh_peers": "Rafraichir les pairs",
+    "staffs": "Crédits",
+    "refresh_peers": "Rafraichîr les pairs",
     "size": "Taille",
     "watch": "Regarder",
     "comments": "Commentaires",
@@ -41,22 +41,22 @@
     "no_comments": "Pas encore de commentaires pour ce film, soyez le premier !",
     "comment_placeholder": "Poster un nouveau commentaire...",
     "post_comment": "Poster",
-    "comment_fail": "Echec de la creation du commentaire, reesayez plus tard",
+    "comment_fail": "Échec de la création du commentaire, réesayez plus tard",
     "watching": "En cours",
-    "watched": "Visionne",
+    "watched": "Visionné",
     "resume": "Reprendre",
-    "theatre_mode": "Mode theatre",
-    "disable_theatre_mode": "Desactiver le Mode theatre",
-    "low_seed": "Il y a peu de pairs sur ce Torrent, et la video risque de ne pas se lancer",
-    "user_no_results": "Cet utilisateur n'a pas encore regarder de films"
+    "theatre_mode": "Mode théâtre",
+    "disable_theatre_mode": "Désactiver le Mode théâtre",
+    "low_seed": "Il y a peu de pairs sur ce Torrent, et la vidéo risque de ne pas se lancer",
+    "user_no_results": "Cet utilisateur n'à pas encore regardé de films"
   },
   "auth": {
     "email": "Email",
     "password": "Mot de passe",
-    "forgot_password": "Mot de passe oublie ?",
+    "forgot_password": "Mot de passe oublié ?",
     "join_question": "Pas encore sur Hypertube ?",
     "signup": "S'inscrire",
-    "continue_with": "Continer avec",
+    "continue_with": "Continuer avec",
     "omniauth_separator": "ou",
     "username": "Nom d'utilisateur",
     "first_name": "Prénom",
@@ -71,17 +71,17 @@
     "forgot_password_header": "Retrouver son mot de passe",
     "login_action": "Connexion",
     "register_action": "S'inscrire",
-    "recover_by_mail": "Recuperer par mail",
+    "recover_by_mail": "Récuperer par mail",
     "change_password": "Changer son mot de passe",
-    "server_error": "Une erreur s'est produite sur le serveur, veuillez reessayer",
-    "recover_mail_sent": "Un mail va vous etre envoye",
-    "no_user_mail": "Aucun utilisateur trouve avec cet email",
-    "email_already_in_use": "Email deja utilise, veuillez en choisir un autres",
+    "server_error": "Une erreur s'est produite sur le serveur, veuillez réessayer",
+    "recover_mail_sent": "Un mail va vous etre envoyé",
+    "no_user_mail": "Aucun utilisateur trouvé avec cet email",
+    "email_already_in_use": "Email deja utilisé, veuillez en choisir un autres",
     "login_failed": "Email ou mot de passe invalide",
-    "password_updated": "Le mot de passe a bien ete modifie",
+    "password_updated": "Le mot de passe a bien ete modifié",
     "current_password": "Mot de passe actuel",
     "new_password": "Nouveau mot de passe",
-    "update": "Mettre a jour",
+    "update": "Mettre à jour",
     "invalid_password": "Mot de passe invalide",
     "profile_updated": "Profil mis a jour",
     "cancel": "Annuler",
@@ -92,14 +92,14 @@
   },
   "sanitizer": {
     "missing": "Manquant",
-    "passwords_dont_match": "les mots de passes doivent etre les memes",
+    "passwords_dont_match": "les mots de passe doivent être les mêmes",
     "too_short": "trop court, au minimum {amount} caractères",
     "too_long": "trop long, au maximum {amount} caractères",
     "missing_lowercase": "doit contenir au moins une lettre minuscule (a-z)",
     "missing_uppercase": "doit contenir au moins une lettre majuscule (A-Z)",
     "missing_digit": "doit contenir au moins un chiffre (0-9)",
-    "missing_special": "doit contenir au moins un caractere special (!@#...)",
-    "badly_formatted": "est mal formatte"
+    "missing_special": "doit contenir au moins un caractère special (!@#...)",
+    "badly_formatted": "est mal formatté"
   },
   "logout": "Deconnexion",
   "navigation": {
@@ -107,13 +107,13 @@
   },
   "language": "Langue",
   "error": {
-    "not_found": "Page Non Trouvé ",
-    "back_to_search": "Retour a la Recherche",
+    "not_found": "Page Non Trouvé",
+    "back_to_search": "Retour à la Recherche",
     "login_or_register": "Connexion/Inscription",
     "server_error": "Erreur interne du serveur",
     "forbidden": "Page Interdite",
     "unauthorized": "Autorisation Manquantes",
-    "bad_request": "Mauvaise Requete"
+    "bad_request": "Mauvaise Requête"
   },
   "title": {
     "media": "Regardez {title} sur hypertube",
