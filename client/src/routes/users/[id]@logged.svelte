@@ -16,7 +16,7 @@
 		});
 		if (!response.ok || response.status >= 400) {
 			return {
-				status: response.ok ? response.status : 500
+				status: response.status > 0 ? response.status : 500
 			};
 		}
 		const results = (await response.json()) as {
@@ -62,7 +62,7 @@
 		});
 		if (!response.ok || response.status >= 400) {
 			return {
-				status: response.ok ? response.status : 500
+				status: response.status > 0 ? response.status : 500
 			};
 		}
 		const body = await response.json();
@@ -185,7 +185,7 @@
 	let emails_already_in_use: Array<string> = [];
 
 	function handle_close() {
-		goto("/search")
+		goto('/search');
 	}
 
 	function handle_pen() {
