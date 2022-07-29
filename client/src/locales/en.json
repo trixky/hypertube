@@ -16,7 +16,7 @@
         "year": "Year",
         "name": "Name",
         "duration": "Duration",
-        "id": "#"
+        "id": "ID"
       }
     },
     "no_results": "No results !",

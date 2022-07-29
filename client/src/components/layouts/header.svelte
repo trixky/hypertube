@@ -3,8 +3,7 @@
 	import Logo from './logo.svelte';
 	import * as cookies from '$utils/cookies';
 	import { locale, _ } from 'svelte-i18n';
-	import { page, session } from '$app/stores';
-	import { scale } from 'svelte/transition';
+	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import Logout from '$components/icons/Logout.svelte';
 
@@ -25,8 +24,8 @@
 <!-- ========================= HTML -->
 <header class="relative text-center w-full bg-black">
 	<!-- <header
-	class="relative w-full bg-black flex flex-col md:flex-row flex-nowrap items-stretch md:h-[7rem] pb-4 md:pb-0"
-> -->
+		class="relative w-full bg-black flex flex-col md:flex-row flex-nowrap items-stretch md:h-[7rem] pb-4 md:pb-0"
+	> -->
 	<!-- <div
 		class="relative md:w-1/2 flex justify-center md:justify-start items-center text-white mt-2 px-4 md:pr-0"
 	>
@@ -49,10 +48,11 @@
 					name="language"
 					id="language"
 					class="p-1 bg-transparent text-white cursor-pointer"
+					value={$locale}
 					on:change={setLocale}
 				>
-					<option value="en">&nbsp;English</option>
-					<option value="fr">Francais</option>
+					<option value="en" selected={$locale?.startsWith('en')}>English</option>
+					<option value="fr" selected={$locale?.startsWith('fr')}>Francais</option>
 				</select>
 			</div>
 			<div class="my-1 inline">
