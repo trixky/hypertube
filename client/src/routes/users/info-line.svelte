@@ -16,8 +16,6 @@
 	<div class="inline-block px-2 align-bottom text-gray-400">
 		{#if value.length || no_value || can_be_empty}
 			<p class="truncate">{value}</p>
-		{:else}
-			<Spinner inversed />
 		{/if}
 	</div>
 </div>
