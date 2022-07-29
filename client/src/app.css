@@ -4,6 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
+::selection {
+	@apply bg-blue-300 text-black;
+}
+
 html {
 	@apply scroll-smooth;
 }
