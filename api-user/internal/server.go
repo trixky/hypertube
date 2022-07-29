@@ -16,6 +16,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var StoragePath = "./storage/"
+
 type UserServer struct {
 	pb.UserServiceServer
 }
