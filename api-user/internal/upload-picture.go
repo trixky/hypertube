@@ -3,23 +3,65 @@ package internal
 import (
 	"bytes"
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	osuser "os/user"
+	"strconv"
 	"strings"
 
+	"github.com/trixky/hypertube/.shared/databases"
 	"github.com/trixky/hypertube/.shared/utils"
 	"github.com/trixky/hypertube/api-user/queries"
 	"github.com/trixky/hypertube/api-user/sqlc"
 )
 
-func UploadFile(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+func UploadPicture(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 	ctx := context.Background()
 
-	err := r.ParseForm()
+	// Manually check cookies
+	cookies := r.Cookies()
+	token := ""
+	for _, cookie := range cookies {
+		if cookie.Name == "token" {
+			token = cookie.Value
+			break
+		}
+	}
+	if token == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("{\"error\":\"You need to be logged in to update your picture\"}"))
+		return
+	}
+
+	// -------------------- cache
+	token_info, err := databases.RetrieveToken(token)
 	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("{\"error\":\"You need to be logged in to update your picture\"}"))
+		return
+	}
+
+	// -------------------- db
+	user, err := queries.SqlcQueries.GetUserById(ctx, token_info.Id)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("{\"error\":\"No users found for this token\"}"))
+			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("{\"error\":\"Failed to find user associated with token\"}"))
+		return
+	}
+
+	// -------------------- Parse FormData input
+	if err := r.ParseForm(); err != nil {
 		panic(err)
 	}
 
@@ -30,7 +72,14 @@ func UploadFile(w http.ResponseWriter, r *http.Request, pathParams map[string]st
 
 	fmt.Println("filename", fileHeader.Filename)
 	fmt.Println("size", fileHeader.Size)
-	fmt.Println("file-header", fileHeader.Header)
+	// fmt.Println("file-header", fileHeader.Header)
+
+	// -------------------- Check file validity
+	if fileHeader.Size > 2_000_000 {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("{\"error\":\"File too large, the limit is 2Mb\"}"))
+		return
+	}
 
 	buffer := &bytes.Buffer{}
 	_, err = io.Copy(buffer, multipartFile)
@@ -39,58 +88,33 @@ func UploadFile(w http.ResponseWriter, r *http.Request, pathParams map[string]st
 	}
 
 	fileParts := strings.Split(fileHeader.Filename, ".")
+	if len(fileParts) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("{\"error\":\"Invalid file\"}"))
+		return
+	}
 	extension := fileParts[len(fileParts)-1]
-	path := StoragePath + fmt.Sprint(1) + "." + extension
+	path := StoragePath + fmt.Sprint(user.ID) + "." + extension
 	log.Println("Saving picture to", path)
+
+	// -------------------- Save the picture to disk and in the database
 	if err := os.WriteFile(path, buffer.Bytes(), 0); err != nil {
+		log.Println("Failed to save image to disk")
+		panic(err)
+	}
+	us, err := osuser.Lookup("hypertube")
+	uid, _ := strconv.Atoi(us.Uid)
+	gid, _ := strconv.Atoi(us.Gid)
+	if err := os.Chown(path, uid, gid); err != nil {
 		log.Println("Failed to save image to disk")
 		panic(err)
 	}
 
 	queries.SqlcQueries.UpdateUserPicture(ctx, sqlc.UpdateUserPictureParams{
-		ID:        1,
+		ID:        user.ID,
 		Extension: utils.MakeNullString(&extension),
 	})
 
 	w.WriteHeader(http.StatusOK)
-
-	// // -------------------- get token
-	// sanitized_token, err := utils.ExtractSanitizedTokenFromGrpcGatewayCookies("", ctx)
-
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// // -------------------- cache
-	// token_info, err := databases.RetrieveToken(sanitized_token)
-	// if err != nil {
-	// 	return nil, status.Errorf(codes.Unauthenticated, "token retrieving failed")
-	// }
-
-	// // -------------------- db
-	// user, err := queries.SqlcQueries.GetUserById(context.Background(), token_info.Id)
-
-	// if err != nil {
-	// 	if errors.Is(err, sql.ErrNoRows) {
-	// 		return nil, status.Errorf(codes.NotFound, "no user found with this id")
-	// 	}
-	// 	return nil, status.Errorf(codes.Internal, "user infos retrieving failed")
-	// }
-
-	// // -------------------- check uploaded file validity
-	// if len(in.GetPicture()) == 0 {
-	// 	return nil, status.Errorf(codes.InvalidArgument, "Invalid picture")
-	// }
-
-	// // -------------------- Save file in storage (shared volume)
-	// log.Println("picture", in.Picture)
-	// path := StoragePath + fmt.Sprint(user.ID) + "." + "png"
-	// if err := os.WriteFile(path, in.GetPicture(), 0); err != nil {
-	// 	log.Println("Failed to save image to disk")
-	// 	return nil, status.Errorf(codes.Internal, "failed to save image to disk")
-	// }
-
-	// return &pb.UploadPictureResponse{
-	// 	Success: true,
-	// }, nil
+	w.Write([]byte("{\"success\":true}"))
 }
