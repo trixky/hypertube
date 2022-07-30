@@ -34,6 +34,7 @@ router.get('/users/:userId/picture', async function (req, res) {
 			await stat(absolutePath);
 			return res.status(200).type(`image/${user.extension}`).sendFile(absolutePath);
 		} catch (error) {
+			console.error(error);
 			await setUserExtension(userId, null);
 		}
 	}
@@ -54,6 +55,7 @@ router.get('/users/:userId/picture', async function (req, res) {
 		await writeFile(absolutePath, picture);
 	} catch (error) {
 		// Failed to save to disk, but the image can still be returned
+		console.error(error);
 	}
 	return res.type('image/png').status(200).send(picture);
 });

@@ -1,9 +1,17 @@
 -- name: GetCommentById :one
-SELECT * FROM comments
-WHERE id = $1 LIMIT 1;
+SELECT  users.username, comments.*
+FROM comments
+RIGHT JOIN users ON comments.user_id = users.id
+WHERE comments.id = $1 LIMIT 1;
+
+-- name: GetLastComments :many
+SELECT users.username, comments.*
+FROM comments
+RIGHT JOIN users ON comments.user_id = users.id
+ORDER BY id DESC LIMIT 15;
 
 -- name: GetMediaComments :many
-SELECT users.username, comments.id, comments.user_id, comments.content, comments.created_at
+SELECT users.username, comments.*
 FROM comments
 RIGHT JOIN users ON comments.user_id = users.id
 WHERE media_id = $1
@@ -25,6 +33,9 @@ INSERT INTO comments
 VALUES
 	($1, $2, $3)
 RETURNING *;
+
+-- name: UpdateComment :exec
+UPDATE comments SET content = $2 WHERE id = $1;
 
 -- name: DeleteComment :exec
 DELETE FROM comments

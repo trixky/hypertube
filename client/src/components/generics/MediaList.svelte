@@ -67,7 +67,7 @@
 				class="cover"
 				class:opacity-80={result.watched}
 				style={`background-image: url(${cover})`}
-				in:fade={{ duration: 150, delay: (index - fadeDelay) * 10 }}
+				in:fade|local={{ duration: 150, delay: (index - fadeDelay) * 10 }}
 			>
 				<div class="rating">
 					{#if result.rating}

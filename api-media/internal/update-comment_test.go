@@ -9,6 +9,7 @@ import (
 	_test "github.com/trixky/hypertube/.shared/test"
 	"github.com/trixky/hypertube/api-media/proto"
 	"github.com/trixky/hypertube/api-media/queries"
+	"github.com/trixky/hypertube/api-media/utils"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -28,98 +29,63 @@ func init() {
 	queries.InitSqlc()       // Init sqlc queries
 }
 
-func TestSearch(t *testing.T) {
+func TestUpdateComment(t *testing.T) {
 	server := &MediaServer{}
-
-	query := "42"
-	var page uint32 = 1
-	year := "year"
-	var yearNumber uint32 = 199
-	sortAsc := "asc"
-	var rating float32 = 7.2
 
 	tests := []struct {
 		token           string
-		input           *proto.SearchRequest
+		input           *proto.UpdateCommentRequest
 		corrupted_token bool
 		invalid_token   bool
 		error_expected  bool
 	}{
 		// ------------------------- Failed expected
 		{ // Token missing #1
-			input:          &proto.SearchRequest{},
+			input:          &proto.UpdateCommentRequest{},
 			error_expected: true,
 		},
 		{ // Token invalid
 			token:          "576100d0-0c2b-11ed-861d-0242ac120002",
-			input:          &proto.SearchRequest{},
+			input:          &proto.UpdateCommentRequest{},
 			invalid_token:  true,
 			error_expected: true,
 		},
 		{ // Token corrupted
 			token:           "528ff7b4-0c2b-11ed-861d-0242ac120002",
-			input:           &proto.SearchRequest{},
+			input:           &proto.UpdateCommentRequest{},
 			corrupted_token: true,
 			error_expected:  true,
 		},
+		{ // Comment doesn't exist
+			token: "f944c98c-0c2a-11ed-861d-0242ac120002",
+			input: &proto.UpdateCommentRequest{
+				CommentId: 424242,
+				Content:   "hello",
+			},
+			error_expected: true,
+		},
+		{ // Comment is too short
+			token: "f944c98c-0c2a-11ed-861d-0242ac120002",
+			input: &proto.UpdateCommentRequest{
+				CommentId: 2,
+				Content:   "h",
+			},
+			error_expected: true,
+		},
+		{ // Comment is too long
+			token: "f944c98c-0c2a-11ed-861d-0242ac120002",
+			input: &proto.UpdateCommentRequest{
+				CommentId: 2,
+				Content:   utils.RandomString(100_000),
+			},
+			error_expected: true,
+		},
 		// ------------------------- Success expected
 		{
-			token:          "f944c98c-0c2a-11ed-861d-0242ac120002",
-			input:          &proto.SearchRequest{},
-			error_expected: false,
-		},
-		{
 			token: "f944c98c-0c2a-11ed-861d-0242ac120002",
-			input: &proto.SearchRequest{
-				SortBy: &year,
-			},
-			error_expected: false,
-		},
-		{
-			token: "f944c98c-0c2a-11ed-861d-0242ac120002",
-			input: &proto.SearchRequest{
-				SortOrder: &sortAsc,
-			},
-			error_expected: false,
-		},
-		{
-			token: "f944c98c-0c2a-11ed-861d-0242ac120002",
-			input: &proto.SearchRequest{
-				Year: &yearNumber,
-			},
-			error_expected: false,
-		},
-		{
-			token: "f944c98c-0c2a-11ed-861d-0242ac120002",
-			input: &proto.SearchRequest{
-				Rating: &rating,
-			},
-			error_expected: false,
-		},
-		{
-			token: "f944c98c-0c2a-11ed-861d-0242ac120002",
-			input: &proto.SearchRequest{
-				Query: &query,
-			},
-			error_expected: false,
-		},
-		{
-			token: "f944c98c-0c2a-11ed-861d-0242ac120002",
-			input: &proto.SearchRequest{
-				GenreIds: []int32{1, 2},
-			},
-			error_expected: false,
-		},
-		{
-			token: "f944c98c-0c2a-11ed-861d-0242ac120002",
-			input: &proto.SearchRequest{
-				Query:     &query,
-				Page:      &page,
-				SortBy:    &year,
-				SortOrder: &sortAsc,
-				Year:      &yearNumber,
-				Rating:    &rating,
-				GenreIds:  []int32{1, 2},
+			input: &proto.UpdateCommentRequest{
+				CommentId: 2,
+				Content:   "hello",
 			},
 			error_expected: false,
 		},
@@ -140,7 +106,7 @@ func TestSearch(t *testing.T) {
 			}))
 		}
 
-		if _, err := server.Search(ctx, test.input); (err != nil) != test.error_expected {
+		if _, err := server.UpdateComment(ctx, test.input); (err != nil) != test.error_expected {
 			t.Fatal(err)
 		}
 	}
