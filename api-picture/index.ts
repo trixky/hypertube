@@ -7,6 +7,7 @@ import { connect as connectPostgres } from './postgres/db';
 import env from './env';
 import { connect as connectRedis } from './redis/db';
 import usersRouter from './Controllers/users';
+import fileUpload from 'express-fileupload';
 
 (async () => {
 	if (!env.API_PICTURE_PORT) {
@@ -34,6 +35,12 @@ import usersRouter from './Controllers/users';
 	// *
 
 	const app = express();
+
+	app.use(
+		fileUpload({
+			createParentPath: true
+		})
+	);
 
 	app.use(
 		cors({

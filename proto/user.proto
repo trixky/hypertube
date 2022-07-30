@@ -29,23 +29,6 @@ message UserInfoResponse {
     string user_info = 1; // base 64
 }
 
-message UploadPictureRequest {
-    int64 user_id = 1;
-    bytes picture = 2;
-}
-
-message UploadPictureResponse {
-    bool success = 1;
-}
-
-message DeletePictureRequest {
-    int64 user_id = 1;
-}
-
-message DeletePictureResponse {
-    bool success = 1;
-}
-
 message GetUserMoviesRequest {
     int64 user_id = 1;
 	optional uint32 page = 2;
@@ -61,18 +44,6 @@ service UserService {
     rpc UpdateMe(UpdateMeRequest) returns (UserInfoResponse) {
         option (google.api.http) = {
             patch: "/v1/me"
-        };
-    };
-
-    rpc UploadPicture(UploadPictureRequest) returns (UploadPictureResponse) {
-        option (google.api.http) = {
-            post: "/v1/me/picture"
-        };
-    };
-
-    rpc DeletePicture(DeletePictureRequest) returns (DeletePictureResponse) {
-        option (google.api.http) = {
-            delete: "/v1/me/picture"
         };
     };
 
