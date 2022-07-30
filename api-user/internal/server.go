@@ -16,9 +16,13 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var StoragePath = "./storage/"
+
 type UserServer struct {
 	pb.UserServiceServer
 }
+
+var Mux *runtime.ServeMux
 
 // NewGrpcServer create a new GRPC server
 func NewGrpcServer() (string, *grpc.Server) {
@@ -60,12 +64,12 @@ func NewGrpcGatewayServer(grpc_addr string) {
 	}
 
 	// Create mux
-	gwmux := runtime.NewServeMux(runtime.WithMetadata(
+	Mux = runtime.NewServeMux(runtime.WithMetadata(
 		md.GrpcMiddleware,
 	))
 
 	// Register the authentification service
-	err = pb.RegisterUserServiceHandler(context.Background(), gwmux, conn)
+	err = pb.RegisterUserServiceHandler(context.Background(), Mux, conn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -73,7 +77,7 @@ func NewGrpcGatewayServer(grpc_addr string) {
 	// Create the HTTP sever
 	gwServer := &http.Server{
 		Addr:    grpc_gateway_addr,
-		Handler: utils.AllowCORS(gwmux),
+		Handler: utils.AllowCORS(Mux),
 	}
 
 	go func() {

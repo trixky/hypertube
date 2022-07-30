@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/trixky/hypertube/.shared/databases"

@@ -101,7 +101,7 @@
 		on:click={() => dispatch('select')}
 	>
 		{#if torrent.hover || selected}
-			<div class="loader" transition:fade />
+			<div class="loader" transition:fade|local />
 		{/if}
 		<div
 			class="flex items-center w-full h-full px-2 py-1 rounded-md relative overflow-hidden bg-black hover:bg-stone-900 transition-all text-blue-400 visible"

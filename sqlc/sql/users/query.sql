@@ -59,7 +59,7 @@ email = $5,
 password = $6
 WHERE id = $1;
 
--- name: UdpateUserPicture :exec
+-- name: UpdateUserPicture :exec
 UPDATE users SET extension = $2
 WHERE id = $1;
 

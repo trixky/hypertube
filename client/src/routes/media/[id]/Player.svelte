@@ -34,6 +34,7 @@
 
 	const dispatch = createEventDispatcher();
 
+	let destroyed = false;
 	let loading = true;
 	function closePlayer() {
 		dispatch('close');
@@ -184,6 +185,7 @@
 			// Check torrent status for some informations
 			let idledFor = 0;
 			async function checkStatus() {
+				if (destroyed) return;
 				const response = await fetch(apiStreaming(`/torrent/${torrent.id}/status`), {
 					method: 'GET',
 					credentials: 'include',
@@ -305,6 +307,7 @@
 	});
 
 	onDestroy(() => {
+		destroyed = true;
 		clearTimeout(initialStatusTimeout);
 		clearTimeout(statusTimeout);
 		clearTimeout(focusTimeout);
