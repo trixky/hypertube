@@ -1,8 +1,8 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts" context="module">
 	import type { Load } from '@sveltejs/kit';
-	import { goto } from '$app/navigation';
 	import Separator from '$components/generics/separator.svelte';
+	import ProfilePicture from '../../components/profile/profile-picture.svelte';
 
 	async function getUserMovies(
 		fetch: (info: RequestInfo, init?: RequestInit | undefined) => Promise<Response>,
@@ -439,6 +439,7 @@
 						<img class="invert" src={img_src} width="18px" height="18px" alt={img_alt} />
 					</button>
 				{/if}
+					<ProfilePicture user_id={user.id} size={128}/>
 				<form class="pt-1 w-full">
 					<div>
 						<InfoLine label={$_('auth.username')} bind:value={current_username} {can_be_empty} />
