@@ -6,20 +6,9 @@
 	// -- and insert them on startup in the client
 	export const load: Load = async ({ fetch, session }) => {
 		const { response: genresResponse, genres } = await getGenres(fetch, session);
-		let notFound = genresResponse.status == 404;
-		let forbidden = genresResponse.status >= 400 && genresResponse.status < 500 && !notFound;
-
-		if (forbidden) {
+		if (!genresResponse.ok || genresResponse.status >= 400) {
 			return {
-				status: 403
-			};
-		} else if (notFound) {
-			return {
-				status: 404
-			};
-		} else if (genresResponse.status >= 500) {
-			return {
-				status: 500
+				status: genresResponse.status > 0 ? genresResponse.status : 500
 			};
 		}
 
@@ -28,20 +17,9 @@
 			results,
 			totalResults
 		} = await executeSearch(baseUrl, fetch, session);
-		notFound = searchResponse.status == 404;
-		forbidden = searchResponse.status >= 400 && searchResponse.status < 500 && !notFound;
-
-		if (forbidden) {
+		if (!searchResponse.ok || searchResponse.status >= 400) {
 			return {
-				status: 403
-			};
-		} else if (notFound) {
-			return {
-				status: 404
-			};
-		} else if (searchResponse.status >= 500) {
-			return {
-				status: 500
+				status: searchResponse.status > 0 ? searchResponse.status : 500
 			};
 		}
 
@@ -89,7 +67,7 @@
 	export let ssrTotalResults: number;
 	totalResults.set(ssrTotalResults);
 
-	let sortColumns: string[] = ['year', 'name', 'duration', 'id'];
+	let sortColumns: string[] = ['name', 'year', 'duration', 'id'];
 
 	let loadMoreError = false;
 	$: loading = $searching || $loadingMore;
@@ -246,10 +224,7 @@
 				</div>
 			</div>
 		</div>
-		<div
-			class="relative text-white overflow-hidden"
-			style="height: {$genresAnimations}px;"
-		>
+		<div class="relative text-white overflow-hidden" style="height: {$genresAnimations}px;">
 			<div class="flex items-center flex-wrap p-4 pb-0" bind:offsetHeight={genresHeight}>
 				<button
 					class="inline-flex items-center text-red-500 py-1 px-2 mb-2 mr-2 hover:underline underline-offset-1 transition-all hover:shadow-md"

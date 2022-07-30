@@ -69,15 +69,15 @@
 				style={`background-image: url(${cover})`}
 				in:fade={{ duration: 150, delay: (index - fadeDelay) * 10 }}
 			>
-				{#if result.rating}
-					{@const rating = Math.round(result.rating * 10) / 10}
-					<div class="rating">
+				<div class="rating">
+					{#if result.rating}
+						{@const rating = Math.round(result.rating * 10) / 10}
 						<div class="flex justify-between items-center w-full">
 							<div class="stars" style={`--rating: ${rating};`} />
 							<div class="text-sm">{rating}/10</div>
 						</div>
-					</div>
-				{/if}
+					{/if}
+				</div>
 			</div>
 			<div
 				class="text-white font-bold truncate"

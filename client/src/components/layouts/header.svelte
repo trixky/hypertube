@@ -24,7 +24,6 @@
 
 <!-- ========================= HTML -->
 <header class="relative text-center w-full bg-black">
-
 	<div class="absolute top-0 left-1/2 -translate-x-1/2 mt-7">
 		<Logo />
 	</div>
@@ -35,10 +34,11 @@
 					name="language"
 					id="language"
 					class="p-1 bg-transparent text-white cursor-pointer"
+					value={$locale}
 					on:change={setLocale}
 				>
-					<option value="en">&nbsp;English</option>
-					<option value="fr">Francais</option>
+					<option value="en" selected={$locale?.startsWith('en')}>English</option>
+					<option value="fr" selected={$locale?.startsWith('fr')}>Francais</option>
 				</select>
 			</div>
 			<div class="my-1 inline">
