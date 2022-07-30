@@ -13,7 +13,7 @@ services:
     depends_on:
       - postgres
       - redis
-    restart: on-failure
+    restart: unless-stopped
     links:
       - postgres
       - redis
@@ -33,7 +33,7 @@ services:
     depends_on:
       - postgres
       - redis
-    restart: on-failure
+    restart: unless-stopped
     links:
       - postgres
       - redis
@@ -58,7 +58,7 @@ services:
     depends_on:
       - postgres
       - redis
-    restart: on-failure
+    restart: unless-stopped
     links:
       - client
       - postgres
@@ -75,7 +75,7 @@ services:
       - ./postgres/.env
     depends_on:
       - postgres
-    restart: on-failure
+    restart: unless-stopped
     links:
       - postgres
     ports:
@@ -96,7 +96,7 @@ services:
       - postgres
       - api-scrapper
       - redis
-    restart: on-failure
+    restart: unless-stopped
     links:
       - postgres
       - api-scrapper
@@ -115,7 +115,7 @@ services:
       - ./api-streaming/.env
     depends_on:
       - postgres
-    restart: on-failure
+    restart: unless-stopped
     links:
       - postgres
     ports:
@@ -132,46 +132,16 @@ services:
     depends_on:
       - postgres
       - redis
-    restart: on-failure
+    restart: unless-stopped
     links:
       - postgres
       - redis
     ports:
       - "${API_POSITION_PORT}:${API_POSITION_PORT}"
 
-  test-meta:
-    build: ./test/meta
-    env_file:
-      - ./client/.env
-      - ./api-auth/.env
-      - ./api-user/.env
-      - ./api-position/.env
-      - ./api-media/.env
-      - ./redis/.env
-    volumes:
-      - ./test/meta:/app
-      - /app/node_modules
-      - /app/.yarn
-    depends_on:
-      - client
-      - api-auth
-      - api-user
-      - api-position
-      - api-media
-      - redis
-    links:
-      - client
-      - api-auth
-      - api-user
-      - api-position
-      - api-media
-      - redis
-    profiles:
-      - test
-
   postgres:
     image: postgres:14.4-alpine
-    restart: always
+    restart: unless-stopped
     env_file:
       - ./postgres/.env
     ports:
@@ -184,6 +154,7 @@ services:
 
   redis:
     image: redis:7.0.2-alpine
+    restart: unless-stopped
     command: --port ${REDIS_PORT}
     env_file:
       - ./redis/.env
@@ -196,16 +167,17 @@ services:
 
   adminer:
     image: adminer:4.8.1-standalone
+    restart: unless-stopped
     depends_on:
       - postgres
     ports:
       - 5050:8080
-    restart: unless-stopped
     links:
       - postgres
 
   tmdb-proxy:
     image: nginx:1.23-alpine
+    restart: unless-stopped
     env_file:
       - ./tmdb-proxy/.env
     volumes:
@@ -240,6 +212,7 @@ services:
       - tmdb-proxy
     ports:
       - "${CLIENT_PORT}:3000"
+    restart: unless-stopped
 
 volumes:
   postgres-data:
