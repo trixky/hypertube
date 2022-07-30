@@ -1,5 +1,7 @@
 FROM golang:1.18.3-alpine3.16 as builder
 
+RUN addgroup -S hypertube && adduser -S hypertube -G hypertube
+
 WORKDIR /hypertube/app
 COPY ./api-user /hypertube/app
 COPY ./.shared /hypertube/.shared
@@ -13,4 +15,5 @@ FROM golang:1.18.3-alpine3.16
 RUN mkdir /data
 COPY --from=builder /api .
 
+USER hypertube
 ENTRYPOINT ./api

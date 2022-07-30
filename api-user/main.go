@@ -30,5 +30,12 @@ func init() {
 
 func main() {
 	log.Println("------------------------- START api-user")
+
+	// Manually add the gRPC Gateway upload route
+	err := internal.Mux.HandlePath("POST", "/v1/me/picture", internal.UploadFile)
+	if err != nil {
+		panic(err)
+	}
+
 	select {} // Keep alive
 }
