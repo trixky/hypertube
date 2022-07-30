@@ -43,6 +43,29 @@ services:
     # access to the server:
     # $> docker-compose exec server sh
 
+  api-picture:
+    build:
+      context: ./api-picture
+      dockerfile: ./Dockerfile
+    env_file:
+      - ./.env
+      - ./postgres/.env
+      - ./redis/.env
+      - ./client/.env
+      - ./api-picture/.env
+    volumes:
+      - picture-data:/app/storage
+    depends_on:
+      - postgres
+      - redis
+    restart: on-failure
+    links:
+      - client
+      - postgres
+      - redis
+    ports:
+      - "${API_PICTURE_PORT}:${API_PICTURE_PORT}"
+
   api-scrapper:
     build:
       context: ./
@@ -228,3 +251,5 @@ volumes:
   streaming-data:
     driver: local
 
+  picture-data:
+    driver: local
