@@ -59,14 +59,6 @@ email = $5,
 password = $6
 WHERE id = $1;
 
--- name: UpdateUserPicture :exec
-UPDATE users SET extension = $2
-WHERE id = $1;
-
--- name: DeleteUserPicture :exec
-UPDATE users SET extension = NULL
-WHERE id = $1;
-
 -- name: UpdateUserPassword :exec
 UPDATE users
 set password = $2

@@ -22,8 +22,6 @@ type UserServer struct {
 	pb.UserServiceServer
 }
 
-var Mux *runtime.ServeMux
-
 // NewGrpcServer create a new GRPC server
 func NewGrpcServer() (string, *grpc.Server) {
 	grpc_port := ":" + strconv.Itoa(environment.Grpc.Port)
@@ -64,12 +62,12 @@ func NewGrpcGatewayServer(grpc_addr string) {
 	}
 
 	// Create mux
-	Mux = runtime.NewServeMux(runtime.WithMetadata(
+	mux := runtime.NewServeMux(runtime.WithMetadata(
 		md.GrpcMiddleware,
 	))
 
 	// Register the authentification service
-	err = pb.RegisterUserServiceHandler(context.Background(), Mux, conn)
+	err = pb.RegisterUserServiceHandler(context.Background(), mux, conn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -77,7 +75,7 @@ func NewGrpcGatewayServer(grpc_addr string) {
 	// Create the HTTP sever
 	gwServer := &http.Server{
 		Addr:    grpc_gateway_addr,
-		Handler: utils.AllowCORS(Mux),
+		Handler: utils.AllowCORS(mux),
 	}
 
 	go func() {
