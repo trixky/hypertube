@@ -62,8 +62,8 @@ services:
     volumes:
       - ./api-picture:/app
       - picture-data:/app/storage
-      - /app/node_modules
-      - /app/.yarn
+      - api-picture-node-modules:/app/node_modules
+      - api-picture-node-yarn:/app/.yarn
     depends_on:
       - postgres
       - redis
@@ -131,8 +131,8 @@ services:
     volumes:
       - ./api-streaming:/app
       - streaming-data:/app/.cache
-      - /app/node_modules
-      - /app/.yarn
+      - api-streaming-node-modules:/app/node_modules
+      - api-streaming-node-yarn:/app/.yarn
     depends_on:
       - postgres
     restart: on-failure
@@ -154,8 +154,8 @@ services:
       - ./api-position/.env
     volumes:
       - ./api-position:/app
-      - /app/node_modules
-      - /app/.yarn
+      - api-position-node-modules:/app/node_modules
+      - api-position-node-yarn:/app/.yarn
     depends_on:
       - postgres
       - redis
@@ -178,8 +178,8 @@ services:
       - ./redis/.env
     volumes:
       - ./test/meta:/app
-      - /app/node_modules
-      - /app/.yarn
+      - test-meta-node-modules:/app/node_modules
+      - test-meta-node-yarn:/app/.yarn
     depends_on:
       - client
       - api-auth
@@ -280,10 +280,10 @@ services:
       - ./client/.env
     volumes:
       - ./client:/app
-      - /app/node_modules
-      - /app/.yarn
-      - /app/.svelte-kit
-      - /app/build
+      - client-node-modules:/app/node_modules
+      - client-node-yarn:/app/.yarn
+      - client-svelte-kit:/app/.svelte-kit
+      - client-build:/app/build
     depends_on:
       - api-auth
       - api-media
@@ -316,4 +316,29 @@ volumes:
   streaming-data:
     driver: local
   picture-data:
+    driver: local
+  # Named modules to avoid unnamed volumes
+  client-node-modules:
+    driver: local
+  client-node-yarn:
+    driver: local
+  client-svelte-kit:
+    driver: local
+  client-build:
+    driver: local
+  test-meta-node-modules:
+    driver: local
+  test-meta-node-yarn:
+    driver: local
+  api-streaming-node-modules:
+    driver: local
+  api-streaming-node-yarn:
+    driver: local
+  api-picture-node-modules:
+    driver: local
+  api-picture-node-yarn:
+    driver: local
+  api-position-node-modules:
+    driver: local
+  api-position-node-yarn:
     driver: local
