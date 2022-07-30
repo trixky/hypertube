@@ -16,7 +16,7 @@
 		});
 		if (!response.ok || response.status >= 400) {
 			return {
-				status: response.ok ? response.status : 500
+				status: response.status > 0 ? response.status : 500
 			};
 		}
 		const results = (await response.json()) as {
@@ -62,7 +62,7 @@
 		});
 		if (!response.ok || response.status >= 400) {
 			return {
-				status: response.ok ? response.status : 500
+				status: response.status > 0 ? response.status : 500
 			};
 		}
 		const body = await response.json();
@@ -183,10 +183,6 @@
 	$: password_input_type = show_password ? 'text' : 'password';
 
 	let emails_already_in_use: Array<string> = [];
-
-	function handle_close() {
-		goto('/search');
-	}
 
 	function handle_pen() {
 		modification_mode = !modification_mode;
@@ -435,26 +431,9 @@
 	<div class="flex justify-center items-center ">
 		<BlackBox title={its_me ? $_('auth.my_profile') : $_('auth.profile')}>
 			{#if !user_does_not_exist}
-				<div class="my-4">
-					<img
-						src="/twitter.png"
-						class="w-[120px] h-[120px] bg-blue-300 rounded-[60px] m-auto"
-						alt="profile picture"
-					/>
-					{#if modification_mode}
-						<div class="mt-4 text-center">
-							<button class="px-2 mx-2" on:click={() => {}}>
-								<img class="invert" src="/upload.png" width="18px" height="18px" alt={img_alt} />
-							</button>
-							<button class="px-2 mx-2" on:click={() => {}}>
-								<img class="invert" src="/trash.png" width="18px" height="18px" alt={img_alt} />
-							</button>
-						</div>
-					{/if}
-				</div>
-				<button class="absolute left-5 top-4" on:click={handle_close}>
+				<a href="/search" class="absolute left-5 top-4">
 					<img class="invert" src="/return.png" width="18px" height="18px" alt={img_alt} />
-				</button>
+				</a>
 				{#if its_me}
 					<button class="absolute right-5 top-4" on:click={handle_pen}>
 						<img class="invert" src={img_src} width="18px" height="18px" alt={img_alt} />
