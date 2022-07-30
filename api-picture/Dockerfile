@@ -10,6 +10,8 @@ RUN yarn build
 
 FROM node:16-alpine3.15
 
+RUN apk add dumb-init
+
 WORKDIR /app
 COPY --from=builder --chown=node:node /app .
 

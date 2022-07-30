@@ -1,8 +1,9 @@
 .dockerignore
-node_modules
 npm-debug.log
 Dockerfile
 .git
 .gitignore
-.yarn
-build
+**/build
+**/dist
+**/node_modules
+**/.yarn
