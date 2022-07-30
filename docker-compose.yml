@@ -36,6 +36,7 @@ services:
     volumes:
       - ./api-user:/hypertube/app
       - ./.shared:/hypertube/.shared
+      - picture-data:/hypertube/app/storage
     depends_on:
       - postgres
       - redis

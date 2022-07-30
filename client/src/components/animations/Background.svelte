@@ -103,8 +103,8 @@
 			<div
 				class="absolute top-0 w-1 rounded-sm will-change-transform"
 				style={`left: ${line.left}px; height: ${line.height}px; background-color: ${line.color}`}
-				in:fade|local={{ duration: 0 }}
-				out:fly|local={{ y: backgroundHeight, duration: line.duration, delay: 0, easing: linear }}
+				in:fade={{ duration: 0 }}
+				out:fly={{ y: backgroundHeight, duration: line.duration, delay: 0, easing: linear }}
 				on:introend={removeLine.bind(null, line.id)}
 				on:outroend={resetLine.bind(null, line.id)}
 			/>

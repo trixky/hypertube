@@ -1,6 +1,8 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts" context="module">
 	import type { Load } from '@sveltejs/kit';
+	import { get } from 'svelte/store';
+	import { browser } from '$app/env';
 
 	// Preload search results and genres
 	// -- and insert them on startup in the client
@@ -12,10 +14,21 @@
 			};
 		}
 
+		if (browser && get(results).length > 0) {
+			return {
+				status: 200,
+				props: {
+					ssrGenres: genres,
+					ssrResults: get(results),
+					ssrTotalResults: get(totalResults)
+				}
+			};
+		}
+
 		const {
 			response: searchResponse,
-			results,
-			totalResults
+			results: searchResults,
+			totalResults: searchTotalResults
 		} = await executeSearch(baseUrl, fetch, session);
 		if (!searchResponse.ok || searchResponse.status >= 400) {
 			return {
@@ -27,8 +40,8 @@
 			status: 200,
 			props: {
 				ssrGenres: genres,
-				ssrResults: results,
-				ssrTotalResults: totalResults
+				ssrResults: searchResults,
+				ssrTotalResults: searchTotalResults
 			}
 		};
 	};
