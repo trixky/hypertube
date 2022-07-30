@@ -11,6 +11,7 @@ function randomPicture(id: number | string) {
 	return jdenticon.toPng(id, 128);
 }
 
+const allowedExtensions = ['png', 'jpeg', 'jpg', 'webp', 'gif', 'bmp'];
 router.post('/v1/user/me/picture', async function (req, res) {
 	// Check that the user exists
 	const userQueryResult = await getUser(res.locals.user_id);
@@ -31,11 +32,20 @@ router.post('/v1/user/me/picture', async function (req, res) {
 	if (picture.size > 2_000_000) {
 		return res.status(400).send({ error: 'File too large, the limit is 2Mb' });
 	}
-	if (!picture.mimetype.startsWith('image')) {
+	const extension = picture.name.split('.').pop() ?? '';
+	if (!picture.mimetype.startsWith('image/') && allowedExtensions.indexOf(extension) < 0) {
 		return res.status(400).send({ error: 'Invalid picture' });
 	}
 
-	const extension = picture.name.split('.').pop() ?? '';
+	// Also verify the magic mime type
+	// try {
+	// 	const type = await imageType(picture.data);
+	// 	console.log(type);
+	// } catch (error) {
+	// 	console.error(error);
+	// 	return res.status(400).send({ error: 'Invalid picture' });
+	// }
+
 	const path = `${CACHE_PATH}/${res.locals.user_id}.${extension}`;
 	const absolutePath = resolve(path);
 	try {

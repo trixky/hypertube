@@ -7,7 +7,6 @@
 	import Eye from '$components/inputs/eye.svelte';
 	import * as cookies from '$utils/cookies';
 	import * as sanitizer from '$utils/sanitizer';
-	import { uppercase_first_character } from '$utils/str';
 	import { encrypt_password } from '$utils/password';
 	import { goto } from '$app/navigation';
 	import { browser } from '$app/env';
@@ -149,7 +148,7 @@
 	}
 
 	function notifies_response_warning(warning: string) {
-		response_warning = uppercase_first_character(warning);
+		response_warning = warning;
 	}
 
 	// ----------------------------------------------------------------- sanitizing
@@ -229,8 +228,7 @@
 
 		if (warning.length == 0 && confirm_password.length > 0) confirm_password_blur = true;
 
-		if (registration_attempts || confirm_password_blur)
-			confirm_password_warning = warning
+		if (registration_attempts || confirm_password_blur) confirm_password_warning = warning;
 
 		return confirm_password_warning.length > 0;
 	}
@@ -238,23 +236,23 @@
 	if (browser) {
 		document.onkeypress = function (event) {
 			if (event.keyCode == 13) {
-				loading = true
-				event.preventDefault()
+				loading = true;
+				event.preventDefault();
 
 				username_blur = true; // username
-				check_username()
+				check_username();
 				firstname_blur = true; // firstname
-				check_firstname()
+				check_firstname();
 				lastname_blur = true; // lastname
-				check_lastname()
+				check_lastname();
 				email_blur = true; // email
-				check_email()
+				check_email();
 				password_blur = true; // password
-				check_password()
+				check_password();
 				confirm_password_blur = true; // confirm_password
-				check_confirm_password()
+				check_confirm_password();
 				if (!disabled) {
-					handle_register()
+					handle_register();
 				}
 			}
 		};

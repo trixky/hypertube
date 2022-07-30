@@ -1,4 +1,3 @@
-import { uppercase_first_character } from './str';
 import { $t } from './translate';
 
 function name(name: string, can_be_null = false): string {
@@ -44,9 +43,7 @@ function password(password: string, _ /* can_be_null */ = false): string {
 		password_warnings.push($t('sanitizer.missing_special'));
 	}
 
-	let password_warning = password_warnings
-		.map((str) => uppercase_first_character(str))
-		.join('\n- ');
+	let password_warning = password_warnings.map((str) => str).join('\n- ');
 
 	if (password_warnings.length > 1) password_warning = '- ' + password_warning;
 
