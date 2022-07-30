@@ -6,38 +6,51 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/trixky/hypertube/.shared/databases"
-	"github.com/trixky/hypertube/.shared/utils"
-	pb "github.com/trixky/hypertube/api-user/proto"
 	"github.com/trixky/hypertube/api-user/queries"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
-func (s *UserServer) DeletePicture(ctx context.Context, in *pb.DeletePictureRequest) (*pb.DeletePictureResponse, error) {
-	// -------------------- get token
-	sanitized_token, err := utils.ExtractSanitizedTokenFromGrpcGatewayCookies("", ctx)
+func DeletePicture(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+	ctx := context.Background()
 
-	if err != nil {
-		return nil, err
+	// Manually check cookies
+	cookies := r.Cookies()
+	token := ""
+	for _, cookie := range cookies {
+		if cookie.Name == "token" {
+			token = cookie.Value
+			break
+		}
+	}
+	if token == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("{\"error\":\"You need to be logged in to update your picture\"}"))
+		return
 	}
 
 	// -------------------- cache
-	token_info, err := databases.RetrieveToken(sanitized_token)
+	token_info, err := databases.RetrieveToken(token)
 	if err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "token retrieving failed")
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("{\"error\":\"You need to be logged in to update your picture\"}"))
+		return
 	}
 
 	// -------------------- db
-	user, err := queries.SqlcQueries.GetUserById(context.Background(), token_info.Id)
+	user, err := queries.SqlcQueries.GetUserById(ctx, token_info.Id)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, status.Errorf(codes.NotFound, "no user found with this id")
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("{\"error\":\"No users found for this token\"}"))
+			return
 		}
-		return nil, status.Errorf(codes.Internal, "user infos retrieving failed")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("{\"error\":\"Failed to find user associated with token\"}"))
+		return
 	}
 
 	// -------------------- delete file
@@ -48,9 +61,12 @@ func (s *UserServer) DeletePicture(ctx context.Context, in *pb.DeletePictureRequ
 	}
 
 	// -------------------- delete the reference
-	if err := queries.SqlcQueries.DeleteUserPicture(context.Background(), token_info.Id); err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to delete picture in the database")
+	if err := queries.SqlcQueries.DeleteUserPicture(ctx, token_info.Id); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("{\"error\":\"Failed to delete file\"}"))
+		return
 	}
 
-	return &pb.DeletePictureResponse{}, nil
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("{\"success\":true}"))
 }

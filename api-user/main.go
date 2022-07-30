@@ -31,9 +31,11 @@ func init() {
 func main() {
 	log.Println("------------------------- START api-user")
 
-	// Manually add the gRPC Gateway upload route
-	err := internal.Mux.HandlePath("POST", "/v1/me/picture", internal.UploadFile)
-	if err != nil {
+	// Manually add the gRPC Gateway picture routes
+	if err := internal.Mux.HandlePath("POST", "/v1/me/picture", internal.UploadPicture); err != nil {
+		panic(err)
+	}
+	if err := internal.Mux.HandlePath("DELETE", "/v1/me/picture", internal.DeletePicture); err != nil {
 		panic(err)
 	}
 

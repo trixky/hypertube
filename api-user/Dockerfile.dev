@@ -1,8 +1,7 @@
+# https://levelup.gitconnected.com/docker-for-go-development-a27141f36ba9
 FROM golang:1.18.3-alpine3.16
 
 RUN addgroup -S hypertube && adduser -S hypertube -G hypertube
-
-# https://levelup.gitconnected.com/docker-for-go-development-a27141f36ba9
 
 # copy api files
 WORKDIR /hypertube/app
@@ -18,5 +17,4 @@ RUN go install -v github.com/githubnemo/CompileDaemon
 
 RUN mkdir -p /hypertube/app/storage
 RUN chown -R hypertube:hypertube /hypertube/app/storage
-USER hypertube
 ENTRYPOINT CompileDaemon --build="go build main.go" --command=./main
