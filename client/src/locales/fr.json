@@ -47,7 +47,7 @@
     "resume": "Reprendre",
     "theatre_mode": "Mode théâtre",
     "disable_theatre_mode": "Désactiver le Mode théâtre",
-    "low_seed": "Il y a peu de pairs sur ce Torrent, et la vidéo risque de ne pas se lancer",
+    "low_seed": "Il y a peu de pairs sur ce Torrent, la vidéo risque de ne pas se lancer",
     "user_no_results": "Cet utilisateur n'à pas encore regardé de films"
   },
   "auth": {
@@ -76,14 +76,14 @@
     "server_error": "Une erreur s'est produite sur le serveur, veuillez réessayer",
     "recover_mail_sent": "Un mail va vous etre envoyé",
     "no_user_mail": "Aucun utilisateur trouvé avec cet email",
-    "email_already_in_use": "Email deja utilisé, veuillez en choisir un autres",
+    "email_already_in_use": "Email déjà utilisé, veuillez en choisir un autre",
     "login_failed": "Email ou mot de passe invalide",
-    "password_updated": "Le mot de passe a bien ete modifié",
+    "password_updated": "Le mot de passe a bien été modifié",
     "current_password": "Mot de passe actuel",
     "new_password": "Nouveau mot de passe",
     "update": "Mettre à jour",
     "invalid_password": "Mot de passe invalide",
-    "profile_updated": "Profil mis a jour",
+    "profile_updated": "Profil mis à jour",
     "cancel": "Annuler",
     "modify": "Modifier",
     "my_profile": "Mon Profil",
@@ -98,7 +98,7 @@
     "missing_lowercase": "doit contenir au moins une lettre minuscule (a-z)",
     "missing_uppercase": "doit contenir au moins une lettre majuscule (A-Z)",
     "missing_digit": "doit contenir au moins un chiffre (0-9)",
-    "missing_special": "doit contenir au moins un caractère special (!@#...)",
+    "missing_special": "doit contenir au moins un caractère spécial (!@#...)",
     "badly_formatted": "est mal formatté"
   },
   "logout": "Deconnexion",
@@ -107,21 +107,21 @@
   },
   "language": "Langue",
   "error": {
-    "not_found": "Page Non Trouvé",
+    "not_found": "Page non trouvé",
     "back_to_search": "Retour à la Recherche",
     "login_or_register": "Connexion/Inscription",
     "server_error": "Erreur interne du serveur",
     "forbidden": "Page Interdite",
-    "unauthorized": "Autorisation Manquantes",
+    "unauthorized": "Autorisation Manquante",
     "bad_request": "Mauvaise Requête"
   },
   "title": {
-    "media": "Regardez {title} sur hypertube",
-    "recover_password": "hypertube :: Retrouver son Mot de Passe",
-    "register": "hypertube :: Inscription",
-    "login": "hypertube :: Connexion",
-    "search": "Resultats pour {query} sur hypertube",
-    "search_empty": "hypertube :: Recherche"
+    "media": "Regardez {title} sur Hypertube",
+    "recover_password": "Hypertube :: Retrouver son Mot de Passe",
+    "register": "Hypertube :: Inscription",
+    "login": "Hypertube :: Connexion",
+    "search": "Resultats pour {query} sur Hypertube",
+    "search_empty": "Hypertube :: Recherche"
   },
   "profile_picture": {
     "too_big": "La taille de l'image doit être inférieur à 2MO",

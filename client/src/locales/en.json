@@ -41,12 +41,12 @@
     "no_comments": "No comments on this media, yet, be the first one !",
     "comment_placeholder": "Post a new comment...",
     "post_comment": "Post",
-    "comment_fail": "Failed to post comment, retry layer",
+    "comment_fail": "Failed to post comment, retry later",
     "watching": "Watching",
     "watched": "Watched",
     "resume": "Resume",
-    "theatre_mode": "Theatre mode",
-    "disable_theatre_mode": "Disable Theatre mode",
+    "theatre_mode": "Theater mode",
+    "disable_theatre_mode": "Disable Theater mode",
     "low_seed": "This torrent has a low peer count and might not start",
     "user_no_results": "This user didn't watch any movies yet"
   },
@@ -116,12 +116,12 @@
     "bad_request": "Bad Request"
   },
   "title": {
-    "media": "Watch {title} on hypertube",
-    "recover_password": "hypertube :: Recover Password",
-    "register": "hypertube :: Register",
-    "login": "hypertube :: Login",
-    "search": "Results for {query} on hypertube",
-    "search_empty": "hypertube :: Search"
+    "media": "Watch {title} on Hypertube",
+    "recover_password": "Hypertube :: Recover Password",
+    "register": "Hypertube :: Register",
+    "login": "Hypertube :: Login",
+    "search": "Results for {query} on Hypertube",
+    "search_empty": "Hypertube :: Search"
   },
   "profile_picture": {
     "too_big": "Image size must be less than 2MB",
