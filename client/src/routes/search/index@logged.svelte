@@ -152,7 +152,7 @@
 <svelte:head>
 	{#if !$search.query?.length}
 		<title>
-			{$_('title.search_empty', { values: { query: $search.query } })}
+			{$_('title.search_empty')}
 		</title>
 	{:else}
 		<title>
