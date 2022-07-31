@@ -122,5 +122,10 @@
     "login": "hypertube :: Connexion",
     "search": "Resultats pour {query} sur hypertube",
     "search_empty": "hypertube :: Recherche"
+  },
+  "profile_picture": {
+    "too_big": "La taille de l'image doit être inférieur à 2MO",
+    "success_update": "Mise à jour avec succès",
+    "success_delete": "Supprimée avec succès"
   }
 }

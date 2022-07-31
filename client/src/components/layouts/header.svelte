@@ -37,18 +37,20 @@
 					value={$locale}
 					on:change={setLocale}
 				>
-					<option value="en" selected={$locale?.startsWith('en')}>English</option>
-					<option value="fr" selected={$locale?.startsWith('fr')}>Francais</option>
+					<option value="en" class="text-black" selected={$locale?.startsWith('en')}>English</option>
+					<option value="fr" class="text-black" selected={$locale?.startsWith('fr')}>Francais</option>
 				</select>
 			</div>
 			<div class="my-1 inline">
 				<a href={`/users/${user.id}`} class="[&>*]:hover:underline">
 					<p class="text-white inline pr-1 underline-offset-1">{user.username}</p>
-					<ProfilePicture user_id={user.id}/>
+					<a href="/users/{user.id}">
+						<ProfilePicture user_id={user.id} tranlsate />
+					</a>
 				</a>
 			</div>
 			<button
-				class="inline text-red-500 transition-all rounded-md hover:underline underline-offset-1"
+				class="inline-block w-fit m-auto text-red-500 transition-all rounded-md hover:underline underline-offset-1"
 				on:click|preventDefault={logout}
 			>
 				<span class="transition-all pr-3 ">{$_('logout')}</span><Logout />

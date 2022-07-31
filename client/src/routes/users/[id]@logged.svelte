@@ -3,6 +3,7 @@
 	import type { Load } from '@sveltejs/kit';
 	import Separator from '$components/generics/separator.svelte';
 	import ProfilePicture from '../../components/profile/profile-picture.svelte';
+	import { profilePicture } from '../../stores/profile-picture';
 
 	async function getUserMovies(
 		fetch: (info: RequestInfo, init?: RequestInit | undefined) => Promise<Response>,
@@ -419,6 +420,69 @@
 		page += 1;
 		loadingMovies = false;
 	}
+
+	// ---------------------- profile picture
+
+	let file_input: any;
+
+	let profile_picture_warning = '';
+	let profile_picture_success_warning = '';
+	let warning_count = 0;
+
+	async function refresh_profile_picture(
+		fail_warning: string | undefined = '',
+		success_warning: string | undefined = ''
+	) {
+		if (fail_warning != undefined && fail_warning.length > 0) {
+			const current_warning_count = ++warning_count;
+			
+			profile_picture_warning = fail_warning;
+			profile_picture_success_warning = '';
+
+			setTimeout(() => {
+				if (current_warning_count == warning_count)
+				profile_picture_warning = '';
+			}, 5000);
+		} else if (success_warning != undefined && success_warning.length > 0) {
+			const current_warning_count = ++warning_count;
+			
+			profile_picture_warning = '';
+			profile_picture_success_warning = success_warning;
+			
+			setTimeout(() => {
+				if (current_warning_count == warning_count)
+					profile_picture_success_warning = '';
+			}, 5000);
+		}
+
+		profilePicture.refresh();
+	}
+
+	const upload_picture = (e: any) => {
+		const file = e.target.files[0];
+		const formData = new FormData();
+
+		formData.append('picture', file);
+
+		fetch('http://localhost:5180/v1/user/me/picture', {
+			credentials: 'include',
+			method: 'POST',
+			body: formData
+		})
+			.then((response) => response.json())
+			.then(() => refresh_profile_picture(undefined, $_('profile_picture.success_update')))
+			.catch(() => refresh_profile_picture($_('error.server_error'), undefined));
+	};
+
+	const delete_picture = () => {
+		fetch('http://localhost:5180/v1/user/me/picture', {
+			credentials: 'include',
+			method: 'DELETE'
+		})
+			.then((response) => response.json())
+			.then((success) => refresh_profile_picture(undefined, $_('profile_picture.success_delete')))
+			.catch((error) => refresh_profile_picture($_('error.server_error'), undefined));
+	};
 </script>
 
 <svelte:window on:keydown={handle_keydown} />
@@ -439,7 +503,47 @@
 						<img class="invert" src={img_src} width="18px" height="18px" alt={img_alt} />
 					</button>
 				{/if}
-					<ProfilePicture user_id={user.id} size={128}/>
+				<div class="my-4">
+					<ProfilePicture user_id={user.id} size={128} />
+					{#if modification_mode}
+						<div>
+							<button
+								class="float-left"
+								on:click={() => {
+									file_input.click();
+								}}
+							>
+								<img
+									class="invert hover-scale"
+									src="/upload.png"
+									width="18px"
+									height="18px"
+									alt={img_alt}
+								/>
+							</button>
+							<button class="float-right" on:click={delete_picture}>
+								<img
+									class="invert hover-scale"
+									src="/trash.png"
+									width="18px"
+									height="18px"
+									alt={img_alt}
+								/>
+							</button>
+						</div>
+						<input
+							type="file"
+							accept=".jpg, .jpeg, .png"
+							class="hidden"
+							bind:this={file_input}
+							on:change={(e) => upload_picture(e)}
+						/>
+						<div class="pt-6 text-center">
+							<Warning content={profile_picture_warning} color="red" />
+							<Warning content={profile_picture_success_warning} color="green" />
+						</div>
+					{/if}
+				</div>
 				<form class="pt-1 w-full">
 					<div>
 						<InfoLine label={$_('auth.username')} bind:value={current_username} {can_be_empty} />
