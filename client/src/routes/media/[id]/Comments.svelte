@@ -123,7 +123,9 @@
 						<p class="inline opacity-60 text-sm mr-2">#{comment.id}</p>
 					</a>
 					<a href="/users/{comment.user.id}">
-						<ProfilePicture user_id={comment.user.id} />
+						<a href="/users/{comment.user.id}">
+							<ProfilePicture user_id={comment.user.id} tranlsate />
+						</a>
 						<p class="font-bold pl-2 inline">{comment.user.name}</p>
 					</a>
 				</div>

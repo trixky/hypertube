@@ -1,7 +1,5 @@
 <!-- ========================= SCRIPT -->
 <script lang="ts">
-	import Spinner from '$components/animations/spinner.svelte';
-
 	export let label: string;
 	export let value = '';
 	export let no_value = false;

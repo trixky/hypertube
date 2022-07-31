@@ -122,5 +122,10 @@
     "login": "hypertube :: Login",
     "search": "Results for {query} on hypertube",
     "search_empty": "hypertube :: Search"
+  },
+  "profile_picture": {
+    "too_big": "Image size must be less than 2MB",
+    "success_update": "successfully updated",
+    "success_delete": "successfully deleted"
   }
 }
