@@ -6,6 +6,7 @@
 	import type { MediaComment } from '$types/Media';
 	import Warning from '$components/inputs/warning.svelte';
 	import { apiMedia } from '$utils/api';
+	import ProfilePicture from '../../../components/profile/profile-picture.svelte';
 
 	$: self = $session.user!;
 
@@ -118,8 +119,15 @@
 			{/if}
 			<div class="comment-header">
 				<div>
-					<a href="#comment-{comment.id}" class="opacity-60 text-sm mr-2">#{comment.id}</a>
-					<a href="/users/{comment.user.id}" class="font-bold">{comment.user.name}</a>
+					<a href="#comment-{comment.id}">
+						<p class="inline opacity-60 text-sm mr-2">#{comment.id}</p>
+					</a>
+					<a href="/users/{comment.user.id}">
+						<a href="/users/{comment.user.id}">
+							<ProfilePicture user_id={comment.user.id} tranlsate />
+						</a>
+						<p class="font-bold pl-2 inline">{comment.user.name}</p>
+					</a>
 				</div>
 				<div class="text-sm">{comment.date.toLocaleString()}</div>
 			</div>
@@ -140,7 +148,7 @@
 	}
 
 	.comment.self .comment-header {
-		@apply p-3 pb-0 bg-stone-900 rounded-t-md;
+		@apply p-3 pb-1 bg-stone-900 rounded-t-md;
 	}
 	.comment.self .comment-content {
 		@apply p-3 pt-0 bg-stone-900 rounded-b-md;
@@ -149,7 +157,11 @@
 	.comment.self .bordered {
 		@apply absolute top-0 right-0 bottom-0 left-0;
 		background: rgb(170, 50, 201);
-		background: linear-gradient(to bottom right, rgb(255, 255, 255) 0%, rgba(107, 139, 176, 1) 100%);
+		background: linear-gradient(
+			to bottom right,
+			rgb(255, 255, 255) 0%,
+			rgba(107, 139, 176, 1) 100%
+		);
 	}
 
 	.comment-header {
