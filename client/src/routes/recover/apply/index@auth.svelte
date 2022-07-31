@@ -6,7 +6,6 @@
 	import Warning from '$components/inputs/warning.svelte';
 	import Eye from '$components/inputs/eye.svelte';
 	import * as sanitizer from '$utils/sanitizer';
-	import { uppercase_first_character } from '$utils/str';
 	import { encrypt_password } from '$utils/password';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -89,7 +88,7 @@
 	}
 
 	function notifies_response_warning(warning: string) {
-		response_warning = uppercase_first_character(warning);
+		response_warning = warning;
 	}
 
 	// ----------------------------------------------------------------- sanitizing

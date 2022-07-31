@@ -5,7 +5,6 @@
 	import ConfirmationButton from '$components/buttons/confirmation-button.svelte';
 	import Warning from '$components/inputs/warning.svelte';
 	import * as sanitizer from '$utils/sanitizer';
-	import { uppercase_first_character } from '$utils/str';
 	import { _ } from 'svelte-i18n';
 	import { apiAuth } from '$utils/api';
 
@@ -64,11 +63,11 @@
 	}
 
 	function notifies_response_warning(warning: string) {
-		response_warning = uppercase_first_character(warning);
+		response_warning = warning;
 	}
 
 	function notifies_response_success(success: string) {
-		response_update_success = uppercase_first_character(success);
+		response_update_success = success;
 		setTimeout(() => {
 			response_update_success = '';
 		}, 10000);
