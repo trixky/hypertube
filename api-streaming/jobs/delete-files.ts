@@ -38,7 +38,7 @@ export default function scheduleDeleteFiles() {
 						while (true) {
 							const relativeUpperFolder = path.dirname(folder);
 							upperFolder = path.basename(relativeUpperFolder);
-							if (upperFolder == 'movies' || upperFolder == '/') {
+							if (upperFolder == 'movies' || upperFolder == '/' || upperFolder == ''  || upperFolder == '.' || !upperFolder) {
 								break;
 							}
 							folder = relativeUpperFolder;
