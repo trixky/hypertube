@@ -20,8 +20,8 @@ func DoScrapeLatest(callback *func(response *pb.ScrapeResponse) error) error {
 		for _, category := range Categories {
 			var page uint32 = 1
 			var consecutive_errors int32 = 0
-			updated_torrents := 0
 			for {
+				updated_torrents := 0
 				start := time.Now()
 				page_result, err_scrapper := scrapper.ScrapeList(category, page)
 
