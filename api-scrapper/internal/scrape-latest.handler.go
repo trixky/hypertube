@@ -20,7 +20,7 @@ func DoScrapeLatest(callback *func(response *pb.ScrapeResponse) error) error {
 		for _, category := range Categories {
 			var page uint32 = 1
 			var consecutive_errors int32 = 0
-			has_existing := false
+			has_existing := 0
 			for {
 				start := time.Now()
 				page_result, err_scrapper := scrapper.ScrapeList(category, page)
@@ -52,7 +52,7 @@ func DoScrapeLatest(callback *func(response *pb.ScrapeResponse) error) error {
 						converted_torrent := TorrentToProto(&created_torrent)
 						new_torrents = append(new_torrents, &converted_torrent)
 					} else {
-						has_existing = true
+						has_existing += 1
 					}
 				}
 
@@ -70,7 +70,7 @@ func DoScrapeLatest(callback *func(response *pb.ScrapeResponse) error) error {
 
 				// Update NextPage to loop or complete the job
 				page = page_result.NextPage
-				if page == 0 || has_existing {
+				if page == 0 || has_existing > 4 {
 					break
 				}
 				time.Sleep(time.Second)
