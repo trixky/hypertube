@@ -5,6 +5,7 @@
 	import ConfirmationButton from '$components/buttons/confirmation-button.svelte';
 	import Warning from '$components/inputs/warning.svelte';
 	import * as sanitizer from '$utils/sanitizer';
+	import { browser } from '$app/env';
 	import { _ } from 'svelte-i18n';
 	import { apiAuth } from '$utils/api';
 
@@ -22,14 +23,33 @@
 
 	$: disabled = email_warning.length > 0 || !email.length || !email_blur;
 
-	async function handle_login() {
+	if (browser) {
+		document.onkeypress = function (event) {
+			if (event.keyCode == 13) {
+				event.preventDefault();
+
+				email_blur = true; // email
+				check_email();
+
+				if (!disabled) {
+					loading = true;
+					handle_ask();
+				}
+			}
+		};
+	}
+
+	async function handle_ask() {
 		return new Promise((resolve) => {
 			login_attempts++;
 			let inputs_corrupted = false;
 
 			if (check_email()) inputs_corrupted = true;
 
-			if (inputs_corrupted) return resolve(false);
+			if (inputs_corrupted) {
+				loading = false;
+				return resolve(false);
+			}
 
 			setTimeout(async () => {
 				const res = await fetch(apiAuth('/v1/internal/recover-password'), {
@@ -48,6 +68,7 @@
 						.json()
 						.then(() => {
 							notifies_response_success($_('auth.recover_mail_sent'));
+							loading = false;
 							resolve(true);
 						})
 						.catch(() => {
@@ -57,6 +78,7 @@
 					if (res.status == 404) notifies_response_warning($_('auth.no_user_mail'));
 					else notifies_response_warning($_('auth.server_error'));
 				}
+				loading = false;
 				resolve(false);
 			}, 1000);
 		});
@@ -109,7 +131,7 @@
 		<Warning content={email_warning} color="red" />
 		<ConfirmationButton
 			name={$_('auth.recover_by_mail')}
-			handler={handle_login}
+			handler={handle_ask}
 			bind:loading
 			bind:disabled
 		/>

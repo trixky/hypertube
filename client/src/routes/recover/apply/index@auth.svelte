@@ -45,7 +45,25 @@
 	let show_password = false;
 	$: new_password_input_type = show_password ? 'text' : 'password';
 
-	function handle_register() {
+	if (browser) {
+		document.onkeypress = function (event) {
+			if (event.keyCode == 13) {
+				event.preventDefault();
+
+				new_password_blur = true; // new password
+				check_new_password();
+				confirm_new_password_blur = true; // confirm new password
+				check_confirm_new_password();
+
+				if (!disabled) {
+					loading = true;
+					handle_apply();
+				}
+			}
+		};
+	}
+
+	function handle_apply() {
 		return new Promise((resolve) => {
 			registration_attempts++;
 			let inputs_corrupted = false;
@@ -53,7 +71,11 @@
 			if (check_new_password()) inputs_corrupted = true;
 			if (check_confirm_new_password()) inputs_corrupted = true;
 
-			if (inputs_corrupted) return resolve(false);
+			if (inputs_corrupted) {
+				loading = false;
+				return resolve(false);
+			}
+
 			show_password = false;
 
 			setTimeout(async () => {
@@ -73,6 +95,7 @@
 					await res
 						.json()
 						.then(() => {
+							loading = false;
 							resolve(true);
 							goto('/login' + '?from=' + 'recover/apply');
 						})
@@ -82,6 +105,7 @@
 				} else {
 					notifies_response_warning($_('auth.server_error'));
 				}
+				loading = false;
 				resolve(false);
 			}, 1000);
 		});
@@ -161,7 +185,7 @@
 		<Warning content={confirm_new_password_warning} color="red" />
 		<ConfirmationButton
 			name={$_('auth.change_password')}
-			handler={handle_register}
+			handler={handle_apply}
 			bind:loading
 			bind:disabled
 		/>
