@@ -2,7 +2,6 @@
 <script lang="ts">
 	import { tweened } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
-	import { uppercase_first_character } from '$utils/str';
 
 	export let content = '';
 	export let centered = false;
@@ -29,9 +28,9 @@
 		class:text-green-300={color == 'green'}
 		class:text-blue-300={color == 'blue'}
 		class:text-orange-300={color == 'orange'}
-		class="text-xs pt-2 whitespace-pre-line px-2 transition-colors"
+		class="text-xs pt-2 whitespace-pre-line px-2 transition-colors first-letter:capitalize"
 		bind:offsetHeight={height_warning}
 	>
-		{uppercase_first_character(content)}
+		{content}
 	</p>
 </div>

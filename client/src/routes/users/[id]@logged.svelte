@@ -94,7 +94,6 @@
 	import * as sanitizer from '$utils/sanitizer';
 	import ConfirmationButton from '$components/buttons/confirmation-button.svelte';
 	import * as cookies from '$utils/cookies';
-	import { uppercase_first_character } from '$utils/str';
 	import { encrypt_password } from '$utils/password';
 	import { apiUser } from '$utils/api';
 	import { session } from '$app/stores';
@@ -289,11 +288,11 @@
 	}
 
 	function notifies_update_response_warning(warning: string) {
-		response_update_warning = uppercase_first_character(warning);
+		response_update_warning = warning;
 	}
 
 	function notifies_response_success(success: string) {
-		response_update_success = uppercase_first_character(success);
+		response_update_success = success;
 		setTimeout(() => {
 			response_update_success = '';
 		}, 5000);
