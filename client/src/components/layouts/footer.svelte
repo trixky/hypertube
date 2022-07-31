@@ -7,25 +7,13 @@
 <footer>
 	<div class="text-center pb-6 pt-14">
 		<a href="https://twitter.com/">
-			<img
-				src="/twitter.png"
-				alt="twitter"
-				class="hover-scale"
-			/>
+			<img src="/twitter.png" alt="twitter" class="hover-scale" />
 		</a>
 		<a href="https://facebook.com/">
-			<img
-				src="/facebook.png"
-				alt="facebook"
-				class="hover-scale"
-			/>
+			<img src="/facebook.png" alt="facebook" class="hover-scale" />
 		</a>
 		<a href="https://web.telegram.org/k/">
-			<img
-				src="/telegram.png"
-				alt="telegram"
-				class="hover-scale"
-			/>
+			<img src="/telegram.png" alt="telegram" class="hover-scale" />
 		</a>
 	</div>
 </footer>

@@ -123,6 +123,51 @@
 		seekToTime(player, currentTime);
 	}
 
+	// Check torrent status for some informations
+	let idledFor = 0;
+	async function checkStatus() {
+		if (destroyed) return;
+		const response = await fetch(apiStreaming(`/torrent/${torrent.id}/status`), {
+			method: 'GET',
+			credentials: 'include',
+			headers: {
+				Accept: 'application/json'
+			}
+		});
+		if (response.ok) {
+			const body = (await response.json()) as StatusResponse;
+			if (body.status == 'ongoing') {
+				let message = 'Video is still being processed.';
+				if (body.download && body.download.completed != body.download.total) {
+					message = `${message}\nDownload: ${readableFileSize(
+						body.download.completed
+					)} / ${readableFileSize(body.download.total)}`;
+				}
+				if (body.encoding) {
+					message = `${message}\nEncoding: ${body.encoding.processed} / ${body.encoding.completeDuration} (${body.encoding.fps}fps)`;
+				}
+				setPlayMessage('info', message);
+				statusTimeout = setTimeout(checkStatus, 5000);
+			} else if (body.status == 'idle') {
+				idledFor += 1;
+				if (idledFor < 3) {
+					statusTimeout = setTimeout(checkStatus, 5000);
+					playMessage = undefined;
+				} else {
+					setPlayMessage(
+						'error',
+						`Failed to get torrent status: ${response.status}, close and re-open`
+					);
+				}
+			} else {
+				playMessage = undefined;
+			}
+		} else {
+			setPlayMessage('error', `Failed to get torrent status: ${response.status}`);
+			statusTimeout = setTimeout(checkStatus, 5000);
+		}
+	}
+
 	let initialStatusTimeout = 0;
 	onMount(async () => {
 		setPlayMessage('info', 'Video is loading...');
@@ -180,51 +225,6 @@
 			} catch (error) {
 				console.error(error);
 				setSubtitleMessage('error', 'Failed to load subtitles...');
-			}
-
-			// Check torrent status for some informations
-			let idledFor = 0;
-			async function checkStatus() {
-				if (destroyed) return;
-				const response = await fetch(apiStreaming(`/torrent/${torrent.id}/status`), {
-					method: 'GET',
-					credentials: 'include',
-					headers: {
-						Accept: 'application/json'
-					}
-				});
-				if (response.ok) {
-					const body = (await response.json()) as StatusResponse;
-					if (body.status == 'ongoing') {
-						let message = 'Video is still being processed.';
-						if (body.download && body.download.completed != body.download.total) {
-							message = `${message}\nDownload: ${readableFileSize(
-								body.download.completed
-							)} / ${readableFileSize(body.download.total)}`;
-						}
-						if (body.encoding) {
-							message = `${message}\nEncoding: ${body.encoding.processed} / ${body.encoding.completeDuration} (${body.encoding.fps}fps)`;
-						}
-						setPlayMessage('info', message);
-						statusTimeout = setTimeout(checkStatus, 5000);
-					} else if (body.status == 'idle') {
-						idledFor += 1;
-						if (idledFor < 3) {
-							statusTimeout = setTimeout(checkStatus, 5000);
-							playMessage = undefined;
-						} else {
-							setPlayMessage(
-								'error',
-								`Failed to get torrent status: ${response.status}, close and re-open`
-							);
-						}
-					} else {
-						playMessage = undefined;
-					}
-				} else {
-					setPlayMessage('error', `Failed to get torrent status: ${response.status}`);
-					statusTimeout = setTimeout(checkStatus, 5000);
-				}
 			}
 
 			// Bind
@@ -296,7 +296,7 @@
 			});
 
 			// Handle torrent errors
-			player.addEventListener('error', (event) => {
+			player.addEventListener('error', () => {
 				clearTimeout(initialStatusTimeout);
 				clearTimeout(statusTimeout);
 				clearTimeout(focusTimeout);

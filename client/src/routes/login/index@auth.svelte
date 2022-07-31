@@ -8,7 +8,7 @@
 	import Eye from '$components/inputs/eye.svelte';
 	import Warning from '$components/inputs/warning.svelte';
 	import * as cookies from '$utils/cookies';
-	import * as sanitizer from '$utils/sanitizer'; 
+	import * as sanitizer from '$utils/sanitizer';
 	import { encrypt_password } from '$utils/password';
 	import { page, session } from '$app/stores';
 	import { browser } from '$app/env';
@@ -95,7 +95,7 @@
 											external: me.external
 										}
 									});
-									loading = false
+									loading = false;
 									resolve(true);
 									goto('/');
 								} else {
@@ -112,7 +112,7 @@
 					if (res.status == 403) notifies_response_warning($_('auth.login_failed'));
 					else notifies_response_warning($_('auth.server_error'));
 				}
-				loading = false
+				loading = false;
 				resolve(false);
 			}, 500);
 		});
@@ -153,15 +153,15 @@
 	if (browser) {
 		document.onkeypress = function (event) {
 			if (event.keyCode == 13) {
-				loading = true
-				event.preventDefault()
+				loading = true;
+				event.preventDefault();
 
 				email_blur = true; // email
-				check_email()
+				check_email();
 				password_blur = true; // password
-				check_password()
+				check_password();
 				if (!disabled) {
-					handle_login()
+					handle_login();
 				}
 			}
 		};

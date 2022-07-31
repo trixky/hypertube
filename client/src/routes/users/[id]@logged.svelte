@@ -393,7 +393,7 @@
 	// * User movies
 
 	export let medias: Result[] = [];
-	export let totalResults: number = 0;
+	export let totalResults = 0;
 	let loadingMovies = false;
 
 	let page = 2;
@@ -422,7 +422,7 @@
 
 	// ---------------------- profile picture
 
-	let file_input: any;
+	let file_input: HTMLInputElement;
 
 	let profile_picture_warning = '';
 	let profile_picture_success_warning = '';
@@ -434,31 +434,37 @@
 	) {
 		if (fail_warning != undefined && fail_warning.length > 0) {
 			const current_warning_count = ++warning_count;
-			
+
 			profile_picture_warning = fail_warning;
 			profile_picture_success_warning = '';
 
 			setTimeout(() => {
-				if (current_warning_count == warning_count)
-				profile_picture_warning = '';
+				if (current_warning_count == warning_count) profile_picture_warning = '';
 			}, 5000);
 		} else if (success_warning != undefined && success_warning.length > 0) {
 			const current_warning_count = ++warning_count;
-			
+
 			profile_picture_warning = '';
 			profile_picture_success_warning = success_warning;
-			
+
 			setTimeout(() => {
-				if (current_warning_count == warning_count)
-					profile_picture_success_warning = '';
+				if (current_warning_count == warning_count) profile_picture_success_warning = '';
 			}, 5000);
 		}
 
 		profilePicture.refresh();
 	}
 
-	const upload_picture = (e: any) => {
-		const file = e.target.files[0];
+	const upload_picture = (
+		e: Event & {
+			currentTarget: EventTarget & HTMLInputElement;
+		}
+	) => {
+		if (!e.currentTarget.files) {
+			refresh_profile_picture($_('error.missing_profile_picture'), undefined);
+			return;
+		}
+		const file = e.currentTarget.files[0];
 		const formData = new FormData();
 
 		formData.append('picture', file);
@@ -479,8 +485,8 @@
 			method: 'DELETE'
 		})
 			.then((response) => response.json())
-			.then((success) => refresh_profile_picture(undefined, $_('profile_picture.success_delete')))
-			.catch((error) => refresh_profile_picture($_('error.server_error'), undefined));
+			.then(() => refresh_profile_picture(undefined, $_('profile_picture.success_delete')))
+			.catch(() => refresh_profile_picture($_('error.server_error'), undefined));
 	};
 </script>
 

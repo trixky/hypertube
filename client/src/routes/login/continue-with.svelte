@@ -16,13 +16,7 @@
 	>
 		<div class="flex justify-center items-center">
 			<p class="truncate pr-2 hidden md:block">{$_('auth.continue_with')}</p>
-			<img
-				class="w-[20px] h-[20px] "
-				alt="{destination} logo"
-				src={logo}
-				height="20"
-				width="20"
-			/>
+			<img class="w-[20px] h-[20px] " alt="{destination} logo" src={logo} height="20" width="20" />
 		</div>
 	</button>
 </a>
