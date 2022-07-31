@@ -236,7 +236,6 @@
 	if (browser) {
 		document.onkeypress = function (event) {
 			if (event.keyCode == 13) {
-				loading = true;
 				event.preventDefault();
 
 				username_blur = true; // username
@@ -251,7 +250,9 @@
 				check_password();
 				confirm_password_blur = true; // confirm_password
 				check_confirm_password();
+
 				if (!disabled) {
+					loading = true;
 					handle_register();
 				}
 			}

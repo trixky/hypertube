@@ -124,7 +124,7 @@
     "search_empty": "Hypertube :: Recherche"
   },
   "profile_picture": {
-    "too_big": "La taille de l'image doit être inférieur à 2MO",
+    "too_big": "La taille de l'image doit être inférieur à 2Mo",
     "success_update": "Mise à jour avec succès",
     "success_delete": "Supprimée avec succès"
   }
