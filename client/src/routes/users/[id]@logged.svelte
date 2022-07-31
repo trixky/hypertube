@@ -154,6 +154,11 @@
 	let response_update_warning = '';
 	let response_update_success = '';
 
+	let file_input: any;
+	let profile_picture_warning = '';
+	let profile_picture_success_warning = '';
+	let profile_picture_warning_count = 0;
+
 	$: warnings =
 		username_warning.length ||
 		firstname_warning.length ||
@@ -187,6 +192,9 @@
 
 	function handle_pen() {
 		modification_mode = !modification_mode;
+		profile_picture_warning = '';
+		profile_picture_success_warning = '';
+		profile_picture_warning_count++;
 	}
 
 	function clear_all_inputs() {
@@ -423,66 +431,81 @@
 
 	// ---------------------- profile picture
 
-	let file_input: any;
-
-	let profile_picture_warning = '';
-	let profile_picture_success_warning = '';
-	let warning_count = 0;
-
 	async function refresh_profile_picture(
 		fail_warning: string | undefined = '',
 		success_warning: string | undefined = ''
 	) {
 		if (fail_warning != undefined && fail_warning.length > 0) {
-			const current_warning_count = ++warning_count;
-			
+			const current_profile_picture_warning_count = ++profile_picture_warning_count;
+
 			profile_picture_warning = fail_warning;
 			profile_picture_success_warning = '';
 
 			setTimeout(() => {
-				if (current_warning_count == warning_count)
-				profile_picture_warning = '';
+				if (current_profile_picture_warning_count == profile_picture_warning_count)
+					profile_picture_warning = '';
 			}, 5000);
 		} else if (success_warning != undefined && success_warning.length > 0) {
-			const current_warning_count = ++warning_count;
-			
+			profilePicture.refresh();
+
+			const current_profile_picture_warning_count = ++profile_picture_warning_count;
+
 			profile_picture_warning = '';
 			profile_picture_success_warning = success_warning;
-			
+
 			setTimeout(() => {
-				if (current_warning_count == warning_count)
+				if (current_profile_picture_warning_count == profile_picture_warning_count)
 					profile_picture_success_warning = '';
 			}, 5000);
 		}
-
-		profilePicture.refresh();
 	}
 
-	const upload_picture = (e: any) => {
+	async function upload_picture(e: any) {
 		const file = e.target.files[0];
+
+		if (file.size > 2097152) {
+			const current_profile_picture_warning_count = ++profile_picture_warning_count;
+
+			profile_picture_warning = '';
+			profile_picture_warning = $_('profile_picture.too_big');
+
+			setTimeout(() => {
+				if (current_profile_picture_warning_count == profile_picture_warning_count)
+					profile_picture_warning = '';
+			}, 5000);
+
+			return;
+		}
+
 		const formData = new FormData();
 
 		formData.append('picture', file);
 
-		fetch('http://localhost:5180/v1/user/me/picture', {
+		const res = await fetch('http://localhost:5180/v1/user/me/picture', {
 			credentials: 'include',
 			method: 'POST',
 			body: formData
-		})
-			.then((response) => response.json())
-			.then(() => refresh_profile_picture(undefined, $_('profile_picture.success_update')))
-			.catch(() => refresh_profile_picture($_('error.server_error'), undefined));
-	};
+		});
 
-	const delete_picture = () => {
-		fetch('http://localhost:5180/v1/user/me/picture', {
+		if (res.ok) {
+			refresh_profile_picture(undefined, $_('profile_picture.success_update'));
+		} else {
+			refresh_profile_picture($_('error.server_error'), undefined);
+		}
+	}
+
+	async function delete_picture() {
+		const res = await fetch('http://localhost:5180/v1/user/me/picture', {
 			credentials: 'include',
 			method: 'DELETE'
-		})
-			.then((response) => response.json())
-			.then((success) => refresh_profile_picture(undefined, $_('profile_picture.success_delete')))
-			.catch((error) => refresh_profile_picture($_('error.server_error'), undefined));
-	};
+		});
+
+		if (res.ok) {
+			refresh_profile_picture(undefined, $_('profile_picture.success_delete'));
+		} else {
+			refresh_profile_picture($_('error.server_error'), undefined);
+		}
+	}
 </script>
 
 <svelte:window on:keydown={handle_keydown} />
@@ -503,7 +526,7 @@
 						<img class="invert" src={img_src} width="18px" height="18px" alt={img_alt} />
 					</button>
 				{/if}
-				<div class="my-4">
+				<div class="my-4 text-center">
 					<ProfilePicture user_id={user.id} size={128} />
 					{#if modification_mode}
 						<div>

@@ -154,14 +154,15 @@
 	if (browser) {
 		document.onkeypress = function (event) {
 			if (event.keyCode == 13) {
-				loading = true
 				event.preventDefault()
-
+				
 				email_blur = true; // email
 				check_email()
 				password_blur = true; // password
 				check_password()
+
 				if (!disabled) {
+					loading = true
 					handle_login()
 				}
 			}
