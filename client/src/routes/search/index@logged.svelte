@@ -97,7 +97,7 @@
 		genresOpen = !genresOpen;
 	}
 
-	let selected: number[] = [];
+	let selected: number[] = Array.from($search.genres);
 	async function onGenresChange() {
 		search.setGenres(selected);
 		search.execute();

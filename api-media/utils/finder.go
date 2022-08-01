@@ -269,6 +269,7 @@ func (params *FindMediasParams) ToString(locale string, separator string) string
 		fmt.Sprint(params.Year),
 		params.SortColumn,
 		params.SortOrder,
+		string(params.Genres),
 	}
 	return strings.Join(args, separator)
 }
