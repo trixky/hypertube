@@ -27,7 +27,7 @@ func (s *MediaServer) GetComment(ctx context.Context, in *pb.GetCommentRequest) 
 			return nil, status.Errorf(codes.NotFound, "no comment with this id")
 		} else {
 			log.Println(err)
-			return nil, err
+			return nil, status.Errorf(codes.Internal, "failed to get comment")
 		}
 	}
 

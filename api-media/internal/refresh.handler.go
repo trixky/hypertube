@@ -29,7 +29,7 @@ func (s *MediaServer) Refresh(in *pb.RefreshMediaRequest, out pb.MediaService_Re
 			return status.Errorf(codes.NotFound, "no media with this id")
 		} else {
 			log.Println(err)
-			return err
+			return status.Errorf(codes.Internal, "failed to get media")
 		}
 	}
 
@@ -41,7 +41,7 @@ func (s *MediaServer) Refresh(in *pb.RefreshMediaRequest, out pb.MediaService_Re
 			return nil
 		} else {
 			log.Println(err)
-			return err
+			return status.Errorf(codes.Internal, "failed to get media torrents")
 		}
 	}
 
@@ -61,7 +61,7 @@ func (s *MediaServer) Refresh(in *pb.RefreshMediaRequest, out pb.MediaService_Re
 			})
 			if err != nil {
 				log.Println(err)
-				return err
+				return status.Errorf(codes.Internal, "failed to scrape torrent")
 			}
 
 			out.Send(&pb.RefreshMediaResponse{

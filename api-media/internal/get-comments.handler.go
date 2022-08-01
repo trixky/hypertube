@@ -26,7 +26,7 @@ func (s *MediaServer) GetComments(ctx context.Context, in *pb.GetCommentsRequest
 			return nil, status.Errorf(codes.NotFound, "no media with this id")
 		} else {
 			log.Println(err)
-			return nil, err
+			return nil, status.Errorf(codes.Internal, "failed to get media")
 		}
 	}
 
@@ -37,7 +37,7 @@ func (s *MediaServer) GetComments(ctx context.Context, in *pb.GetCommentsRequest
 			return &pb.GetCommentsResponse{}, nil
 		} else {
 			log.Println(err)
-			return nil, err
+			return nil, status.Errorf(codes.Internal, "failed to load comments")
 		}
 	}
 

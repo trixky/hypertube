@@ -13,6 +13,8 @@ import (
 	"github.com/trixky/hypertube/api-media/queries"
 	"github.com/trixky/hypertube/api-media/sqlc"
 	"github.com/trixky/hypertube/api-media/utils"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -82,7 +84,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Med
 	medias_count, err := utils.CountMedias(ctx, params)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.Println(err)
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to get medias")
 	}
 	if medias_count == 0 {
 		response := pb.MediaList{}
@@ -107,7 +109,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Med
 			return &response, nil
 		}
 		log.Println(err)
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to get medias")
 	}
 
 	// Convert to proto
@@ -137,7 +139,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Med
 				pb_media.Watched = false
 			} else {
 				log.Println(err)
-				return nil, err
+				return nil, status.Errorf(codes.Internal, "failed to get watch status")
 			}
 		}
 
@@ -145,7 +147,7 @@ func (s *MediaServer) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Med
 		names, err := queries.SqlcQueries.GetMediaNames(ctx, int32(media.ID))
 		if err != nil {
 			log.Println(err)
-			return nil, err
+			return nil, status.Errorf(codes.Internal, "failed to load media names")
 		}
 		for _, name := range names {
 			if sutils.NameMatchLocale(&user_locale, name.Lang) {

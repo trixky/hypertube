@@ -23,7 +23,7 @@ func (s *UserServer) GetUserMovies(ctx context.Context, in *pb.GetUserMoviesRequ
 	sanitized_token, err := utils.ExtractSanitizedTokenFromGrpcGatewayCookies("", ctx)
 
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.InvalidArgument, "invalid token")
 	}
 
 	// -------------------- cache
@@ -54,7 +54,7 @@ func (s *UserServer) GetUserMovies(ctx context.Context, in *pb.GetUserMoviesRequ
 	// -------------------- count medias
 	count, err := queries.SqlcQueries.CountUserMedias(ctx, int32(user.ID))
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to get medias")
 	}
 
 	if count == 0 {
@@ -74,7 +74,7 @@ func (s *UserServer) GetUserMovies(ctx context.Context, in *pb.GetUserMoviesRequ
 		if errors.Is(err, sql.ErrNoRows) {
 			return &pb.MediaList{}, nil
 		} else {
-			return nil, err
+			return nil, status.Errorf(codes.Internal, "failed to get medias")
 		}
 	}
 
@@ -105,7 +105,7 @@ func (s *UserServer) GetUserMovies(ctx context.Context, in *pb.GetUserMoviesRequ
 				pb_media.Watched = false
 			} else {
 				log.Println(err)
-				return nil, err
+				return nil, status.Errorf(codes.Internal, "failed to get watch status")
 			}
 		}
 
@@ -113,7 +113,7 @@ func (s *UserServer) GetUserMovies(ctx context.Context, in *pb.GetUserMoviesRequ
 		names, err := queries.SqlcQueries.GetMediaNames(ctx, int32(media.ID))
 		if err != nil {
 			log.Println(err)
-			return nil, err
+			return nil, status.Errorf(codes.Internal, "failed to get media names")
 		}
 		for _, name := range names {
 			if utils.NameMatchLocale(&user_locale, name.Lang) {

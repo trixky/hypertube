@@ -27,7 +27,7 @@ func (s *MediaServer) UpdateComment(ctx context.Context, in *pb.UpdateCommentReq
 			return nil, status.Errorf(codes.NotFound, "no comment with this id")
 		} else {
 			log.Println(err)
-			return nil, err
+			return nil, status.Errorf(codes.Internal, "failed to get comment")
 		}
 	}
 
@@ -48,7 +48,7 @@ func (s *MediaServer) UpdateComment(ctx context.Context, in *pb.UpdateCommentReq
 	})
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to update comment")
 	}
 
 	return &pb.UpdateCommentResponse{}, nil
