@@ -9,6 +9,8 @@ import (
 	pb "github.com/trixky/hypertube/api-media/proto"
 	"github.com/trixky/hypertube/api-media/queries"
 	"github.com/trixky/hypertube/api-media/utils"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *MediaServer) Genres(ctx context.Context, in *pb.GenresRequest) (*pb.GenresResponse, error) {
@@ -22,7 +24,7 @@ func (s *MediaServer) Genres(ctx context.Context, in *pb.GenresRequest) (*pb.Gen
 			err = nil
 		} else {
 			log.Println(err)
-			return nil, err
+			return nil, status.Errorf(codes.Internal, "failed to load genres")
 		}
 	}
 

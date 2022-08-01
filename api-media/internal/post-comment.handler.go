@@ -28,7 +28,7 @@ func (s *MediaServer) PostComment(ctx context.Context, in *pb.PostCommentRequest
 			return nil, status.Errorf(codes.NotFound, "no media with this id")
 		} else {
 			log.Println(err)
-			return nil, err
+			return nil, status.Errorf(codes.Internal, "failed to get media")
 		}
 	}
 
@@ -45,7 +45,7 @@ func (s *MediaServer) PostComment(ctx context.Context, in *pb.PostCommentRequest
 	})
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to add comment")
 	}
 
 	created_at, _ := ptypes.TimestampProto(comment.CreatedAt)

@@ -61,7 +61,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 			return nil, status.Errorf(codes.NotFound, "no media with this id")
 		} else {
 			log.Println(err)
-			return nil, err
+			return nil, status.Errorf(codes.Internal, "failed to get media")
 		}
 	}
 
@@ -91,7 +91,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 	names, err := queries.SqlcQueries.GetMediaNames(ctx, int32(media.ID))
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.Println(err)
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to get media names")
 	} else {
 		err = nil
 	}
@@ -110,7 +110,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 	})
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.Println(err)
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to get media torrents")
 	} else {
 		err = nil
 	}
@@ -135,7 +135,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 
 	genres, err := queries.SqlcQueries.GetMediaGenres(ctx, int32(media.ID))
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to get media genres")
 	} else {
 		err = nil
 	}
@@ -146,7 +146,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 	actors, err := queries.SqlcQueries.GetMediaActors(ctx, int32(media.ID))
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.Println(err)
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to get media actors")
 	} else {
 		err = nil
 	}
@@ -163,7 +163,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 	staffs, err := queries.SqlcQueries.GetMediaStaffs(ctx, int32(media.ID))
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.Println(err)
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to get media staffs")
 	} else {
 		err = nil
 	}
@@ -205,7 +205,7 @@ func (s *MediaServer) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetRespon
 	comments, err := queries.SqlcQueries.GetMediaComments(ctx, int32(media.ID))
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.Println(err)
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to load comments")
 	} else {
 		err = nil
 	}
