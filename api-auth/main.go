@@ -27,6 +27,7 @@ func init() {
 	environment.Api42.GetAll()                   // Get 42 api environment
 	environment.ApiGoogle.GetAll()               // Get google api environment
 	environment.Outlook.GetAll()                 // Get outlook environment
+	environment.Demo.GetAll()                    // Get demo environment
 
 	databases.InitPostgres()  // Init postgres
 	databases.InitRedis()     // Init redis

@@ -139,7 +139,9 @@
 					if (res.status == 409) {
 						emails_already_in_use.push(email);
 						check_email();
-					} else notifies_response_warning($_('auth.server_error'));
+					}
+					else if (res.status == 503) notifies_response_warning($_('auth.register_demo_error'));
+					else notifies_response_warning($_('auth.server_error'));
 				}
 				loading = false;
 				resolve(false);

@@ -78,6 +78,8 @@
     "no_user_mail": "Aucun utilisateur trouvé avec cet email",
     "email_already_in_use": "Email déjà utilisé, veuillez en choisir un autre",
     "login_failed": "Email ou mot de passe invalide",
+    "login_demo_error": "Vous ne pouvez pas vous connecter en mode demo",
+    "register_demo_error": "Vous ne pouvez pas vous enregistrez en mode demo",
     "password_updated": "Le mot de passe a bien été modifié",
     "current_password": "Mot de passe actuel",
     "new_password": "Nouveau mot de passe",

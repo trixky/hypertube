@@ -110,6 +110,7 @@
 						});
 				} else {
 					if (res.status == 403) notifies_response_warning($_('auth.login_failed'));
+					else if (res.status == 503) notifies_response_warning($_('auth.login_demo_error'));
 					else notifies_response_warning($_('auth.server_error'));
 				}
 				loading = false
