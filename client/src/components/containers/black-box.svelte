@@ -4,7 +4,7 @@
 </script>
 
 <!-- ========================= HTML -->
-<div class="my-auto w-full">
+<div class="my-auto w-full z-[200]">
 	<div
 		class="mx-auto relative bg-black/80 rounded-2xl p-8 pb-6 w-[92%] max-w-[400px] flex justify-center items-center my-6 flex-col h-fit"
 	>

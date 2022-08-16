@@ -12,6 +12,10 @@ html {
 	@apply scroll-smooth;
 }
 
+main {
+	@apply bg-black overflow-hidden;
+}
+
 main > div:not(.media-page) input {
 	@apply w-full p-2 rounded-sm duration-[0.35s] bg-white text-black;
 }
