@@ -24,17 +24,13 @@
 </script>
 
 <!-- ========================= HTML -->
-<main
-	class="h-full relative flex content-center justify-center bg-no-repeat bg-cover bg-center"
->
+<main class="h-full relative flex content-center justify-center bg-no-repeat bg-cover bg-center">
 	<DynamicBackground />
 	<slot />
 </main>
 
 <!-- ========================= CSS -->
 <style lang="postcss">
-
-
 	.linear-gradient {
 		background: radial-gradient(rgba(68, 0, 255, 0.2) 5%, black), url('/background.jpg') no-repeat;
 		background-size: cover;

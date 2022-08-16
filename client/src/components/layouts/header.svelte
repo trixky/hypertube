@@ -37,8 +37,11 @@
 					value={$locale}
 					on:change={setLocale}
 				>
-					<option value="en" class="text-black" selected={$locale?.startsWith('en')}>English</option>
-					<option value="fr" class="text-black" selected={$locale?.startsWith('fr')}>Francais</option>
+					<option value="en" class="text-black" selected={$locale?.startsWith('en')}>English</option
+					>
+					<option value="fr" class="text-black" selected={$locale?.startsWith('fr')}
+						>Francais</option
+					>
 				</select>
 			</div>
 			<div class="my-1 inline">

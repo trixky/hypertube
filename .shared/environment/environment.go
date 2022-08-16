@@ -13,7 +13,8 @@ import (
 const (
 	DEFAULT_HOST = "0.0.0.0"
 
-	environement_variable_missing = "environement variable missing"
+	environement_variable_missing           = "environement variable missing"
+	environement_variable_corrupted_boolean = "environement variable corrupted [true/false]"
 )
 
 type Config struct {

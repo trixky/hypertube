@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/trixky/hypertube/.shared/databases"
+	"github.com/trixky/hypertube/.shared/environment"
 	"github.com/trixky/hypertube/.shared/sanitizer"
 	"github.com/trixky/hypertube/.shared/utils"
 	pb "github.com/trixky/hypertube/api-auth/proto"
@@ -31,6 +32,11 @@ func sanitizeInternalLogin(in *pb.InternalLoginRequest) error {
 
 // InternalLogin Handles the "InternalLogin" route
 func (s *AuthServer) InternalLogin(ctx context.Context, in *pb.InternalLoginRequest) (*pb.GenericConnectionResponse, error) {
+	// -------------------- Demo ?
+	if environment.Demo.Demo {
+		return nil, status.Errorf(codes.Unavailable, "demo mode: you can't login")
+	}
+
 	// -------------------- Sanitize
 	if err := sanitizeInternalLogin(in); err != nil {
 		return nil, err

@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/trixky/hypertube/.shared/databases"
+	"github.com/trixky/hypertube/.shared/environment"
 	"github.com/trixky/hypertube/.shared/sanitizer"
 	"github.com/trixky/hypertube/.shared/utils"
 	"github.com/trixky/hypertube/api-auth/email"
@@ -41,6 +42,11 @@ func sanitizeInternalRegister(in *pb.InternalRegisterRequest) error {
 
 // InternalRegister Handles the "InternalRegister" route
 func (s *AuthServer) InternalRegister(ctx context.Context, in *pb.InternalRegisterRequest) (*pb.GenericConnectionResponse, error) {
+	// -------------------- Demo ?
+	if environment.Demo.Demo {
+		return nil, status.Errorf(codes.Unavailable, "demo mode: you can't register")
+	}
+
 	// -------------------- Sanitize
 	if err := sanitizeInternalRegister(in); err != nil {
 		return nil, err

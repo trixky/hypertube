@@ -9,7 +9,11 @@
 <!-- ========================= HTML -->
 <div class="centered my-0 py-2">
 	<div class="inline-block px-2 align-bottom">
-		<label class="inline-block first-letter:capitalize" style="padding: 0 !important;" for="username">{label}</label>
+		<label
+			class="inline-block first-letter:capitalize"
+			style="padding: 0 !important;"
+			for="username">{label}</label
+		>
 	</div>
 	<div class="inline-block px-2 align-bottom text-gray-400">
 		{#if value.length || no_value || can_be_empty}
