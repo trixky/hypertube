@@ -9,6 +9,8 @@
 	import { _ } from 'svelte-i18n';
 	import { apiAuth } from '$utils/api';
 
+	const demo_mode = import.meta.env.VITE_DEMO_MODE;
+
 	let loading = false;
 
 	let login_attempts = 0;
@@ -50,37 +52,45 @@
 				loading = false;
 				return resolve(false);
 			}
-
-			setTimeout(async () => {
-				const res = await fetch(apiAuth('/v1/internal/recover-password'), {
-					method: 'POST',
-					headers: {
-						'content-type': 'application/json',
-						accept: 'application/json'
-					},
-					body: JSON.stringify({
-						email
-					})
-				});
-
-				if (res.ok) {
-					await res
-						.json()
-						.then(() => {
-							notifies_response_success($_('auth.recover_mail_sent'));
-							loading = false;
-							resolve(true);
+			
+			if (demo_mode === 'false')
+				setTimeout(async () => {
+					const res = await fetch(apiAuth('/v1/internal/recover-password'), {
+						method: 'POST',
+						headers: {
+							'content-type': 'application/json',
+							accept: 'application/json'
+						},
+						body: JSON.stringify({
+							email
 						})
-						.catch(() => {
-							notifies_response_warning($_('auth.server_error'));
-						});
-				} else {
-					if (res.status == 404) notifies_response_warning($_('auth.no_user_mail'));
-					else notifies_response_warning($_('auth.server_error'));
-				}
-				loading = false;
-				resolve(false);
-			}, 1000);
+					});
+
+					if (res.ok) {
+						await res
+							.json()
+							.then(() => {
+								notifies_response_success($_('auth.recover_mail_sent'));
+								loading = false;
+								resolve(true);
+							})
+							.catch(() => {
+								notifies_response_warning($_('auth.server_error'));
+							});
+					} else {
+						if (res.status == 404) notifies_response_warning($_('auth.no_user_mail'));
+						else notifies_response_warning($_('auth.server_error'));
+					}
+					loading = false;
+					resolve(false);
+				}, 1000);
+			else {
+				setTimeout(async () => {
+					loading = false;
+					notifies_response_warning($_('auth.register_demo_error'))
+					resolve(false);
+				}, 1000);
+			}
 		});
 	}
 

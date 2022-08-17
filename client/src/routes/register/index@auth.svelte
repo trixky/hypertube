@@ -14,6 +14,8 @@
 	import { apiAuth } from '$utils/api';
 	import { session } from '$app/stores';
 
+	const demo_mode = import.meta.env.VITE_DEMO_MODE;
+
 	let loading = false;
 
 	let registration_attempts = 0;
@@ -85,68 +87,76 @@
 			if (inputs_corrupted) return resolve(false);
 			show_password = false;
 
-			setTimeout(async () => {
-				const res = await fetch(apiAuth('/v1/internal/register'), {
-					method: 'POST',
-					headers: {
-						'content-type': 'application/json',
-						accept: 'application/json'
-					},
-					body: JSON.stringify({
-						username,
-						firstname,
-						lastname,
-						email,
-						password: await encrypt_password(password)
-					})
-				});
+			if (demo_mode === 'false')
+				setTimeout(async () => {
+					const res = await fetch(apiAuth('/v1/internal/register'), {
+						method: 'POST',
+						headers: {
+							'content-type': 'application/json',
+							accept: 'application/json'
+						},
+						body: JSON.stringify({
+							username,
+							firstname,
+							lastname,
+							email,
+							password: await encrypt_password(password)
+						})
+					});
 
-				if (res.ok) {
-					await res
-						.json()
-						.then((body) => {
-							if (cookies.labels.token in body && cookies.labels.user_info in body) {
-								const user = atob(body[cookies.labels.user_info]);
-								const me = JSON.parse(user);
-								if (me) {
-									cookies.add_a_cookie(cookies.labels.token, body.token);
-									cookies.add_a_cookie(cookies.labels.user_info, body[cookies.labels.user_info]);
-									session.set({
-										token: body.token,
-										user: {
-											id: me.id,
-											username: me.username,
-											firstname: me.firstname,
-											lastname: me.lastname,
-											email: me.email,
-											external: me.external
-										}
-									});
-									loading = false;
-									resolve(true);
-									goto('/');
+					if (res.ok) {
+						await res
+							.json()
+							.then((body) => {
+								if (cookies.labels.token in body && cookies.labels.user_info in body) {
+									const user = atob(body[cookies.labels.user_info]);
+									const me = JSON.parse(user);
+									if (me) {
+										cookies.add_a_cookie(cookies.labels.token, body.token);
+										cookies.add_a_cookie(cookies.labels.user_info, body[cookies.labels.user_info]);
+										session.set({
+											token: body.token,
+											user: {
+												id: me.id,
+												username: me.username,
+												firstname: me.firstname,
+												lastname: me.lastname,
+												email: me.email,
+												external: me.external
+											}
+										});
+										loading = false;
+										resolve(true);
+										goto('/');
+									} else {
+										notifies_response_warning($_('auth.server_error'));
+									}
 								} else {
 									notifies_response_warning($_('auth.server_error'));
 								}
-							} else {
+							})
+							.catch(() => {
 								notifies_response_warning($_('auth.server_error'));
-							}
-						})
-						.catch(() => {
-							notifies_response_warning($_('auth.server_error'));
-						});
-				} else {
-					if (res.status == 409) {
-						emails_already_in_use.push(email);
-						check_email();
+							});
+					} else {
+						if (res.status == 409) {
+							emails_already_in_use.push(email);
+							check_email();
+						}
+						else if (res.status == 503) notifies_response_warning($_('auth.register_demo_error'));
+						else notifies_response_warning($_('auth.server_error'));
 					}
-					else if (res.status == 503) notifies_response_warning($_('auth.register_demo_error'));
-					else notifies_response_warning($_('auth.server_error'));
-				}
-				loading = false;
-				resolve(false);
-			}, 1000);
-		});
+					loading = false;
+					resolve(false);
+				}, 1000);
+			else {
+				setTimeout(async () => {
+					loading = false;
+					notifies_response_warning($_('auth.register_demo_error'))
+					resolve(false);
+				}, 1000);
+			}
+		})
 	}
 
 	function notifies_response_warning(warning: string) {

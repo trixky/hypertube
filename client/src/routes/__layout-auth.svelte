@@ -30,14 +30,3 @@
 	<DynamicBackground />
 	<slot />
 </main>
-
-<!-- ========================= CSS -->
-<style lang="postcss">
-
-
-	.linear-gradient {
-		background: radial-gradient(rgba(68, 0, 255, 0.2) 5%, black), url('/background.jpg') no-repeat;
-		background-size: cover;
-		background-position: center;
-	}
-</style>

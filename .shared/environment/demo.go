@@ -21,7 +21,7 @@ func (e *env_demo) GetAll() {
 	} else if demo == "true" {
 		e.Demo = true
 	} else if demo == "false" {
-		e.Demo = true
+		e.Demo = false
 	} else {
 		log.Fatalf("%s %s", ENV_demo_mode, environement_variable_corrupted_boolean)
 	}

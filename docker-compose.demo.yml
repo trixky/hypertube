@@ -1,0 +1,75 @@
+version: "3.8"
+services:
+  api-auth:
+    build:
+      context: ./
+      dockerfile: ./api-auth/Dockerfile
+    env_file:
+      - ./.env
+      - ./client/.env
+      - ./api-auth/.env
+      - ./postgres/.env
+      - ./redis/.env
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    links:
+      - postgres
+      - redis
+    ports:
+      - "${API_AUTH_GRPC_PORT}:${API_AUTH_GRPC_PORT}"
+      - "${API_AUTH_GRPC_GATEWAY_PORT}:${API_AUTH_GRPC_GATEWAY_PORT}"
+      - "${API_AUTH_HTTP_PORT}:${API_AUTH_HTTP_PORT}"
+
+  postgres:
+    image: postgres:14.4-alpine
+    restart: unless-stopped
+    env_file:
+      - ./postgres/.env
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    # access to the psql CLI:
+    # $> docker-compose exec postgres psql
+
+  redis:
+    image: redis:7.0.2-alpine
+    restart: unless-stopped
+    command: --port ${REDIS_PORT}
+    env_file:
+      - ./redis/.env
+    volumes:
+      - redis-data:/data
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    # access to the redis CLI:
+    # $> dc exec -it redis /bin/sh -c 'redis-cli -h redis'
+
+  client:
+    build:
+      context: ./client
+      dockerfile: ./Dockerfile
+    env_file:
+      - ./.env
+      - ./api-auth/.env
+      - ./api-user/.env
+      - ./api-media/.env
+      - ./api-streaming/.env
+      - ./tmdb-proxy/.env
+      - ./client/.env
+    depends_on:
+      - api-auth
+    links:
+      - api-auth
+    ports:
+      - "${CLIENT_PORT}:3000"
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
