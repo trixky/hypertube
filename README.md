@@ -7,7 +7,7 @@ You can watch torrents without download them, because the platform does it for y
 
 ## Usage
 
-### prerequisite
+### prerequisites
 
 - docker-compose
 - go
@@ -15,7 +15,7 @@ You can watch torrents without download them, because the platform does it for y
 - protobuf *(./proto/README.md)*
 
 
-### prerequisite
+### up
 
 ```bash
 source env.sh
