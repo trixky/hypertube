@@ -3,13 +3,15 @@
 A streaming site using torrents with serverless architecture.
 You can watch torrents without download them, because the platform does it for you ! __(docker-compose)__
 
-![Recordit GIF](https://raw.githubusercontent.com/trixky/hypertube/main/.demo/demo.gif)
+<img src="https://raw.githubusercontent.com/trixky/hypertube/main/.demo/demo.gif" width="600"/>
 
 ## Online
 
 This project is online, so you can visit it by clicking [here](https://hypertube.trixky.com/)!
 
-![Recordit GIF](https://raw.githubusercontent.com/trixky/hypertube/main/.demo/login.gif)
+> The site is in __demo__ mode, so you can't login/register
+
+<img src="https://raw.githubusercontent.com/trixky/hypertube/main/.demo/login.gif" width="600"/>
 
 ## Usage
 
