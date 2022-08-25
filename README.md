@@ -11,7 +11,7 @@ You can watch torrents without downloading them, because the platform does it fo
 
 This project is online, so you can visit it by clicking [here](https://hypertube.trixky.com/)!
 
-> The site is in __demo__ mode, so you can't login/register
+> The site is in __demo__ mode for legal reasons, so you can't login/register
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/trixky/hypertube/main/.demo/login.gif" alt="Login page" width="600"/>
