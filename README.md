@@ -39,3 +39,4 @@ This project is online, so you can visit it by clicking [here](https://hypertube
 - Node.js / Express
 - ffmpeg
 - nginx
+- tailwind
