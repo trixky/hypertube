@@ -26,7 +26,7 @@ docker-compose -f docker-compose.build.yaml up
 
 ## Online
 
-This project is online, so you can visit it by clicking [here](https://hypertube.trixky.com/)!
+This project is [online](https://hypertube.trixky.com/)!
 
 <img src="https://raw.githubusercontent.com/trixky/hypertube/main/.demo/login.gif" alt="Login page" width="600"/>
 
